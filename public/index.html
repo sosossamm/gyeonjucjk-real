@@ -451,12 +451,120 @@ body {
 }
 .btn-reset:hover { color: var(--ink); border-color: var(--ink3); }
 
+/* MODE TOGGLE */
+.mode-toggle {
+  display: flex; gap: 8px; margin-bottom: 1.25rem;
+}
+.mode-btn {
+  flex: 1; padding: 0.85rem 1rem;
+  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  transition: all 0.15s; text-align: center;
+}
+.mode-btn.active {
+  border-color: var(--ink); background: var(--ink); color: #fff;
+}
+.mode-btn span { display: block; font-size: 11px; font-weight: 400; margin-top: 3px; opacity: 0.7; }
+
+/* MANUAL INPUT */
+.manual-card { display: none; }
+.manual-card.show { display: block; }
+
+.cat-section { margin-bottom: 1.25rem; }
+.cat-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.cat-section-header:hover { background: var(--rule); }
+.cat-section-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.cat-section-toggle { font-size: 18px; color: var(--muted); transition: transform 0.2s; }
+.cat-section-toggle.open { transform: rotate(45deg); }
+
+.cat-items-wrap {
+  display: none; padding: 1rem 1.25rem;
+  border: 1px solid var(--rule); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--surface);
+}
+.cat-items-wrap.open { display: block; }
+
+.manual-item-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.manual-item-row:last-child { margin-bottom: 0; }
+.manual-item-name { font-size: 13px; font-weight: 600; color: var(--ink3); }
+.manual-item-input {
+  width: 130px; padding: 6px 10px;
+  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--ink); background: var(--paper); outline: none;
+  text-align: right;
+  transition: border-color 0.15s;
+}
+.manual-item-input:focus { border-color: var(--accent); background: #fff; }
+.manual-item-unit { font-size: 12px; color: var(--muted); width: 24px; }
+
+.manual-total-bar {
+  background: var(--ink); color: #fff;
+  border-radius: var(--radius-sm); padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.manual-total-label { font-size: 13px; opacity: 0.7; }
+.manual-total-amount { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
+
+/* CHECK UI */
+.cat-filled-badge {
+  font-size: 11px; font-weight: 700;
+  background: var(--accent); color: #fff;
+  padding: 2px 8px; border-radius: 20px; margin-left: 6px;
+}
+.cost-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.cost-label { font-size: 13px; font-weight: 700; color: var(--ink); }
+.cost-input-wrap { display: flex; align-items: center; gap: 8px; }
+.cost-unit { font-size: 13px; font-weight: 700; color: var(--muted); }
+.checks-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--hint); margin-bottom: 10px;
+}
+.checks-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-item {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; padding: 6px 12px;
+  border: 1.5px solid var(--rule); border-radius: 20px;
+  transition: all 0.15s; user-select: none;
+}
+.check-item:hover { border-color: var(--accent); }
+.check-item input[type=checkbox] { display: none; }
+.check-box {
+  width: 14px; height: 14px; border-radius: 3px;
+  border: 1.5px solid var(--rule); background: var(--paper);
+  flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.check-item input:checked ~ .check-box { background: var(--accent); border-color: var(--accent); }
+.check-item input:checked ~ .check-box::after { content: '✓'; font-size: 9px; color: #fff; font-weight: 800; }
+.check-item input:checked ~ .check-txt { color: var(--accent); font-weight: 700; }
+.check-txt { font-size: 13px; color: var(--ink3); }
+
 @media (max-width: 640px) {
   .form-grid { grid-template-columns: 1fr 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .cat-grid  { grid-template-columns: repeat(2, 1fr); }
   .advice-grid { grid-template-columns: 1fr; }
   .hero { padding: 2.5rem 1.25rem 2rem; }
+  .manual-item-row { grid-template-columns: 1fr auto; }
+  .manual-item-unit { display: none; }
 }
 </style>
 </head>
@@ -505,6 +613,18 @@ body {
     <div class="step active" id="step1"><div class="step-num">1</div>파일 업로드</div>
     <div class="step" id="step2"><div class="step-num">2</div>정보 입력</div>
     <div class="step" id="step3"><div class="step-num">3</div>분석 결과</div>
+  </div>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modePDF" onclick="switchMode('pdf')">
+      📄 견적서 파일 업로드
+      <span>PDF · JPG · PNG 파일로 분석</span>
+    </button>
+    <button class="mode-btn" id="modeManual" onclick="switchMode('manual')">
+      ✏️ 직접 입력하기
+      <span>공정별 금액을 직접 입력해서 분석</span>
+    </button>
   </div>
 
   <!-- UPLOAD CARD -->
@@ -558,6 +678,44 @@ body {
         <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
       </svg>
       AI 견적 분석 시작하기
+    </button>
+  </div>
+
+  <!-- MANUAL INPUT CARD -->
+  <div class="card manual-card" id="manualCard">
+    <div class="card-title">공정별 견적 금액 입력</div>
+    <div id="manualCats"></div>
+    <div class="manual-total-bar">
+      <span class="manual-total-label">입력된 총 견적금액</span>
+      <span class="manual-total-amount" id="manualTotal">0원</span>
+    </div>
+    <div class="form-grid" style="margin-bottom:0;">
+      <div class="form-field">
+        <label>공사 면적</label>
+        <input type="number" id="areaNumM" placeholder="예: 84" min="1" max="999" oninput="syncArea(this)">
+      </div>
+      <div class="form-field">
+        <label>면적 단위</label>
+        <select id="areaUnitM">
+          <option value="m2">㎡ (제곱미터)</option>
+          <option value="py">평</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>공사 지역</label>
+        <select id="regionM">
+          <option value="서울">서울</option>
+          <option value="수도권">수도권 (경기/인천)</option>
+          <option value="광역시">광역시</option>
+          <option value="기타">기타 지역</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-analyze" id="analyzeBtnM" onclick="doManualAnalyze()" style="margin-top:1.25rem;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
+      </svg>
+      입력 내용으로 분석하기
     </button>
   </div>
 
@@ -645,7 +803,201 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 let pdfText='', imageBase64='', imageMime='', allItems=[];
 
-/* ── FILE HANDLING ── */
+/* ── MANUAL INPUT DATA ── */
+const MANUAL_CATS=[
+  { id:'demolition', cat:'철거/방수', icon:'🔨',
+    checks:['전체 철거','부분 철거','방수 공사']
+  },
+  { id:'tile', cat:'타일', icon:'🟫',
+    checks:['주방 벽','발코니 바닥','화장실 전체','화장실 부분','현관 바닥']
+  },
+  { id:'floor', cat:'바닥', icon:'🪵',
+    checks:['마루','장판','데코타일','타일']
+  },
+  { id:'wallpaper', cat:'도배', icon:'🖼️',
+    checks:['전체 실크','전체 합지','실크+합지 혼합']
+  },
+  { id:'paint', cat:'도장 (페인트)', icon:'🎨',
+    checks:['현관','거실','주방','방 전체','발코니']
+  },
+  { id:'bathroom', cat:'욕실', icon:'🚿',
+    checks:['타일 교체','위생도기 교체','악세사리 전체 교체 (수전·수납장·샤워기 등)']
+  },
+  { id:'kitchen', cat:'주방', icon:'🍳',
+    checks:['상부장 교체','하부장 교체','도어 교체','상판 교체','냉장고장']
+  },
+  { id:'furniture', cat:'가구/붙박이장', icon:'🚪',
+    checks:['붙박이장','드레스룸','신발장','거실장','TV장']
+  },
+  { id:'electric', cat:'전기/조명', icon:'💡',
+    checks:['전기 배선 공사','조명 전체 교체','스위치·콘센트 교체','분전반 교체']
+  },
+];
+
+function buildManualCats(){
+  const wrap=document.getElementById('manualCats');
+  wrap.innerHTML=MANUAL_CATS.map((c,ci)=>`
+    <div class="cat-section" id="catsec${ci}">
+      <div class="cat-section-header" onclick="toggleCat(${ci})">
+        <div class="cat-section-title">
+          <span style="font-size:16px;">${c.icon}</span>
+          <span>${c.cat}</span>
+          <span class="cat-filled-badge" id="badge${ci}" style="display:none;"></span>
+        </div>
+        <span class="cat-section-toggle" id="toggle${ci}">+</span>
+      </div>
+      <div class="cat-items-wrap" id="catWrap${ci}">
+        <div class="cost-row">
+          <label class="cost-label">총 비용</label>
+          <div class="cost-input-wrap">
+            <input class="manual-item-input" type="number" min="0" placeholder="예: 150"
+              id="inp_${ci}" oninput="updateManualTotal(); updateBadge(${ci})">
+            <span class="cost-unit">만원</span>
+          </div>
+        </div>
+        <div class="checks-label">공사 항목 선택</div>
+        <div class="checks-grid">
+          ${c.checks.map((chk,ki)=>`
+            <label class="check-item">
+              <input type="checkbox" id="chk_${ci}_${ki}" onchange="updateBadge(${ci})">
+              <span class="check-box"></span>
+              <span class="check-txt">${chk}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateBadge(ci){
+  const amt=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+  const badge=document.getElementById(`badge${ci}`);
+  if(amt>0){
+    badge.style.display='inline-block';
+    badge.textContent=amt.toLocaleString()+'만원';
+  } else {
+    badge.style.display='none';
+  }
+}
+
+function toggleCat(ci){
+  const wrap=document.getElementById('catWrap'+ci);
+  const tog=document.getElementById('toggle'+ci);
+  const open=wrap.classList.toggle('open');
+  tog.classList.toggle('open', open);
+}
+
+function updateManualTotal(){
+  let total=0;
+  MANUAL_CATS.forEach((_,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    total+=v*10000;
+  });
+  document.getElementById('manualTotal').textContent=fmtWon(total);
+}
+
+function fmtWon(n){
+  if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
+  if(n>=10000)return Math.round(n/10000)+'만원';
+  return n.toLocaleString()+'원';
+}
+
+function formatInput(el){
+  /* allow raw numbers */
+}
+
+function switchMode(mode){
+  const isPDF=mode==='pdf';
+  document.getElementById('modePDF').classList.toggle('active', isPDF);
+  document.getElementById('modeManual').classList.toggle('active', !isPDF);
+  document.getElementById('uploadCard').style.display=isPDF?'':'none';
+  document.getElementById('infoCard').style.display=isPDF?'':'none';
+  document.getElementById('manualCard').classList.toggle('show', !isPDF);
+  if(!isPDF) buildManualCats();
+}
+
+function syncArea(el){
+  /* keep pdf and manual area in sync */
+  document.getElementById('areaNum').value=el.value;
+}
+
+async function doManualAnalyze(){
+  const area=parseFloat(document.getElementById('areaNumM').value)||0;
+  const unit=document.getElementById('areaUnitM').value;
+  const region=document.getElementById('regionM').value;
+  const py=unit==='py'?area:area/3.305785;
+  const m2=unit==='m2'?area:area*3.305785;
+
+  /* collect filled items */
+  const filledItems=[];
+  let totalAmount=0;
+  MANUAL_CATS.forEach((c,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    if(v>0){
+      const checkedItems=c.checks.filter((_,ki)=>
+        document.getElementById(`chk_${ci}_${ki}`)?.checked
+      );
+      filledItems.push({
+        name: c.cat,
+        category: c.cat,
+        amount: v*10000,
+        unit: '식',
+        subItems: checkedItems
+      });
+      totalAmount+=v*10000;
+    }
+  });
+
+  if(filledItems.length===0){ alert('최소 1개 항목의 금액을 입력해주세요.'); return; }
+
+  document.getElementById('analyzeBtnM').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+  startProgress(false);
+
+  const SYS=`You are a Korean interior renovation cost analyst. Analyze each item and return ONLY valid JSON. No markdown, no explanation. Raw JSON only.
+verdict: "저렴"(20%+ below avg), "적정"(within ±20%), "비쌈"(20%+ above avg)
+reason: max 10 Korean chars, no special chars
+Region: ${region}, Area: ${Math.round(py)}평(${Math.round(m2)}㎡)
+Market rates: 철거평당15-25만,방수m2당8-15만,타일m2당6-14만,마루m2당4-12만,도배평당2.5-5만,욕실100-250만,싱크대200-600만,붙박이장90cm당60-150만,전기평당10-20만,조명개당5-30만,확장m2당25-50만
+JSON:{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평","items":[{"name":"항목명","category":"카테고리","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}`;
+
+  const itemsText=filledItems.map(i=>{
+    const sub=i.subItems&&i.subItems.length>0?` [포함: ${i.subItems.join(', ')}]`:'';
+    return `${i.name}${sub}: ${(i.amount/10000).toLocaleString()}만원`;
+  }).join('\n');
+  const USR=`다음 항목들을 분석해주세요. 총액: ${(totalAmount/10000).toLocaleString()}만원\n${itemsText}`;
+
+  try{
+    const resp=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4096,
+        system:SYS,
+        messages:[{role:'user',content:USR}]
+      })
+    });
+    const data=await resp.json();
+    const raw=data.content.map(b=>b.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const jsonMatch=clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('JSON 응답을 찾을 수 없습니다');
+    let result;
+    try{ result=JSON.parse(jsonMatch[0]); }
+    catch(e){
+      const fixed=jsonMatch[0].replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
+      result=JSON.parse(fixed);
+    }
+    stopProgress();
+    render(result);
+    setStep(3);
+  }catch(err){
+    stopProgress();
+    alert('분석 중 오류가 발생했습니다.\n'+err.message);
+  }finally{
+    document.getElementById('analyzeBtnM').disabled=false;
+  }
+}
 const zone=document.getElementById('uploadZone');
 const finput=document.getElementById('fileInput');
 
@@ -977,6 +1329,7 @@ function doReset(){
   document.getElementById('areaNum').value='';
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('resultsWrap').classList.remove('show');
+  switchMode('pdf');
   setStep(1);
   window.scrollTo({top:0,behavior:'smooth'});
 }
