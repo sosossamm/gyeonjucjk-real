@@ -719,6 +719,9 @@ body {
     </button>
   </div>
 
+  <!-- ERROR BOX -->
+  <div id="errorBox" style="display:none; background:#FCEAEA; border:1px solid #F0B0B0; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1rem; font-size:13px; color:#791F1F; line-height:1.6;"></div>
+
   <!-- PROGRESS -->
   <div class="progress-card" id="progressCard">
     <div class="progress-steps" id="progressSteps"></div>
@@ -1142,7 +1145,50 @@ function stopProgress(){
   document.getElementById('progressCard').classList.remove('show');
 }
 
-/* ── ANALYZE ── */
+/* ── SHARED API CALL ── */
+async function callAPI(userContent, region, py, m2){
+  const SYS=`You are a Korean interior renovation cost expert.
+Return ONLY a raw JSON object. No markdown fences, no explanation, nothing else.
+All text fields must be short (under 15 chars). No apostrophes or special chars inside strings.
+Use only these verdicts exactly: 저렴 적정 비쌈
+
+Required JSON shape (copy exactly, fill values):
+{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평15자이내","items":[{"name":"항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}
+
+Category options: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 기타
+region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡)
+Market refs: 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실100-250만 싱크대200-600만 붙박이장90cm당60-150만 전기평당10-20만`;
+
+  const resp=await fetch('/api/analyze',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:4096,
+      system:SYS,
+      messages:[{role:'user',content:userContent}]
+    })
+  });
+  if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
+  const data=await resp.json();
+  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  const raw=data.content.map(b=>b.text||'').join('');
+  const match=raw.match(/\{[\s\S]*\}/);
+  if(!match) throw new Error(`JSON 없음. AI응답: ${raw.slice(0,100)}`);
+  let s=match[0]
+    .replace(/,\s*([}\]])/g,'$1')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'');
+  return JSON.parse(s);
+}
+
+function showError(msg){
+  stopProgress();
+  const eb=document.getElementById('errorBox');
+  if(eb){eb.textContent='⚠ '+msg;eb.style.display='block';}
+  else{alert(msg);}
+}
+
+/* ── ANALYZE (PDF / IMAGE) ── */
 async function doAnalyze(){
   const area=parseFloat(document.getElementById('areaNum').value)||0;
   const unit=document.getElementById('areaUnit').value;
@@ -1153,78 +1199,79 @@ async function doAnalyze(){
 
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('resultsWrap').classList.remove('show');
+  const eb=document.getElementById('errorBox');
+  if(eb) eb.style.display='none';
   setStep(2);
   startProgress(isImg);
 
-  const SYS=`You are a Korean interior renovation cost analyst. Analyze the estimate and return ONLY valid JSON. No markdown, no explanation, no extra text. Just raw JSON.
-
-Rules:
-- verdict: "저렴"(20%+ below avg), "적정"(within ±20%), "비쌈"(20%+ above avg)
-- All string values must use double quotes. Escape any special characters.
-- reason field: max 10 Korean characters, no commas, no quotes inside
-- advices: exactly 4 items, each max 20 Korean characters
-
-Region: ${region}, Area: ${Math.round(py)}평(${Math.round(m2)}㎡)
-
-Market rates(${region}):
-철거평당15-25만,방수m2당8-15만,타일m2당6-14만,마루m2당4-12만,도배평당2.5-5만,도장m2당2-5만,욕실100-250만,싱크대200-600만,붙박이장90cm당60-150만,전기평당10-20만,조명개당5-30만,확장m2당25-50만
-
-JSON format:
-{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평","items":[{"name":"항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}`;
-
-  /* Build message content — image or text */
   let userContent;
   if(isImg){
     userContent=[
-      {
-        type:'image',
-        source:{ type:'base64', media_type:imageMime, data:imageBase64 }
-      },
-      {
-        type:'text',
-        text:`위 견적서 이미지를 분석해주세요.\n공사 면적: ${Math.round(m2)}㎡ (${Math.round(py)}평), 지역: ${region}\n이미지에서 모든 공사 항목과 금액을 정확히 읽어서 JSON으로 반환하세요.`
-      }
+      {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
+      {type:'text',text:`견적서 이미지. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 모든 항목 금액 읽고 JSON 분석`}
     ];
   } else {
-    userContent=`아래 인테리어 견적서를 분석해주세요.\n공사 면적: ${Math.round(m2)}㎡ (${Math.round(py)}평), 지역: ${region}\n\n=== 견적서 내용 ===\n${pdfText.slice(0,5000)}\n=== 끝 ===`;
+    userContent=`견적서 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region}\n${pdfText.slice(0,4000)}`;
   }
 
   try{
-    const resp=await fetch('/api/analyze',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:4096,
-        system:SYS,
-        messages:[{role:'user', content:userContent}]
-      })
-    });
-    const data=await resp.json();
-    const raw=data.content.map(b=>b.text||'').join('');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const jsonMatch=clean.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('AI 응답에서 JSON을 찾을 수 없습니다');
-    let result;
-    try{
-      result=JSON.parse(jsonMatch[0]);
-    }catch(parseErr){
-      const fixed=jsonMatch[0]
-        .replace(/,\s*}/g,'}')
-        .replace(/,\s*]/g,']')
-        .replace(/[\u0000-\u001F\u007F]/g,' ');
-      result=JSON.parse(fixed);
-    }
+    const result=await callAPI(userContent,region,py,m2);
     stopProgress();
     render(result);
     setStep(3);
   }catch(err){
-    stopProgress();
-    alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.\n'+err.message);
+    console.error(err);
+    showError('분석 오류: '+err.message);
     document.getElementById('analyzeBtn').disabled=false;
   }
 }
 
+/* ── ANALYZE (MANUAL) ── */
+async function doManualAnalyze(){
+  const area=parseFloat(document.getElementById('areaNumM').value)||0;
+  const unit=document.getElementById('areaUnitM').value;
+  const region=document.getElementById('regionM').value;
+  const py=unit==='py'?area:area/3.305785;
+  const m2=unit==='m2'?area:area*3.305785;
+
+  const filledItems=[];
+  let totalAmount=0;
+  MANUAL_CATS.forEach((c,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    if(v>0){
+      const subs=c.checks.filter((_,ki)=>document.getElementById(`chk_${ci}_${ki}`)?.checked);
+      filledItems.push({name:c.cat,category:c.cat,amount:v*10000,subItems:subs});
+      totalAmount+=v*10000;
+    }
+  });
+
+  if(!filledItems.length){alert('최소 1개 항목의 금액을 입력해주세요.');return;}
+  if(!area){alert('공사 면적을 입력해주세요.');return;}
+
+  document.getElementById('analyzeBtnM').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+  const eb=document.getElementById('errorBox');
+  if(eb) eb.style.display='none';
+  startProgress(false);
+
+  const lines=filledItems.map(i=>{
+    const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';
+    return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;
+  }).join('\n');
+  const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 총액:${Math.round(totalAmount/10000)}만원\n${lines}`;
+
+  try{
+    const result=await callAPI(userContent,region,py,m2);
+    stopProgress();
+    render(result);
+    setStep(3);
+  }catch(err){
+    console.error(err);
+    showError('분석 오류: '+err.message);
+  }finally{
+    document.getElementById('analyzeBtnM').disabled=false;
+  }
+}
 /* ── RENDER ── */
 function fmt(n){
   if(!n||isNaN(n))return'—';
@@ -1329,7 +1376,15 @@ function doReset(){
   document.getElementById('areaNum').value='';
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('resultsWrap').classList.remove('show');
-  switchMode('pdf');
+
+  const isManual=document.getElementById('modeManual').classList.contains('active');
+  if(isManual){
+    document.querySelectorAll('.manual-item-input').forEach(el=>el.value='');
+    document.querySelectorAll('.cat-items-wrap input[type=checkbox]').forEach(el=>el.checked=false);
+    document.querySelectorAll('.cat-filled-badge').forEach(el=>el.style.display='none');
+    document.getElementById('manualTotal').textContent='0원';
+  }
+
   setStep(1);
   window.scrollTo({top:0,behavior:'smooth'});
 }
