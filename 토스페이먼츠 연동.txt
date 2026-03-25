@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>견적분석 — 인테리어 견적 데이터 분석기</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<style>
+:root {
+  --ink: #0F0E0C;
+  --ink2: #2A2825;
+  --ink3: #4A4743;
+  --muted: #8A8780;
+  --hint: #B8B5B0;
+  --rule: #E8E5E0;
+  --paper: #F8F6F2;
+  --surface: #FFFFFF;
+  --cheap: #1A6B3E;
+  --cheap-bg: #EBF7F0;
+  --cheap-mid: #4CAF82;
+  --fair: #7A6010;
+  --fair-bg: #FBF5E0;
+  --fair-mid: #D4A820;
+  --exp: #9A1F1F;
+  --exp-bg: #FCEAEA;
+  --exp-mid: #E04040;
+  --accent: #1F4FD8;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ─── HEADER ─── */
+.site-header {
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center;
+  padding: 0 2rem;
+  height: 56px;
+  gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+}
+.site-header .logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: inherit;
+}
+.logo-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-icon svg { width: 34px; height: 34px; }
+.logo-wordmark { font-size: 15px; font-weight: 800; letter-spacing: -0.8px; color: #fff; }
+.logo-wordmark span { color: #A0BFF8; }
+.header-sep { flex: 1; }
+.header-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+  color: #A0BFF8; text-transform: uppercase;
+}
+
+/* ─── HERO ─── */
+.hero {
+  background: var(--ink);
+  color: #fff;
+  padding: 4rem 2rem 3.5rem;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 39px,
+    rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px
+  );
+}
+.hero-inner { max-width: 820px; margin: 0 auto; position: relative; }
+.hero-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: #A0BFF8; margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: #A0BFF8; }
+.hero h1 {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 800; letter-spacing: -1.5px;
+  line-height: 1.15; margin-bottom: 1rem;
+}
+.hero h1 em { font-style: normal; color: #A0BFF8; }
+.hero-desc {
+  font-size: 15px; color: rgba(255,255,255,0.6);
+  max-width: 540px; line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.hero-cats {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.hero-cat {
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* ─── MAIN LAYOUT ─── */
+.wrap { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+/* ─── STEPS ─── */
+.steps { display: flex; gap: 0; margin-bottom: 2.5rem; }
+.step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  font-size: 12px; color: var(--hint); font-weight: 600;
+  position: relative;
+}
+.step::after {
+  content: '';
+  position: absolute; top: 16px; left: calc(50% + 16px); right: calc(-50% + 16px);
+  height: 1px; background: var(--rule);
+}
+.step:last-child::after { display: none; }
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--rule);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--hint);
+  background: var(--surface);
+  margin-bottom: 6px; position: relative; z-index: 1;
+  transition: all 0.3s;
+}
+.step.active .step-num {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.step.done .step-num {
+  background: var(--cheap); color: #fff; border-color: var(--cheap);
+}
+.step.active { color: var(--ink); }
+.step.done { color: var(--cheap); }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: ''; display: block;
+  width: 3px; height: 14px; background: var(--ink); border-radius: 2px;
+}
+
+/* ─── UPLOAD ─── */
+.upload-zone {
+  border: 2px dashed var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--paper);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.over {
+  border-color: var(--accent);
+  background: #F0F4FE;
+}
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon-wrap {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--rule); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  transition: background 0.2s;
+}
+.upload-zone:hover .upload-icon-wrap { background: #D0DCFD; }
+.upload-icon-wrap svg { width: 24px; height: 24px; color: var(--muted); }
+.upload-zone:hover .upload-icon-wrap svg { color: var(--accent); }
+.upload-main { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.upload-sub { font-size: 13px; color: var(--muted); }
+
+.file-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 1rem;
+  background: #EBF0FE; border: 1px solid #C0D0FA;
+  color: var(--accent); border-radius: 6px;
+  font-size: 13px; font-weight: 600; padding: 6px 12px;
+}
+.file-pill button {
+  background: none; border: none; color: var(--accent);
+  cursor: pointer; font-size: 18px; line-height: 1; padding: 0 0 0 4px;
+}
+.img-preview-wrap {
+  margin-top: 1rem; position: relative; display: inline-block;
+}
+.img-preview {
+  max-width: 100%; max-height: 200px;
+  border-radius: var(--radius-sm); border: 1px solid var(--rule);
+  display: block; object-fit: contain;
+}
+.img-preview-remove {
+  position: absolute; top: -8px; right: -8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  border: none; cursor: pointer; font-size: 13px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.file-type-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; margin-left: 8px;
+  vertical-align: middle;
+}
+.file-type-badge.pdf { background: #FDE8E8; color: #9A1F1F; }
+.file-type-badge.img { background: #E8F0FE; color: #1F4FD8; }
+
+/* ─── FORM GRID ─── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.form-field label {
+  display: block; font-size: 12px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.form-field input, .form-field select {
+  width: 100%; padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 14px; font-weight: 500;
+  color: var(--ink); background: var(--paper);
+  outline: none; transition: border-color 0.15s;
+  appearance: none;
+}
+.form-field input:focus, .form-field select:focus { border-color: var(--accent); background: #fff; }
+
+/* ─── ANALYZE BTN ─── */
+.btn-analyze {
+  width: 100%;
+  padding: 1.1rem 2rem;
+  background: var(--ink);
+  color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 15px; font-weight: 800;
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 1.25rem;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-analyze:hover:not(:disabled) { opacity: 0.85; }
+.btn-analyze:active:not(:disabled) { transform: scale(0.99); }
+.btn-analyze:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-analyze svg { width: 18px; height: 18px; }
+
+/* ─── PROGRESS ─── */
+.progress-card {
+  background: var(--ink2);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  display: none;
+}
+.progress-card.show { display: block; }
+.progress-steps { display: flex; flex-direction: column; gap: 10px; }
+.prog-item { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.prog-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); flex-shrink: 0;
+  transition: background 0.3s;
+}
+.prog-dot.done { background: var(--cheap-mid); }
+.prog-dot.active {
+  background: #A0BFF8;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.prog-label { color: rgba(255,255,255,0.7); }
+.prog-label.done { color: rgba(255,255,255,0.95); }
+.prog-label.active { color: #fff; font-weight: 600; }
+
+/* ─── RESULTS ─── */
+.results { display: none; }
+.results.show { display: block; }
+
+/* SUMMARY TOP */
+.verdict-banner {
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 1.25rem;
+}
+.verdict-banner.cheap { background: var(--cheap-bg); border: 1px solid #B0DEC4; }
+.verdict-banner.fair  { background: var(--fair-bg);  border: 1px solid #E8D080; }
+.verdict-banner.exp   { background: var(--exp-bg);   border: 1px solid #F0B0B0; }
+.verdict-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.verdict-banner.cheap .verdict-icon { background: var(--cheap-bg); border: 2px solid var(--cheap-mid); }
+.verdict-banner.fair  .verdict-icon { background: var(--fair-bg);  border: 2px solid var(--fair-mid); }
+.verdict-banner.exp   .verdict-icon { background: var(--exp-bg);   border: 2px solid var(--exp-mid); }
+.verdict-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.verdict-banner.cheap .verdict-label { color: var(--cheap); }
+.verdict-banner.fair  .verdict-label { color: var(--fair); }
+.verdict-banner.exp   .verdict-label { color: var(--exp); }
+.verdict-title { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px; }
+.verdict-sub { font-size: 13px; color: var(--ink3); }
+.verdict-total {
+  margin-left: auto; text-align: right; flex-shrink: 0;
+}
+.verdict-total .t-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.verdict-total .t-amount { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+
+/* STATS ROW */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+}
+.stat-label { font-size: 11px; color: var(--hint); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+.stat-val { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+.stat-val.cheap { color: var(--cheap); }
+.stat-val.fair  { color: var(--fair); }
+.stat-val.exp   { color: var(--exp); }
+.stat-val.neutral { color: var(--ink); }
+
+/* ITEMS */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.section-title { font-size: 14px; font-weight: 800; letter-spacing: -0.3px; }
+.section-filter { display: flex; gap: 6px; }
+.filter-btn {
+  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+  border: 1.5px solid var(--rule); background: none; cursor: pointer;
+  color: var(--muted); font-family: inherit; transition: all 0.15s;
+}
+.filter-btn.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+
+.items-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+
+.item-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 0 12px;
+  align-items: start;
+  transition: box-shadow 0.15s;
+  animation: fadeIn 0.3s ease both;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+.item-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.item-verdict-dot {
+  width: 10px; height: 10px; border-radius: 50%; margin-top: 5px;
+  flex-shrink: 0; grid-row: 1;
+}
+.item-verdict-dot.cheap { background: var(--cheap-mid); }
+.item-verdict-dot.fair  { background: var(--fair-mid); }
+.item-verdict-dot.exp   { background: var(--exp-mid); }
+
+.item-name { font-size: 14px; font-weight: 700; grid-column: 2; grid-row: 1; }
+.item-cat-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 2px 7px; border-radius: 4px;
+  background: var(--paper); color: var(--muted);
+  margin-left: 6px; vertical-align: middle;
+}
+
+.item-amount {
+  font-size: 16px; font-weight: 800; letter-spacing: -0.5px;
+  grid-column: 3; grid-row: 1; text-align: right;
+}
+
+.item-detail {
+  font-size: 12px; color: var(--muted);
+  grid-column: 2; grid-row: 2; padding-top: 3px;
+}
+
+.item-pill {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 4px;
+  grid-column: 3; grid-row: 2; align-self: start; text-align: center; margin-top: 3px;
+}
+.item-pill.cheap { background: var(--cheap-bg); color: var(--cheap); }
+.item-pill.fair  { background: var(--fair-bg);  color: var(--fair); }
+.item-pill.exp   { background: var(--exp-bg);   color: var(--exp); }
+
+.item-bar-row { grid-column: 1 / -1; grid-row: 3; padding-top: 10px; display: flex; gap: 10px; align-items: center; }
+.item-bar-track {
+  flex: 1; height: 4px; background: var(--paper); border-radius: 2px; overflow: hidden;
+}
+.item-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+.item-bar-fill.cheap { background: var(--cheap-mid); }
+.item-bar-fill.fair  { background: var(--fair-mid); }
+.item-bar-fill.exp   { background: var(--exp-mid); }
+.item-range { font-size: 11px; color: var(--hint); white-space: nowrap; }
+
+/* ADVICE */
+.advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+.advice-item {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+  font-size: 13px; line-height: 1.65; color: var(--ink3);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.advice-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--rule);
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+
+/* CATEGORY DONUT SUMMARY */
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+.cat-item {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+}
+.cat-name { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+.cat-amount { font-size: 14px; font-weight: 800; letter-spacing: -0.5px; }
+.cat-pct { font-size: 11px; color: var(--hint); margin-top: 2px; }
+
+/* RESET BTN */
+.btn-reset {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  background: none; border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); padding: 8px 14px;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+  margin-top: 0.5rem;
+}
+.btn-reset:hover { color: var(--ink); border-color: var(--ink3); }
+
+/* MODE TOGGLE */
+.mode-toggle {
+  display: flex; gap: 8px; margin-bottom: 1.25rem;
+}
+.mode-btn {
+  flex: 1; padding: 0.85rem 1rem;
+  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  transition: all 0.15s; text-align: center;
+}
+.mode-btn.active {
+  border-color: var(--ink); background: var(--ink); color: #fff;
+}
+.mode-btn span { display: block; font-size: 11px; font-weight: 400; margin-top: 3px; opacity: 0.7; }
+
+/* MANUAL INPUT */
+.manual-card { display: none; }
+.manual-card.show { display: block; }
+
+.cat-section { margin-bottom: 1.25rem; }
+.cat-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.cat-section-header:hover { background: var(--rule); }
+.cat-section-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.cat-section-toggle { font-size: 18px; color: var(--muted); transition: transform 0.2s; }
+.cat-section-toggle.open { transform: rotate(45deg); }
+
+.cat-items-wrap {
+  display: none; padding: 1rem 1.25rem;
+  border: 1px solid var(--rule); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--surface);
+}
+.cat-items-wrap.open { display: block; }
+
+.manual-item-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.manual-item-row:last-child { margin-bottom: 0; }
+.manual-item-name { font-size: 13px; font-weight: 600; color: var(--ink3); }
+.manual-item-input {
+  width: 130px; padding: 6px 10px;
+  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--ink); background: var(--paper); outline: none;
+  text-align: right;
+  transition: border-color 0.15s;
+}
+.manual-item-input:focus { border-color: var(--accent); background: #fff; }
+.manual-item-unit { font-size: 12px; color: var(--muted); width: 24px; }
+
+.manual-total-bar {
+  background: var(--ink); color: #fff;
+  border-radius: var(--radius-sm); padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.manual-total-label { font-size: 13px; opacity: 0.7; }
+.manual-total-amount { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
+
+/* CHECK UI */
+.cat-filled-badge {
+  font-size: 11px; font-weight: 700;
+  background: var(--ink); color: #fff;
+  padding: 2px 8px; border-radius: 20px; margin-left: 6px;
+}
+.cost-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.cost-label { font-size: 13px; font-weight: 700; color: var(--ink); }
+.cost-input-wrap { display: flex; align-items: center; gap: 8px; }
+.cost-unit { font-size: 13px; font-weight: 700; color: var(--muted); min-width: 28px; }
+.checks-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--hint); margin-bottom: 10px;
+}
+.checks-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-item {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; padding: 6px 12px;
+  border: 1.5px solid var(--rule); border-radius: 20px;
+  transition: all 0.15s; user-select: none;
+}
+.check-item:hover { border-color: var(--accent); }
+.check-item input[type=checkbox] { display: none; }
+.check-box {
+  width: 14px; height: 14px; border-radius: 3px;
+  border: 1.5px solid var(--rule); background: var(--paper);
+  flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.check-item input:checked ~ .check-box { background: var(--accent); border-color: var(--accent); }
+.check-item input:checked ~ .check-box::after { content: '✓'; font-size: 9px; color: #fff; font-weight: 800; }
+.check-item input:checked ~ .check-txt { color: var(--accent); font-weight: 700; }
+.check-txt { font-size: 13px; color: var(--ink3); }
+
+/* ── PAYWALL ── */
+.paywall-wrap {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.paywall-preview {
+  padding: 1.75rem;
+}
+.paywall-preview .section-header { margin-bottom: 1rem; }
+
+.item-card-free {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+  animation: fadeIn 0.3s ease both;
+}
+.item-free-left { display: flex; align-items: center; gap: 10px; }
+.item-free-name { font-size: 14px; font-weight: 700; }
+.item-free-cat {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 3px;
+  background: var(--paper); color: var(--muted);
+}
+.item-free-amount { font-size: 15px; font-weight: 800; letter-spacing: -0.5px; }
+.item-free-blur {
+  display: flex; align-items: center; gap: 6px;
+}
+.blur-pill {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 4px;
+  background: var(--rule); color: transparent;
+  text-shadow: 0 0 8px rgba(0,0,0,0.5);
+  filter: blur(3px); user-select: none;
+  letter-spacing: 1px;
+}
+.lock-icon { font-size: 13px; color: var(--muted); }
+
+.paywall-gate {
+  background: var(--ink);
+  padding: 2rem 1.75rem;
+  text-align: center;
+  position: relative;
+}
+.paywall-gate::before {
+  content: '';
+  position: absolute; top: -40px; left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--ink));
+  pointer-events: none;
+}
+.paywall-gate-icon {
+  font-size: 28px; margin-bottom: 0.75rem;
+}
+.paywall-gate-title {
+  font-size: 17px; font-weight: 800; color: #fff;
+  letter-spacing: -0.5px; margin-bottom: 6px;
+}
+.paywall-gate-sub {
+  font-size: 13px; color: rgba(255,255,255,0.55);
+  margin-bottom: 1.5rem; line-height: 1.6;
+}
+.paywall-features {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 1.5rem; text-align: left;
+  max-width: 320px; margin-left: auto; margin-right: auto;
+}
+.paywall-feature {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: rgba(255,255,255,0.8);
+}
+.paywall-feature-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cheap-mid); flex-shrink: 0;
+}
+.btn-pay {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: #fff; color: var(--ink);
+  border: none; border-radius: var(--radius-sm);
+  padding: 1rem 2.5rem;
+  font-family: inherit; font-size: 15px; font-weight: 800;
+  letter-spacing: -0.3px; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  width: 100%; max-width: 320px;
+}
+.btn-pay:hover { opacity: 0.9; }
+.btn-pay:active { transform: scale(0.99); }
+.btn-pay-price {
+  background: var(--ink); color: #fff;
+  font-size: 13px; font-weight: 800;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+.paid-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--cheap-bg); color: var(--cheap);
+  border: 1px solid var(--cheap-mid);
+  font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 1rem;
+}
+
+/* blur overlay on advice */
+.advice-blur-wrap { position: relative; }
+.advice-blur-overlay {
+  position: absolute; inset: 0;
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.4);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .cat-grid  { grid-template-columns: repeat(2, 1fr); }
+  .advice-grid { grid-template-columns: 1fr; }
+  .hero { padding: 2.5rem 1.25rem 2rem; }
+  .manual-item-row { grid-template-columns: 1fr auto; }
+  .manual-item-unit { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="34" height="34" rx="8" fill="#0F0E0C"/>
+        <rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/>
+        <line x1="7.5" y1="10" x2="13.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="7.5" y1="13" x2="13.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="7.5" y1="16" x2="11" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <rect x="18" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.5"/>
+        <line x1="20.5" y1="10" x2="26.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="20.5" y1="13" x2="26.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="20.5" y1="16" x2="24" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16.5" y1="8" x2="17.5" y2="8" stroke="white" stroke-width="1" opacity="0.6"/>
+        <line x1="16.5" y1="11" x2="17.5" y2="11" stroke="white" stroke-width="1" opacity="0.6"/>
+        <line x1="16.5" y1="14" x2="17.5" y2="14" stroke="white" stroke-width="1" opacity="0.6"/>
+        <circle cx="22" cy="25" r="4.5" stroke="#E04040" stroke-width="1.8"/>
+        <line x1="25.2" y1="28.2" x2="28" y2="31" stroke="#E04040" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="20.5" y1="25" x2="23.5" y2="25" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="22" y1="23.5" x2="22" y2="26.5" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-wordmark">견적<span>분석</span></span>
+  </a>
+  <div class="header-sep"></div>
+  <span class="header-tag">인테리어 견적 데이터 분석기</span>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">3,000건+ 실거래 데이터 기반</div>
+    <h1>내 견적, <em>비싼 건지</em><br>알고 싶었잖아요</h1>
+    <p class="hero-desc">3,000여 건의 실제 인테리어 견적 데이터를 분석해 구축한 지역별 단가 기준으로,<br>내 견적서가 적정한지 항목별로 즉시 판별해드립니다.</p>
+    <div class="hero-cats">
+      <span class="hero-cat">철거/방수</span>
+      <span class="hero-cat">타일/바닥</span>
+      <span class="hero-cat">도배/도장</span>
+      <span class="hero-cat">욕실/주방</span>
+      <span class="hero-cat">가구/붙박이장</span>
+      <span class="hero-cat">전기/조명</span>
+      <span class="hero-cat">확장/설비</span>
+      <span class="hero-cat">부자재</span>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<div class="wrap">
+  <!-- STEPS -->
+  <div class="steps" id="stepsBar">
+    <div class="step active" id="step1"><div class="step-num">1</div>파일 업로드</div>
+    <div class="step" id="step2"><div class="step-num">2</div>정보 입력</div>
+    <div class="step" id="step3"><div class="step-num">3</div>분석 결과</div>
+  </div>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modePDF" onclick="switchMode('pdf')">
+      📄 견적서 파일 업로드
+      <span>PDF · JPG · PNG 파일로 분석</span>
+    </button>
+    <button class="mode-btn" id="modeManual" onclick="switchMode('manual')">
+      ✏️ 직접 입력하기
+      <span>공정별 금액을 직접 입력해서 분석</span>
+    </button>
+  </div>
+
+  <!-- UPLOAD CARD -->
+  <div class="card" id="uploadCard">
+    <div class="card-title">견적서 업로드</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".pdf,image/jpeg,image/png,image/webp">
+      <div class="upload-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 12 15 15"/>
+        </svg>
+      </div>
+      <div class="upload-main">견적서를 올려주세요</div>
+      <div class="upload-sub">PDF · JPG · PNG · WEBP · 클릭하거나 드래그 앤 드롭</div>
+    </div>
+    <div id="imgPreviewArea"></div>
+    <div id="filePillArea"></div>
+  </div>
+
+  <!-- INFO CARD -->
+  <div class="card" id="infoCard">
+    <div class="card-title">공사 정보 입력</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>공사 면적</label>
+        <input type="number" id="areaNum" placeholder="예: 84" min="1" max="999">
+      </div>
+      <div class="form-field">
+        <label>면적 단위</label>
+        <select id="areaUnit">
+          <option value="py">평</option>
+          <option value="m2">㎡ (제곱미터)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>공사 지역</label>
+        <select id="region">
+          <option value="서울">서울</option>
+          <option value="수도권">수도권 (경기/인천)</option>
+          <option value="광역시">광역시</option>
+          <option value="기타">기타 지역</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" disabled onclick="doAnalyze()">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
+      </svg>
+      AI 견적 분석 시작하기
+    </button>
+  </div>
+
+  <!-- MANUAL INPUT CARD -->
+  <div class="card manual-card" id="manualCard">
+    <div class="card-title">공정별 견적 금액 입력</div>
+    <div id="manualCats"></div>
+    <div class="manual-total-bar">
+      <span class="manual-total-label">입력된 총 견적금액</span>
+      <span class="manual-total-amount" id="manualTotal">0원</span>
+    </div>
+    <div class="form-grid" style="margin-bottom:0;">
+      <div class="form-field">
+        <label>공사 면적</label>
+        <input type="number" id="areaNumM" placeholder="예: 84" min="1" max="999" oninput="syncArea(this)">
+      </div>
+      <div class="form-field">
+        <label>면적 단위</label>
+        <select id="areaUnitM">
+          <option value="py">평</option>
+          <option value="m2">㎡ (제곱미터)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>공사 지역</label>
+        <select id="regionM">
+          <option value="서울">서울</option>
+          <option value="수도권">수도권 (경기/인천)</option>
+          <option value="광역시">광역시</option>
+          <option value="기타">기타 지역</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-analyze" id="analyzeBtnM" onclick="doManualAnalyze()" style="margin-top:1.25rem;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
+      </svg>
+      입력 내용으로 분석하기
+    </button>
+  </div>
+
+  <!-- ERROR BOX -->
+  <div id="errorBox" style="display:none; background:#FCEAEA; border:1px solid #F0B0B0; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1rem; font-size:13px; color:#791F1F; line-height:1.6;"></div>
+
+  <!-- PROGRESS -->
+  <div class="progress-card" id="progressCard">
+    <div class="progress-steps" id="progressSteps"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="resultsWrap">
+
+    <!-- VERDICT BANNER -->
+    <div class="verdict-banner" id="verdictBanner">
+      <div class="verdict-icon" id="verdictIcon"></div>
+      <div>
+        <div class="verdict-label" id="verdictLabel"></div>
+        <div class="verdict-title" id="verdictTitle"></div>
+        <div class="verdict-sub" id="verdictSub"></div>
+      </div>
+      <div class="verdict-total">
+        <div class="t-label">총 견적금액</div>
+        <div class="t-amount" id="verdictTotal"></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">전체 항목</div>
+        <div class="stat-val neutral" id="statTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">💚 저렴</div>
+        <div class="stat-val cheap" id="statCheap">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🟡 적정</div>
+        <div class="stat-val fair" id="statFair">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🔴 비쌈</div>
+        <div class="stat-val exp" id="statExp">0</div>
+      </div>
+    </div>
+
+    <!-- CAT BREAKDOWN -->
+    <div class="card">
+      <div class="card-title">카테고리별 금액</div>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+
+    <!-- ITEMS — FREE PREVIEW + PAYWALL -->
+    <div class="paywall-wrap" id="paywallWrap">
+      <div class="paywall-preview">
+        <div class="section-header">
+          <div class="section-title">항목별 견적 목록</div>
+          <div id="paidBadgeArea"></div>
+        </div>
+        <div id="itemsListFree"></div>
+      </div>
+
+      <!-- GATE (숨김 처리됨 after 결제) -->
+      <div class="paywall-gate" id="paywallGate">
+        <div class="paywall-gate-icon">🔍</div>
+        <div class="paywall-gate-title">항목별 상세 분석 열람하기</div>
+        <div class="paywall-gate-sub">적정가 범위, 저렴/비쌈 판정, 협상 팁까지<br>전문가 수준의 상세 분석을 확인하세요</div>
+        <div class="paywall-features">
+          <div class="paywall-feature"><div class="paywall-feature-dot"></div>각 항목 시중가 범위 및 판정 (저렴/적정/비쌈)</div>
+          <div class="paywall-feature"><div class="paywall-feature-dot"></div>시중 평균가 대비 % 비교 바</div>
+          <div class="paywall-feature"><div class="paywall-feature-dot"></div>전문가 협상 팁 4가지</div>
+          <div class="paywall-feature"><div class="paywall-feature-dot"></div>절약 가능 예상 금액</div>
+        </div>
+        <button class="btn-pay" onclick="startPayment()">
+          지금 상세 분석 열람하기
+          <span class="btn-pay-price">1만원</span>
+        </button>
+      </div>
+
+      <!-- PAID DETAIL (결제 후 표시) -->
+      <div style="display:none; padding:1.75rem;" id="paidDetail">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div class="section-title">항목별 상세 분석</div>
+          <div class="section-filter">
+            <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
+            <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
+            <button class="filter-btn" onclick="filterItems('fair',this)">적정</button>
+            <button class="filter-btn" onclick="filterItems('exp',this)">비쌈</button>
+          </div>
+        </div>
+        <div class="items-list" id="itemsList"></div>
+      </div>
+    </div>
+
+    <!-- ADVICE — 결제 후 표시 -->
+    <div class="card" id="adviceCard" style="display:none;">
+      <div class="card-title">전문가 의견 및 협상 팁</div>
+      <div class="advice-grid" id="adviceGrid"></div>
+    </div>
+
+    <button class="btn-reset" onclick="doReset()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M2 7a5 5 0 105.5-4.97"/><path d="M2 3v4h4"/>
+      </svg>
+      새 견적서 분석하기
+    </button>
+
+  </div><!-- /results -->
+</div><!-- /wrap -->
+
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfText='', imageBase64='', imageMime='', allItems=[];
+
+/* ── MANUAL INPUT DATA ── */
+const MANUAL_CATS=[
+  { id:'demolition', cat:'철거/방수', icon:'🔨',
+    checks:['전체 철거','부분 철거','방수 공사']
+  },
+  { id:'tile', cat:'타일', icon:'🟫',
+    checks:['주방 벽','발코니 바닥','화장실 전체','화장실 부분','현관 바닥']
+  },
+  { id:'floor', cat:'바닥', icon:'🪵',
+    checks:['마루','장판','데코타일','타일']
+  },
+  { id:'wallpaper', cat:'도배', icon:'🖼️',
+    checks:['전체 실크','전체 합지','실크+합지 혼합']
+  },
+  { id:'paint', cat:'도장 (페인트)', icon:'🎨',
+    checks:['현관','거실','주방','방 전체','발코니']
+  },
+  { id:'bathroom', cat:'욕실', icon:'🚿',
+    checks:['타일 교체','위생도기 교체','악세사리 전체 교체 (수전·수납장·샤워기 등)']
+  },
+  { id:'kitchen', cat:'주방', icon:'🍳',
+    checks:['상부장 교체','하부장 교체','도어 교체','상판 교체','냉장고장']
+  },
+  { id:'furniture', cat:'가구/붙박이장', icon:'🚪',
+    checks:['붙박이장','드레스룸','신발장','거실장','TV장']
+  },
+  { id:'electric', cat:'전기/조명', icon:'💡',
+    checks:['전기 배선 공사','조명 전체 교체','스위치·콘센트 교체','분전반 교체']
+  },
+];
+
+function buildManualCats(){
+  const wrap=document.getElementById('manualCats');
+  wrap.innerHTML=MANUAL_CATS.map((c,ci)=>`
+    <div class="cat-section" id="catsec${ci}">
+      <div class="cat-section-header" onclick="toggleCat(${ci})">
+        <div class="cat-section-title">
+          <span style="font-size:16px;">${c.icon}</span>
+          <span>${c.cat}</span>
+          <span class="cat-filled-badge" id="badge${ci}" style="display:none;"></span>
+        </div>
+        <span class="cat-section-toggle" id="toggle${ci}">+</span>
+      </div>
+      <div class="cat-items-wrap" id="catWrap${ci}">
+        <div class="cost-row">
+          <label class="cost-label">총 비용</label>
+          <div class="cost-input-wrap">
+            <input class="manual-item-input" type="number" min="0" placeholder="예: 150"
+              id="inp_${ci}" oninput="updateManualTotal(); updateBadge(${ci})">
+            <span class="cost-unit">만원</span>
+          </div>
+        </div>
+        <div class="checks-label">공사 항목 선택</div>
+        <div class="checks-grid">
+          ${c.checks.map((chk,ki)=>`
+            <label class="check-item">
+              <input type="checkbox" id="chk_${ci}_${ki}" onchange="updateBadge(${ci})">
+              <span class="check-box"></span>
+              <span class="check-txt">${chk}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateBadge(ci){
+  const amt=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+  const badge=document.getElementById(`badge${ci}`);
+  if(amt>0){
+    badge.style.display='inline-block';
+    badge.textContent=Number(amt).toLocaleString('ko-KR')+'만원';
+  } else {
+    badge.style.display='none';
+  }
+}
+
+function toggleCat(ci){
+  const wrap=document.getElementById('catWrap'+ci);
+  const tog=document.getElementById('toggle'+ci);
+  const open=wrap.classList.toggle('open');
+  tog.classList.toggle('open', open);
+}
+
+function updateManualTotal(){
+  let total=0;
+  MANUAL_CATS.forEach((_,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    total+=v*10000;
+  });
+  document.getElementById('manualTotal').textContent=fmtWon(total);
+}
+
+function fmtWon(n){
+  if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
+  if(n>=10000)return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
+  return n.toLocaleString('ko-KR')+'원';
+}
+
+function formatInput(el){
+  /* allow raw numbers */
+}
+
+function switchMode(mode){
+  const isPDF=mode==='pdf';
+  document.getElementById('modePDF').classList.toggle('active', isPDF);
+  document.getElementById('modeManual').classList.toggle('active', !isPDF);
+  document.getElementById('uploadCard').style.display=isPDF?'':'none';
+  document.getElementById('infoCard').style.display=isPDF?'':'none';
+  document.getElementById('manualCard').classList.toggle('show', !isPDF);
+  if(!isPDF) buildManualCats();
+}
+
+function syncArea(el){
+  /* keep pdf and manual area in sync */
+  document.getElementById('areaNum').value=el.value;
+}
+
+async function doManualAnalyze(){
+  const area=parseFloat(document.getElementById('areaNumM').value)||0;
+  const unit=document.getElementById('areaUnitM').value;
+  const region=document.getElementById('regionM').value;
+  const py=unit==='py'?area:area/3.305785;
+  const m2=unit==='m2'?area:area*3.305785;
+
+  /* collect filled items */
+  const filledItems=[];
+  let totalAmount=0;
+  MANUAL_CATS.forEach((c,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    if(v>0){
+      const checkedItems=c.checks.filter((_,ki)=>
+        document.getElementById(`chk_${ci}_${ki}`)?.checked
+      );
+      filledItems.push({
+        name: c.cat,
+        category: c.cat,
+        amount: v*10000,
+        unit: '식',
+        subItems: checkedItems
+      });
+      totalAmount+=v*10000;
+    }
+  });
+
+  if(filledItems.length===0){ alert('최소 1개 항목의 금액을 입력해주세요.'); return; }
+
+  document.getElementById('analyzeBtnM').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+  startProgress(false);
+
+  const SYS=`You are a Korean interior renovation cost analyst. Analyze each item and return ONLY valid JSON. No markdown, no explanation. Raw JSON only.
+verdict: "저렴"(20%+ below avg), "적정"(within ±20%), "비쌈"(20%+ above avg)
+reason: max 10 Korean chars, no special chars
+Region: ${region}, Area: ${Math.round(py)}평(${Math.round(m2)}㎡)
+Market rates: 철거평당15-25만,방수m2당8-15만,타일m2당6-14만,마루m2당4-12만,도배평당2.5-5만,욕실100-250만,싱크대200-600만,붙박이장90cm당60-150만,전기평당10-20만,조명개당5-30만,확장m2당25-50만
+JSON:{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평","items":[{"name":"항목명","category":"카테고리","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}`;
+
+  const itemsText=filledItems.map(i=>{
+    const sub=i.subItems&&i.subItems.length>0?` [포함: ${i.subItems.join(', ')}]`:'';
+    return `${i.name}${sub}: ${(i.amount/10000).toLocaleString()}만원`;
+  }).join('\n');
+  const USR=`다음 항목들을 분석해주세요. 총액: ${(totalAmount/10000).toLocaleString()}만원\n${itemsText}`;
+
+  try{
+    const resp=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4096,
+        system:SYS,
+        messages:[{role:'user',content:USR}]
+      })
+    });
+    const data=await resp.json();
+    const raw=data.content.map(b=>b.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const jsonMatch=clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('JSON 응답을 찾을 수 없습니다');
+    let result;
+    try{ result=JSON.parse(jsonMatch[0]); }
+    catch(e){
+      const fixed=jsonMatch[0].replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
+      result=JSON.parse(fixed);
+    }
+    stopProgress();
+    render(result);
+    setStep(3);
+  }catch(err){
+    stopProgress();
+    alert('분석 중 오류가 발생했습니다.\n'+err.message);
+  }finally{
+    document.getElementById('analyzeBtnM').disabled=false;
+  }
+}
+const zone=document.getElementById('uploadZone');
+const finput=document.getElementById('fileInput');
+
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',e=>{
+  e.preventDefault();zone.classList.remove('over');
+  const f=e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+finput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+
+function isImage(file){ return file.type.startsWith('image/'); }
+function isPDF(file){ return file.type==='application/pdf'; }
+
+async function handleFile(file){
+  if(isPDF(file)) await loadPDF(file);
+  else if(isImage(file)) await loadImage(file);
+  else{ alert('PDF 또는 이미지(JPG/PNG/WEBP) 파일만 지원합니다.'); return; }
+}
+
+async function loadPDF(file){
+  showPill(file.name,'pdf');
+  try{
+    const ab=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    let txt='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const p=await pdf.getPage(i);
+      const tc=await p.getTextContent();
+      txt+=tc.items.map(s=>s.str).join(' ')+'\n';
+    }
+    pdfText=txt; imageBase64='';
+    setStep(2);
+    document.getElementById('analyzeBtn').disabled=false;
+  }catch(e){
+    showPill('읽기 실패 — 다른 파일을 시도해주세요','pdf');
+  }
+}
+
+async function loadImage(file){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const dataUrl=e.target.result;
+      const b64=dataUrl.split(',')[1];
+      imageBase64=b64;
+      imageMime=file.type;
+      pdfText='';
+      showImagePreview(dataUrl, file.name);
+      setStep(2);
+      document.getElementById('analyzeBtn').disabled=false;
+      resolve();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function showPill(name,type){
+  const badge=type==='pdf'
+    ?'<span class="file-type-badge pdf">PDF</span>'
+    :'<span class="file-type-badge img">IMAGE</span>';
+  document.getElementById('imgPreviewArea').innerHTML=`
+    <div class="file-pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="0.5" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 4h5M4.5 7h5M4.5 10h3" stroke="currentColor" stroke-width="1.2"/></svg>
+      ${name}${badge}
+      <button onclick="clearFile()">×</button>
+    </div>`;
+}
+
+function showImagePreview(dataUrl, name){
+  document.getElementById('imgPreviewArea').innerHTML=`
+    <div style="margin-top:1rem;">
+      <div class="img-preview-wrap">
+        <img class="img-preview" src="${dataUrl}" alt="견적서 미리보기">
+        <button class="img-preview-remove" onclick="clearFile()">×</button>
+      </div>
+      <div style="margin-top:8px; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">
+        <span class="file-type-badge img">IMAGE</span>
+        ${name} · Claude Vision으로 텍스트 인식
+      </div>
+    </div>`;
+}
+
+function clearFile(){
+  pdfText=''; imageBase64=''; imageMime='';
+  finput.value='';
+  document.getElementById('imgPreviewArea').innerHTML='';
+  document.getElementById('analyzeBtn').disabled=true;
+  setStep(1);
+}
+
+/* ── STEPS ── */
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('step'+i);
+    el.className='step'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+/* ── PROGRESS ── */
+const PROG_STEPS_PDF=[
+  'PDF에서 텍스트 추출 완료',
+  '공사 항목 파싱 중...',
+  '시중 단가 데이터와 비교 중...',
+  '카테고리별 분석 완료',
+  '최종 리포트 생성 중...'
+];
+const PROG_STEPS_IMG=[
+  '이미지 업로드 완료',
+  'Claude Vision으로 텍스트 인식 중...',
+  '공사 항목 파싱 & 단가 비교 중...',
+  '카테고리별 분석 완료',
+  '최종 리포트 생성 중...'
+];
+let progTimer=null;
+function startProgress(isImg){
+  const STEPS=isImg?PROG_STEPS_IMG:PROG_STEPS_PDF;
+  const card=document.getElementById('progressCard');
+  card.classList.add('show');
+  const steps=document.getElementById('progressSteps');
+  steps.innerHTML=STEPS.map((s,i)=>`
+    <div class="prog-item" id="pi${i}">
+      <div class="prog-dot" id="pd${i}"></div>
+      <span class="prog-label" id="pl${i}">${s}</span>
+    </div>`).join('');
+  let cur=0;
+  document.getElementById('pd0').className='prog-dot active';
+  document.getElementById('pl0').className='prog-label active';
+  progTimer=setInterval(()=>{
+    if(cur<STEPS.length-1){
+      document.getElementById('pd'+cur).className='prog-dot done';
+      document.getElementById('pl'+cur).className='prog-label done';
+      cur++;
+      document.getElementById('pd'+cur).className='prog-dot active';
+      document.getElementById('pl'+cur).className='prog-label active';
+    }
+  },900);
+}
+function stopProgress(){
+  clearInterval(progTimer);
+  document.getElementById('progressCard').classList.remove('show');
+}
+
+/* ── SHARED API CALL ── */
+async function callAPI(userContent, region, py, m2){
+  const SYS=`You are a Korean interior renovation cost expert.
+Return ONLY a raw JSON object. No markdown fences, no explanation, nothing else.
+All text fields must be short (under 15 chars). No apostrophes or special chars inside strings.
+Use only these verdicts exactly: 저렴 적정 비쌈
+
+Required JSON shape (copy exactly, fill values):
+{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평15자이내","items":[{"name":"항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}
+
+Category options: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 기타
+region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡)
+Market refs: 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실100-250만 싱크대200-600만 붙박이장90cm당60-150만 전기평당10-20만`;
+
+  const resp=await fetch('/api/analyze',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:4096,
+      system:SYS,
+      messages:[{role:'user',content:userContent}]
+    })
+  });
+  if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
+  const data=await resp.json();
+  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  const raw=data.content.map(b=>b.text||'').join('');
+  const match=raw.match(/\{[\s\S]*\}/);
+  if(!match) throw new Error(`JSON 없음. AI응답: ${raw.slice(0,100)}`);
+  let s=match[0]
+    .replace(/,\s*([}\]])/g,'$1')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'');
+  return JSON.parse(s);
+}
+
+function showError(msg){
+  stopProgress();
+  const eb=document.getElementById('errorBox');
+  if(eb){eb.textContent='⚠ '+msg;eb.style.display='block';}
+  else{alert(msg);}
+}
+
+/* ── ANALYZE (PDF / IMAGE) ── */
+async function doAnalyze(){
+  const area=parseFloat(document.getElementById('areaNum').value)||0;
+  const unit=document.getElementById('areaUnit').value;
+  const region=document.getElementById('region').value;
+  const py=unit==='py'?area:area/3.305785;
+  const m2=unit==='m2'?area:area*3.305785;
+  const isImg=!!imageBase64;
+
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+  const eb=document.getElementById('errorBox');
+  if(eb) eb.style.display='none';
+  setStep(2);
+  startProgress(isImg);
+
+  let userContent;
+  if(isImg){
+    userContent=[
+      {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
+      {type:'text',text:`견적서 이미지. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 모든 항목 금액 읽고 JSON 분석`}
+    ];
+  } else {
+    userContent=`견적서 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region}\n${pdfText.slice(0,4000)}`;
+  }
+
+  try{
+    const result=await callAPI(userContent,region,py,m2);
+    stopProgress();
+    render(result);
+    setStep(3);
+  }catch(err){
+    console.error(err);
+    showError('분석 오류: '+err.message);
+    document.getElementById('analyzeBtn').disabled=false;
+  }
+}
+
+/* ── ANALYZE (MANUAL) ── */
+async function doManualAnalyze(){
+  const area=parseFloat(document.getElementById('areaNumM').value)||0;
+  const unit=document.getElementById('areaUnitM').value;
+  const region=document.getElementById('regionM').value;
+  const py=unit==='py'?area:area/3.305785;
+  const m2=unit==='m2'?area:area*3.305785;
+
+  const filledItems=[];
+  let totalAmount=0;
+  MANUAL_CATS.forEach((c,ci)=>{
+    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
+    if(v>0){
+      const subs=c.checks.filter((_,ki)=>document.getElementById(`chk_${ci}_${ki}`)?.checked);
+      filledItems.push({name:c.cat,category:c.cat,amount:v*10000,subItems:subs});
+      totalAmount+=v*10000;
+    }
+  });
+
+  if(!filledItems.length){alert('최소 1개 항목의 금액을 입력해주세요.');return;}
+  if(!area){alert('공사 면적을 입력해주세요.');return;}
+
+  document.getElementById('analyzeBtnM').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+  const eb=document.getElementById('errorBox');
+  if(eb) eb.style.display='none';
+  startProgress(false);
+
+  const lines=filledItems.map(i=>{
+    const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';
+    return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;
+  }).join('\n');
+  const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 총액:${Math.round(totalAmount/10000)}만원\n${lines}`;
+
+  try{
+    const result=await callAPI(userContent,region,py,m2);
+    stopProgress();
+    render(result);
+    setStep(3);
+  }catch(err){
+    console.error(err);
+    showError('분석 오류: '+err.message);
+  }finally{
+    document.getElementById('analyzeBtnM').disabled=false;
+  }
+}
+/* ── RENDER ── */
+function fmt(n){
+  if(!n||isNaN(n))return'—';
+  if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
+  if(n>=10000)return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
+  return n.toLocaleString('ko-KR')+'원';
+}
+
+let lastResult=null;
+
+function render(r){
+  allItems=r.items||[];
+  lastResult=r;
+
+  const vmap={
+    '저렴':{cls:'cheap',icon:'💚',label:'전체 종합: 저렴',title:'시중 평균보다 저렴한 견적입니다'},
+    '적정':{cls:'fair', icon:'🟡',label:'전체 종합: 적정',title:'시중 평균 수준의 견적입니다'},
+    '비쌈':{cls:'exp',  icon:'🔴',label:'전체 종합: 비쌈',title:'시중 평균보다 비싼 견적입니다'},
+  };
+  const v=vmap[r.overallVerdict]||vmap['적정'];
+  document.getElementById('verdictBanner').className='verdict-banner '+v.cls;
+  document.getElementById('verdictIcon').textContent=v.icon;
+  document.getElementById('verdictLabel').textContent=v.label;
+  document.getElementById('verdictTitle').textContent=v.title;
+  document.getElementById('verdictSub').textContent=r.overallComment||'';
+  document.getElementById('verdictTotal').textContent=fmt(r.totalAmount);
+
+  const cheap=allItems.filter(i=>i.verdict==='저렴').length;
+  const fair =allItems.filter(i=>i.verdict==='적정').length;
+  const exp  =allItems.filter(i=>i.verdict==='비쌈').length;
+  document.getElementById('statTotal').textContent=allItems.length+'개';
+  document.getElementById('statCheap').textContent=cheap+'개';
+  document.getElementById('statFair').textContent=fair+'개';
+  document.getElementById('statExp').textContent=exp+'개';
+
+  const cats={};
+  allItems.forEach(item=>{ const c=item.category||'기타'; cats[c]=(cats[c]||0)+item.amount; });
+  const total=r.totalAmount||Object.values(cats).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('catGrid').innerHTML=
+    Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,amt])=>`
+      <div class="cat-item">
+        <div class="cat-name">${c}</div>
+        <div class="cat-amount">${fmt(amt)}</div>
+        <div class="cat-pct">${Math.round(amt/total*100)}%</div>
+      </div>`).join('');
+
+  /* 무료 항목 목록 — 이름+금액만, 판정은 블러 */
+  document.getElementById('itemsListFree').innerHTML=allItems.map((item,idx)=>`
+    <div class="item-card-free" style="animation-delay:${idx*40}ms">
+      <div class="item-free-left">
+        <div class="item-free-name">${item.name}</div>
+        <span class="item-free-cat">${item.category||''}</span>
+      </div>
+      <div class="item-free-blur">
+        <div class="item-free-amount">${fmt(item.amount)}</div>
+        <div class="blur-pill">비쌈</div>
+        <span class="lock-icon">🔒</span>
+      </div>
+    </div>`).join('');
+
+  /* 페이월 보이기 */
+  document.getElementById('paywallGate').style.display='block';
+  document.getElementById('paidDetail').style.display='none';
+  document.getElementById('adviceCard').style.display='none';
+  document.getElementById('paidBadgeArea').innerHTML='';
+
+  document.getElementById('resultsWrap').classList.add('show');
+  document.getElementById('resultsWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderPaidDetail(){
+  /* 상세 항목 */
+  renderItems('all');
+  document.getElementById('paywallGate').style.display='none';
+  document.getElementById('paidDetail').style.display='block';
+  document.getElementById('paidBadgeArea').innerHTML=
+    '<div class="paid-badge">✓ 상세 분석 열람 완료</div>';
+
+  /* 협상 팁 */
+  const advs=(lastResult&&lastResult.advices)||[];
+  document.getElementById('adviceGrid').innerHTML=advs.map((a,i)=>`
+    <div class="advice-item">
+      <div class="advice-num">${i+1}</div>
+      <span>${a}</span>
+    </div>`).join('');
+  document.getElementById('adviceCard').style.display='block';
+  document.getElementById('adviceCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderItems(filter){
+  const cls={저렴:'cheap',적정:'fair',비쌈:'exp'};
+  const label={저렴:'저렴',적정:'적정',비쌈:'비쌈'};
+  const items=filter==='all'?allItems:allItems.filter(i=>{
+    if(filter==='cheap')return i.verdict==='저렴';
+    if(filter==='fair')return i.verdict==='적정';
+    if(filter==='exp')return i.verdict==='비쌈';
+    return true;
+  });
+  document.getElementById('itemsList').innerHTML=items.map((item,idx)=>{
+    const c=cls[item.verdict]||'fair';
+    const ratio=Math.min(item.ratioVsAvg||100,200);
+    const barPct=Math.min(ratio/2,100);
+    return `<div class="item-card ${c}" style="animation-delay:${idx*40}ms">
+      <div class="item-verdict-dot ${c}"></div>
+      <div class="item-name">${item.name}<span class="item-cat-tag">${item.category||''}</span></div>
+      <div class="item-amount">${fmt(item.amount)}</div>
+      <div class="item-detail">${item.qty}${item.unit} · ${item.reason}</div>
+      <div class="item-pill ${c}">${label[item.verdict]||'적정'}</div>
+      <div class="item-bar-row">
+        <div class="item-bar-track"><div class="item-bar-fill ${c}" style="width:${barPct}%"></div></div>
+        <div class="item-range">시중가 ${fmt(item.marketMin)}~${fmt(item.marketMax)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterItems(filter,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderItems(filter);
+}
+
+/* ── TOSS PAYMENTS ── */
+const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy'; // 테스트키 — 실제 서비스 시 발급받은 키로 교체
+
+async function startPayment(){
+  if(!lastResult){ alert('분석 결과가 없습니다.'); return; }
+
+  const orderId='order_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+  const orderName='인테리어 견적 상세 분석';
+
+  try{
+    const tossPayments=TossPayments(TOSS_CLIENT_KEY);
+    const payment=tossPayments.payment({customerKey:'customer_'+Date.now()});
+    await payment.requestPayment({
+      method:'CARD',
+      amount:{ currency:'KRW', value:10000 },
+      orderId,
+      orderName,
+      successUrl: window.location.origin+'/payment/success?orderId='+orderId,
+      failUrl:    window.location.origin+'/payment/fail',
+    });
+  }catch(err){
+    if(err.code==='USER_CANCEL') return;
+    alert('결제 오류: '+err.message);
+  }
+}
+
+/* 결제 성공 후 URL 파라미터 확인 */
+(function checkPaymentReturn(){
+  const params=new URLSearchParams(window.location.search);
+  const paymentKey=params.get('paymentKey');
+  const orderId=params.get('orderId');
+  const amount=params.get('amount');
+  if(paymentKey&&orderId&&amount){
+    verifyAndUnlock(paymentKey,orderId,amount);
+  }
+})();
+
+async function verifyAndUnlock(paymentKey,orderId,amount){
+  try{
+    const resp=await fetch('/api/verify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({paymentKey,orderId,amount})
+    });
+    const data=await resp.json();
+    if(data.success){
+      /* 저장된 결과 불러오기 */
+      const saved=sessionStorage.getItem('analysisResult');
+      if(saved){
+        lastResult=JSON.parse(saved);
+        allItems=lastResult.items||[];
+        renderPaidDetail();
+      } else {
+        alert('결제 완료! 견적서를 다시 분석해주세요.');
+        window.history.replaceState({},'',window.location.pathname);
+      }
+    } else {
+      alert('결제 검증 실패: '+data.message);
+    }
+  }catch(e){
+    alert('검증 오류: '+e.message);
+  }
+}
+
+/* 분석 결과를 sessionStorage에 임시 저장 (결제 후 복원용) */
+const _origRender=render;
+window.render=function(r){
+  sessionStorage.setItem('analysisResult',JSON.stringify(r));
+  _origRender(r);
+};
+
+function doReset(){
+  pdfText=''; imageBase64=''; imageMime=''; allItems=[];
+  document.getElementById('imgPreviewArea').innerHTML='';
+  document.getElementById('fileInput').value='';
+  document.getElementById('areaNum').value='';
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('resultsWrap').classList.remove('show');
+
+  const isManual=document.getElementById('modeManual').classList.contains('active');
+  if(isManual){
+    document.querySelectorAll('.manual-item-input').forEach(el=>el.value='');
+    document.querySelectorAll('.cat-items-wrap input[type=checkbox]').forEach(el=>el.checked=false);
+    document.querySelectorAll('.cat-filled-badge').forEach(el=>el.style.display='none');
+    document.getElementById('manualTotal').textContent='0원';
+  }
+
+  setStep(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
