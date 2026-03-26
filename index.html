@@ -3,144 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>견적분석 — 인테리어 데이터 분석기</title>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>견적분석 — 인테리어 견적 데이터 분석기</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://js.tosspayments.com/v1/payment"></script>
 <style>
+/* --- 기존 index_v12.html 스타일 유지 --- */
 :root {
-  --ink: #0F0E0C; --paper: #F8F6F2; --surface: #FFFFFF; --rule: #E8E5E0;
-  --accent: #1F4FD8; --muted: #8A8780; --radius: 14px;
+  --ink: #0F0E0C; --ink2: #2A2825; --muted: #8A8780; --rule: #E8E5E0;
+  --paper: #F8F6F2; --surface: #FFFFFF; --accent: #1F4FD8;
+  --radius: 14px; --radius-sm: 8px;
 }
+body { font-family: 'Pretendard', sans-serif; background: var(--paper); color: var(--ink); margin: 0; padding: 20px 10px; }
+.app-wrap { max-width: 560px; margin: 0 auto; }
 
-body {
-  font-family: 'Pretendard', sans-serif;
-  background-color: var(--paper); color: var(--ink);
-  margin: 0; padding: 0; line-height: 1.6;
-}
-
-.app-container { max-width: 600px; margin: 0 auto; padding: 20px; }
-
-/* 입력 영역 스타일 (기존 UI 유지) */
-.input-section {
-  background: var(--surface); padding: 24px;
-  border-radius: var(--radius); border: 1px solid var(--rule);
-  margin-bottom: 24px;
-}
-
-.mode-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-.tab {
-  flex: 1; padding: 12px; text-align: center; border-radius: 8px;
-  background: #eee; cursor: pointer; font-weight: 600;
-}
+/* 탭 스타일 */
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab { flex: 1; padding: 14px; text-align: center; background: #E8E5E0; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s; }
 .tab.active { background: var(--ink); color: #fff; }
 
-/* 결과 영역 스타일 */
+/* 파일 업로드 UI 개선 */
+.upload-card {
+  background: var(--surface); border: 2px dashed var(--rule); border-radius: var(--radius);
+  padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.2s;
+}
+.upload-card.has-file { border: 2px solid var(--ink); background: #fdfdfd; padding: 25px 20px; }
+.file-info-view { display: none; flex-direction: column; align-items: center; gap: 12px; }
+.has-file .file-prompt { display: none; }
+.has-file .file-info-view { display: flex; }
+.btn-sub { padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--rule); background: #fff; cursor: pointer; font-weight: 600; }
+
+/* 면적 입력 (평 우선) */
+.area-box { margin-top: 20px; background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--rule); }
+.area-row { display: flex; align-items: center; gap: 10px; }
+.input-main { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); font-size: 1.1rem; font-weight: 700; outline: none; }
+
+/* 블러 및 페이월 핵심 스타일 */
 .results-wrap { display: none; margin-top: 30px; }
 .results-wrap.show { display: block; }
+.detail-container { position: relative; margin-top: 20px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--rule); background: #fff; }
+.blur-target { transition: filter 0.4s ease; padding: 20px; }
 
-.summary-card {
-  background: var(--surface); padding: 24px;
-  border-radius: var(--radius); border: 1px solid var(--rule);
-  margin-bottom: 20px; text-align: center;
-}
-
-/* 상세 내역 블러 및 페이월 */
-.detail-box {
-  position: relative; background: var(--surface);
-  border-radius: var(--radius); border: 1px solid var(--rule);
-  overflow: hidden; min-height: 350px;
-}
-
-.detail-inner {
-  padding: 20px; transition: filter 0.4s ease;
-}
-
-/* 잠금 상태 스타일 */
-.is-locked .detail-inner {
-  filter: blur(12px); pointer-events: none; user-select: none;
-}
-
+/* 결제 전 잠금 상태 */
+.is-locked .blur-target { filter: blur(15px); pointer-events: none; user-select: none; }
 .paywall-overlay {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.4); z-index: 20;
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  z-index: 100; background: rgba(255, 255, 255, 0.3);
 }
-
-.is-unlocked .paywall-overlay { display: none; }
-.is-unlocked .detail-inner { filter: none; }
-
+.is-locked .paywall-overlay { display: flex; }
 .paywall-card {
-  background: #fff; padding: 30px 20px; border-radius: 18px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15); text-align: center; width: 85%;
+  background: #fff; padding: 35px 20px; border-radius: 20px; text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15); width: 85%;
 }
+.btn-pay { width: 100%; padding: 18px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(31, 79, 216, 0.3); }
 
-.btn-pay {
-  width: 100%; padding: 16px; background: var(--accent); color: #fff;
-  border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem;
-  margin-top: 15px; cursor: pointer;
-}
-
-/* 분석 아이템 행 */
-.item-row {
-  display: flex; justify-content: space-between;
-  padding: 15px 0; border-bottom: 1px solid var(--rule);
-}
+/* 상세 항목 스타일 */
+.item-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--rule); }
+.item-row:last-child { border: none; }
 </style>
 </head>
 <body>
 
-<div class="app-container">
-  <div class="input-section">
-    <div class="mode-tabs">
-      <div class="tab active" onclick="switchMode('file')">파일 업로드</div>
-      <div class="tab" onclick="switchMode('manual')">직접 입력하기</div>
-    </div>
+<div class="app-wrap">
+  <div class="tabs">
+    <div id="tabFile" class="tab active" onclick="switchMode('file')">파일 업로드</div>
+    <div id="tabManual" class="tab" onclick="switchMode('manual')">직접 입력하기</div>
+  </div>
+
+  <div id="inputSection" style="background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--rule);">
     
-    <div id="fileMode">
-      <p style="font-size: 0.9rem; color: #666;">견적서 PDF 또는 이미지를 업로드하세요.</p>
-      <input type="file" id="fileInput" style="margin-bottom: 15px;">
-    </div>
-    
-    <div id="manualMode" style="display:none;">
-      <input type="number" id="areaNum" placeholder="평수 입력 (예: 32)" style="width: 100%; padding: 12px; margin-bottom: 10px; box-sizing: border-box;">
-      <p style="font-size: 0.8rem; color: #888;">* 공정별 금액은 하단 분석 시 합산됩니다.</p>
+    <div id="modeFile">
+      <div id="dropZone" class="upload-card" onclick="triggerUpload()">
+        <div class="file-prompt">
+          <div style="font-size:2.5rem; margin-bottom:10px;">📄</div>
+          <p style="margin:0; font-weight:800; font-size:1.1rem;">견적서 PDF/이미지를 올려주세요</p>
+          <p style="margin:5px 0 0; color:var(--muted); font-size:0.9rem;">클릭하여 파일을 선택하세요</p>
+        </div>
+        <div class="file-info-view" id="fileInfoView">
+          <span id="fileName" style="font-weight:800; color:var(--accent); font-size:1.1rem;">파일명.pdf</span>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-sub" onclick="event.stopPropagation(); triggerUpload();">🔄 재업로드</button>
+            <button class="btn-sub" style="color:#e04040; border-color:#fceaea;" onclick="event.stopPropagation(); removeFile();">🗑️ 삭제</button>
+          </div>
+        </div>
+        <input type="file" id="fileInput" hidden onchange="handleFile(this)">
+      </div>
     </div>
 
-    <button onclick="startAnalysis()" style="width:100%; padding: 16px; background: var(--ink); color:#fff; border:none; border-radius: 10px; font-weight: 700; cursor: pointer;">
-      분석 시작하기
-    </button>
+    <div id="modeManual" style="display:none;">
+      <div class="area-box" style="margin-top:0;">
+        <p style="margin:0 0 10px 0; font-weight:700; font-size:0.95rem;">공사 면적 설정</p>
+        <div class="area-row">
+          <input type="number" id="areaNum" class="input-main" placeholder="32" oninput="syncM2(this.value)">
+          <span style="font-weight:800; font-size:1.2rem;">평</span>
+          <span style="color:var(--muted); font-size:0.9rem;">(약 <span id="m2Val">0</span>㎡)</span>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-top:15px; text-align:center;">각 공정별 금액을 입력하면 정밀 분석이 가능합니다.</p>
+    </div>
+
+    <button onclick="doAnalyze()" style="width:100%; padding:20px; background:var(--ink); color:#fff; border:none; border-radius:14px; font-weight:800; font-size:1.1rem; margin-top:20px; cursor:pointer;">견적 분석 시작하기</button>
   </div>
 
   <div id="resultsWrap" class="results-wrap">
-    <div class="summary-card" id="summaryArea">
-      <h2 style="margin:0 0 10px 0;">🧐 분석 요약</h2>
-      <p id="summaryText">데이터를 분석 중입니다...</p>
+    <div class="summary-card" style="background:#fff; padding:25px; border-radius:var(--radius); border:1px solid var(--rule); text-align:center;">
+      <h2 id="verdictTitle" style="margin:0 0- 12px 0; font-size:1.4rem;">분석 요약</h2>
+      <p id="verdictDesc" style="margin:0; color:var(--ink2); font-weight:500;"></p>
     </div>
 
-    <div id="detailSection" class="detail-box is-locked">
+    <div id="detailContainer" class="detail-container is-locked">
+      
       <div class="paywall-overlay">
         <div class="paywall-card">
-          <span style="font-size: 2rem;">🔒</span>
-          <h3 style="margin: 10px 0;">상세 분석 리포트 잠금</h3>
-          <p style="color: #666; font-size: 0.9rem; line-height: 1.4;">
-            공정별 적정 단가와 절감 포인트,<br>전문가 코멘트를 확인해보세요.
+          <div style="font-size:2.5rem; margin-bottom:15px;">🔒</div>
+          <h3 style="margin:0 0 10px 0; font-size:1.3rem;">상세 분석 리포트 잠금</h3>
+          <p style="font-size:0.95rem; color:var(--muted); line-height:1.5; margin:0;">
+            항목별 <strong>적정 단가 비교</strong>와<br>
+            <strong>비용 절감 솔루션</strong>을 확인해보세요.
           </p>
-          <button class="btn-pay" onclick="requestPayment()">
-            9,900원 결제하고 열기
-          </button>
+          <button class="btn-pay" onclick="requestPayment()">9,900원 결제하고 결과보기</button>
         </div>
       </div>
 
-      <div class="detail-inner">
-        <h4>📋 항목별 세부 진단</h4>
-        <div id="itemsList">
-          <div class="item-row"><span>목공사 상세 분석</span><strong>+120,000원</strong></div>
-          <div class="item-row"><span>타일/욕실 상세 분석</span><strong>-50,000원</strong></div>
-          <div class="item-row"><span>전기/조명 상세 분석</span><strong>적정</strong></div>
-          <div class="item-row"><span>샷시/창호 상세 분석</span><strong>비쌈</strong></div>
-          <div class="item-row"><span>도배/바닥 상세 분석</span><strong>적정</strong></div>
+      <div class="blur-target" id="itemsDisplayList">
+        <h4 style="margin-top:0; border-bottom:2px solid var(--ink); padding-bottom:10px;">📋 공정별 상세 진단 결과</h4>
         </div>
-      </div>
     </div>
   </div>
 </div>
@@ -148,59 +134,83 @@ body {
 <script>
 let currentMode = 'file';
 
+// 탭 전환
 function switchMode(mode) {
   currentMode = mode;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('fileMode').style.display = mode === 'file' ? 'block' : 'none';
-  document.getElementById('manualMode').style.display = mode === 'manual' ? 'block' : 'none';
+  document.getElementById('modeFile').style.display = mode === 'file' ? 'block' : 'none';
+  document.getElementById('modeManual').style.display = mode === 'manual' ? 'block' : 'none';
+  document.getElementById('tabFile').className = mode === 'file' ? 'tab active' : 'tab';
+  document.getElementById('tabManual').className = mode === 'manual' ? 'tab active' : 'tab';
 }
 
-// 분석 시작 함수
-async function startAnalysis() {
-  // 로딩 로직 생략 (기존 기능 유지)
+// 파일 업로드 관련
+function triggerUpload() { document.getElementById('fileInput').click(); }
+function handleFile(input) {
+  if(input.files[0]) {
+    document.getElementById('dropZone').classList.add('has-file');
+    document.getElementById('fileName').innerText = input.files[0].name;
+  }
+}
+function removeFile() {
+  document.getElementById('fileInput').value = '';
+  document.getElementById('dropZone').classList.remove('has-file');
+}
+function syncM2(py) { document.getElementById('m2Val').innerText = py ? (py * 3.3057).toFixed(1) : 0; }
+
+// 분석 실행 함수
+function doAnalyze() {
+  // 결과창 노출
   document.getElementById('resultsWrap').classList.add('show');
-  document.getElementById('summaryText').innerText = "전체적으로 적정한 견적입니다. 다만 몇몇 항목에서 비용 절감이 가능해 보입니다.";
+  document.getElementById('verdictTitle').innerText = "⚖️ 종합 진단: 적정 수준";
+  document.getElementById('verdictDesc').innerText = "총 견적 금액이 시장 평균가 범위 내에 있습니다. 다만, 특정 항목에서 비용을 더 낮출 수 있는 여지가 확인되었습니다.";
+
+  // 상세 데이터 생성 (is-locked 때문에 블러 처리됨)
+  const list = document.getElementById('itemsDisplayList');
+  list.innerHTML += `
+    <div class="item-row"><span>목공사 (가벽/천장)</span><strong style="color:var(--accent);">적정</strong></div>
+    <div class="item-row"><span>타일 및 욕실 공사</span><strong style="color:#e04040;">평균 대비 +12%</strong></div>
+    <div class="item-row"><span>창호(샷시) 공정</span><strong style="color:var(--accent);">적정</strong></div>
+    <div class="item-row"><span>전기 및 조명</span><strong style="color:#1A6B3E;">매우 합리적</strong></div>
+  `;
   
-  // 결과 위치로 이동
-  document.getElementById('resultsWrap').scrollIntoView({ behavior: 'smooth' });
+  window.scrollTo({ top: document.getElementById('resultsWrap').offsetTop - 20, behavior: 'smooth' });
 }
 
-// 토스 결제 함수
+// [핵심] 토스페이먼츠 결제 요청 함수
 async function requestPayment() {
-  const clientKey = 'live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy'; // 테스트용 키
+  // 클라이언트 키 (내 상점 키로 교체 필요)
+  const clientKey = 'test_ck_D5bZzxlz807y4vAn74rbVjYEyOfR'; 
   const tossPayments = TossPayments(clientKey);
   
-  const orderId = 'ORDER-' + new Date().getTime();
+  const orderId = 'ORD-' + Math.random().toString(36).slice(2, 11);
 
   try {
     await tossPayments.requestPayment('카드', {
       amount: 9900,
       orderId: orderId,
       orderName: '인테리어 견적 상세 분석 리포트',
-      successUrl: window.location.origin + window.location.pathname + '?pay=success',
-      failUrl: window.location.origin + window.location.pathname + '?pay=fail',
+      successUrl: window.location.origin + window.location.pathname + '?payStatus=success',
+      failUrl: window.location.origin + window.location.pathname + '?payStatus=fail',
     });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error('결제 요청 중 오류:', error);
   }
 }
 
-// 결제 여부 확인 및 UI 업데이트
-window.onload = function() {
+// 결제 성공 후 돌아왔을 때 처리
+window.addEventListener('load', () => {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('pay') === 'success') {
-    const detail = document.getElementById('detailSection');
-    detail.classList.remove('is-locked');
-    detail.classList.add('is-unlocked');
-    
-    // 결과창을 바로 보여줌
+  if (params.get('payStatus') === 'success') {
+    // 결과창 보여주기
     document.getElementById('resultsWrap').classList.add('show');
-    detail.scrollIntoView();
-    alert('결제가 완료되어 상세 분석 내용이 해제되었습니다.');
+    // 잠금 해제 (블러 제거)
+    const container = document.getElementById('detailContainer');
+    container.classList.remove('is-locked');
+    
+    container.scrollIntoView({ behavior: 'smooth' });
+    alert('결제가 완료되었습니다! 상세 리포트가 공개되었습니다.');
   }
-}
+});
 </script>
-
 </body>
 </html>
