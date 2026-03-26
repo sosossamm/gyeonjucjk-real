@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>견적분석 — 인테리어 견적 데이터 분석기</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://js.tosspayments.com/v2/standard"></script>
 <style>
 :root {
   --ink: #0F0E0C;
@@ -591,14 +590,17 @@ body {
   display: flex; align-items: center; gap: 6px;
 }
 .blur-pill {
-  font-size: 11px; font-weight: 700;
+  font-size: 11px; font-weight: 800;
   padding: 3px 10px; border-radius: 4px;
-  background: var(--rule); color: transparent;
-  text-shadow: 0 0 8px rgba(0,0,0,0.5);
-  filter: blur(3px); user-select: none;
+  background: var(--rule);
+  color: var(--rule);
+  text-shadow: none;
+  filter: blur(4px);
+  user-select: none;
   letter-spacing: 1px;
+  min-width: 40px;
 }
-.lock-icon { font-size: 13px; color: var(--muted); }
+.lock-icon { font-size: 13px; }
 
 .paywall-gate {
   background: var(--ink);
@@ -1444,6 +1446,7 @@ let lastResult=null;
 function render(r){
   allItems=r.items||[];
   lastResult=r;
+  sessionStorage.setItem('analysisResult',JSON.stringify(r));
 
   const vmap={
     '저렴':{cls:'cheap',icon:'💚',label:'전체 종합: 저렴',title:'시중 평균보다 저렴한 견적입니다'},
@@ -1554,24 +1557,25 @@ function filterItems(filter,btn){
 }
 
 /* ── TOSS PAYMENTS ── */
-const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy'; // 테스트키 — 실제 서비스 시 발급받은 키로 교체
+const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy';
 
 async function startPayment(){
   if(!lastResult){ alert('분석 결과가 없습니다.'); return; }
-
-  const orderId='order_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const orderName='인테리어 견적 상세 분석';
-
+  if(typeof TossPayments==='undefined'){
+    alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  const orderId='EST-'+Date.now();
   try{
     const tossPayments=TossPayments(TOSS_CLIENT_KEY);
-    const payment=tossPayments.payment({customerKey:'customer_'+Date.now()});
+    const payment=tossPayments.payment({customerKey:'GUEST-'+Date.now()});
     await payment.requestPayment({
       method:'CARD',
       amount:{ currency:'KRW', value:10000 },
       orderId,
-      orderName,
-      successUrl: window.location.origin+'/payment/success?orderId='+orderId,
-      failUrl:    window.location.origin+'/payment/fail',
+      orderName:'인테리어 견적 상세 분석',
+      successUrl: window.location.href.split('?')[0]+'?paymentKey={PAYMENT_KEY}&orderId='+orderId+'&amount=10000',
+      failUrl:    window.location.href.split('?')[0]+'?payFail=1',
     });
   }catch(err){
     if(err.code==='USER_CANCEL') return;
@@ -1579,53 +1583,49 @@ async function startPayment(){
   }
 }
 
-/* 결제 성공 후 URL 파라미터 확인 */
-(function checkPaymentReturn(){
+/* ── 결제 성공 후 URL 파라미터 감지 ── */
+async function checkPaymentReturn(){
   const params=new URLSearchParams(window.location.search);
   const paymentKey=params.get('paymentKey');
   const orderId=params.get('orderId');
   const amount=params.get('amount');
-  if(paymentKey&&orderId&&amount){
-    verifyAndUnlock(paymentKey,orderId,amount);
-  }
-})();
+  if(!paymentKey||!orderId||!amount) return;
 
-async function verifyAndUnlock(paymentKey,orderId,amount){
+  /* URL 파라미터 즉시 제거 */
+  window.history.replaceState({},'',window.location.pathname);
+
+  /* 저장된 분석 결과 복원 */
+  const saved=sessionStorage.getItem('analysisResult');
+  if(!saved){ alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.'); return; }
+
+  lastResult=JSON.parse(saved);
+  allItems=lastResult.items||[];
+
+  /* 결제 검증 */
   try{
     const resp=await fetch('/api/verify',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({paymentKey,orderId,amount})
+      body:JSON.stringify({paymentKey,orderId,amount:parseInt(amount)})
     });
     const data=await resp.json();
     if(data.success){
-      /* 저장된 결과 불러오기 */
-      const saved=sessionStorage.getItem('analysisResult');
-      if(saved){
-        lastResult=JSON.parse(saved);
-        allItems=lastResult.items||[];
-        renderPaidDetail();
-      } else {
-        alert('결제 완료! 견적서를 다시 분석해주세요.');
-        window.history.replaceState({},'',window.location.pathname);
-      }
+      /* 무료 결과 먼저 보여주고 상세 unlock */
+      render(lastResult);
+      setTimeout(()=>{ renderPaidDetail(); },300);
     } else {
-      alert('결제 검증 실패: '+data.message);
+      alert('결제 검증 실패: '+(data.message||'다시 시도해주세요'));
     }
   }catch(e){
     alert('검증 오류: '+e.message);
   }
 }
 
-/* 분석 결과를 sessionStorage에 임시 저장 (결제 후 복원용) */
-const _origRender=render;
-window.render=function(r){
-  sessionStorage.setItem('analysisResult',JSON.stringify(r));
-  _origRender(r);
-};
+window.addEventListener('load', checkPaymentReturn);
 
 function doReset(){
-  pdfText=''; imageBase64=''; imageMime=''; allItems=[];
+  pdfText=''; imageBase64=''; imageMime=''; allItems=[]; lastResult=null;
+  sessionStorage.removeItem('analysisResult');
   document.getElementById('imgPreviewArea').innerHTML='';
   document.getElementById('fileInput').value='';
   document.getElementById('areaNum').value='';
@@ -1639,7 +1639,6 @@ function doReset(){
     document.querySelectorAll('.cat-filled-badge').forEach(el=>el.style.display='none');
     document.getElementById('manualTotal').textContent='0원';
   }
-
   setStep(1);
   window.scrollTo({top:0,behavior:'smooth'});
 }
