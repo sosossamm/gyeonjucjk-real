@@ -419,23 +419,29 @@ body {
 .advice-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
 .advice-item {
   background: var(--surface); border: 0.5px solid var(--rule);
-  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm); padding: 1.1rem 1.25rem;
   display: flex; gap: 12px; align-items: flex-start;
 }
+.advice-item.highlight {
+  border-color: var(--exp-mid);
+  border-left: 3px solid var(--exp-mid);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
 .advice-icon-wrap {
-  width: 36px; height: 36px; border-radius: 8px;
+  width: 34px; height: 34px; border-radius: 8px;
   background: var(--paper); border: 0.5px solid var(--rule);
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; margin-top: 1px;
 }
-.advice-content { flex: 1; }
+.advice-content { flex: 1; min-width: 0; }
 .advice-tag {
   font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
   text-transform: uppercase; color: var(--muted);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 .advice-text {
-  font-size: 13px; line-height: 1.7; color: var(--ink3);
+  font-size: 13px; line-height: 1.8; color: var(--ink3);
+  word-break: keep-all;
 }
 
 /* ── CAT EDIT TABLE ── */
@@ -1007,31 +1013,168 @@ let pdfText='', imageBase64='', imageMime='', allItems=[];
 /* ── MANUAL INPUT DATA ── */
 const MANUAL_CATS=[
   { id:'demolition', cat:'철거/방수', icon:'🔨',
-    checks:['전체 철거','부분 철거','방수 공사']
+    checks:[
+      '전체 철거 (바닥·벽·천장)',
+      '부분 철거 (욕실·주방만)',
+      '바닥 철거만',
+      '방수 공사 (욕실)',
+      '방수 공사 (발코니)',
+      '방수 공사 (다용도실)',
+      '미장 공사',
+      '폐기물 처리 포함'
+    ]
   },
   { id:'tile', cat:'타일', icon:'🟫',
-    checks:['주방 벽','발코니 바닥','화장실 전체','화장실 부분','현관 바닥']
+    checks:[
+      '욕실 타일 전체',
+      '욕실 타일 부분',
+      '주방 벽 타일',
+      '현관 바닥 타일',
+      '발코니 바닥 타일',
+      '거실 타일',
+      '외부 테라스 타일',
+      '줄눈 시공',
+      '타일 철거 포함'
+    ]
   },
-  { id:'floor', cat:'바닥', icon:'🪵',
-    checks:['마루','장판','데코타일','타일']
+  { id:'floor', cat:'바닥재', icon:'🪵',
+    checks:[
+      '강마루',
+      '강화마루',
+      '원목마루',
+      '헤링본 마루',
+      '장판 (PVC)',
+      '데코타일',
+      '폴리싱 타일',
+      '카펫',
+      '기존 바닥재 철거 포함'
+    ]
   },
   { id:'wallpaper', cat:'도배', icon:'🖼️',
-    checks:['전체 실크','전체 합지','실크+합지 혼합']
+    checks:[
+      '전체 실크 도배',
+      '전체 합지 도배',
+      '실크+합지 혼합',
+      '천장 도배',
+      '벽면 도배만',
+      '포인트 벽지',
+      '방염 도배',
+      '기존 벽지 제거 포함'
+    ]
   },
   { id:'paint', cat:'도장 (페인트)', icon:'🎨',
-    checks:['현관','거실','주방','방 전체','발코니']
+    checks:[
+      '거실 천장·벽',
+      '주방 천장·벽',
+      '방 전체',
+      '현관',
+      '발코니·다용도실',
+      '문짝 도장',
+      '몰딩 도장',
+      '방화문 도장',
+      '친환경 페인트 적용'
+    ]
   },
   { id:'bathroom', cat:'욕실', icon:'🚿',
-    checks:['타일 교체','위생도기 교체','악세사리 전체 교체 (수전·수납장·샤워기 등)']
+    checks:[
+      '욕실 전체 리모델링',
+      '타일 교체',
+      '양변기 교체',
+      '세면대 교체',
+      '욕조 교체',
+      '샤워부스 설치',
+      '수전 교체',
+      '수납장 교체',
+      '환풍기 교체',
+      '욕실 조명 교체',
+      '방수 재시공',
+      '악세사리 전체 교체'
+    ]
   },
   { id:'kitchen', cat:'주방', icon:'🍳',
-    checks:['상부장 교체','하부장 교체','도어 교체','상판 교체','냉장고장']
+    checks:[
+      '주방 전체 리모델링',
+      '상부장 교체',
+      '하부장 교체',
+      '도어만 교체',
+      '상판 (인조대리석) 교체',
+      '상판 (세라믹) 교체',
+      '냉장고장',
+      '팬트리장',
+      '후드 교체',
+      '싱크볼 교체',
+      '수전 교체',
+      '빌트인 가전 포함'
+    ]
   },
   { id:'furniture', cat:'가구/붙박이장', icon:'🚪',
-    checks:['붙박이장','드레스룸','신발장','거실장','TV장']
+    checks:[
+      '안방 붙박이장',
+      '작은방 붙박이장',
+      '드레스룸 전체',
+      '신발장',
+      '거실장·TV장',
+      '책상·서재 가구',
+      '다용도 수납장',
+      '아일랜드 식탁',
+      '현관 벤치수납',
+      '맞춤 제작 가구'
+    ]
   },
   { id:'electric', cat:'전기/조명', icon:'💡',
-    checks:['전기 배선 공사','조명 전체 교체','스위치·콘센트 교체','분전반 교체']
+    checks:[
+      '전기 배선 전체 교체',
+      '전기 부분 보수',
+      '분전반 교체',
+      '콘센트·스위치 전체 교체',
+      '조명 전체 교체 (LED)',
+      '거실 조명',
+      '주방 조명',
+      '욕실 조명',
+      '간접 조명 설치',
+      '스마트홈 시스템',
+      '인터폰 교체',
+      '홈네트워크 공사'
+    ]
+  },
+  { id:'window', cat:'창호/새시', icon:'🪟',
+    checks:[
+      '발코니 새시 전체',
+      '발코니 새시 부분',
+      '단열 이중창',
+      '시스템창호',
+      '방범 창살 설치',
+      '방충망 교체',
+      '현관문 교체',
+      '방화문 교체',
+      '중문 설치'
+    ]
+  },
+  { id:'balcony', cat:'확장/설비', icon:'🏗️',
+    checks:[
+      '발코니 확장',
+      '다용도실 확장',
+      '보일러 교체',
+      '배관 전체 교체',
+      '온수기 교체',
+      '에어컨 배관',
+      '세탁기 배관',
+      '가스 배관 공사',
+      '환기 시스템 설치'
+    ]
+  },
+  { id:'etc', cat:'기타/부자재', icon:'🔩',
+    checks:[
+      '몰딩 시공',
+      '걸레받이 교체',
+      '코킹·실링',
+      '문손잡이·경첩 교체',
+      '커튼박스 설치',
+      '블라인드·버티컬 설치',
+      '천장 단열재',
+      '방음 공사',
+      '청소 (입주청소 포함)'
+    ]
   },
 ];
 
@@ -1345,27 +1488,32 @@ function stopProgress(){
 
 /* ── SHARED API CALL ── */
 async function callAPI(userContent, region, py, m2){
-  const SYS=`You are a senior Korean interior renovation consultant with 15+ years experience helping consumers negotiate with contractors.
+  const SYS=`You are a senior Korean interior renovation consultant with 15+ years experience.
 Return ONLY a raw JSON object. No markdown, no explanation, nothing else.
-All string values must be in Korean. Escape any quotes inside strings with backslash.
-Use only these verdicts: 저렴 적정 비쌈
+All strings must be in Korean. Use double quotes only. No special chars inside strings except spaces.
 
 JSON format:
 {"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4","팁5","팁6","팁7","팁8"]}
 
-For advices, write exactly 8 tips. Each tip must be 40-80 Korean characters. Be VERY specific with actual numbers and actionable steps:
+CRITICAL - For advices array, write exactly 8 tips. Each tip MUST follow this exact structure:
+[공정명] ${region} 기준 평균 OO만원~OO만원인데 현재 견적은 OO만원입니다. [이 공정에서 비용이 높아지는 주요 원인 2가지를 구체적으로 설명]. [절약하거나 협상할 수 있는 구체적 행동 방법 2가지]. 업체에 [구체적으로 물어봐야 할 질문]을 확인해보세요.
 
-Tip 1 (비쌈 항목 협상): 가장 비싼 항목의 적정 금액을 구체적으로 제시하고 재협상 방법 안내
-Tip 2 (비쌈 항목 협상2): 두번째로 비싼 항목 협상 전략과 대안 제시
-Tip 3 (자재 대체): 고가 자재를 동등 품질 저가 자재로 교체하는 구체적 방법 (브랜드명, 규격, 절감액 포함)
-Tip 4 (공사 묶음 할인): 여러 공정을 묶어서 한 업체에 맡길 때 할인 요청 방법과 예상 절감율
-Tip 5 (시기 할인): 비수기(11월-2월) 또는 평일 공사로 할인받는 방법과 예상 절감액
-Tip 6 (업체 선정): 3개 이상 비교견적을 받을 때 주의할 점과 최저가 함정 피하는 방법
-Tip 7 (계약 조건): 계약서에 반드시 넣어야 할 항목, AS기간, 하자보수 조건 협상법
-Tip 8 (추가비용 방지): 공사 중 추가 비용 발생을 막는 사전 점검 항목과 계약 시 명시할 내용
+Examples of good tips:
+- "철거 공사: ${region} 25평 기준 평균 250만원~350만원인데 현재 견적은 450만원입니다. 철거비는 인건비(1인당 하루 25만원)와 폐기물 처리비(1톤당 15만원)로 구성되는데 폐기물 처리 톤수를 실제보다 30% 과다 산정하는 경우가 많습니다. 폐기물 발생량 산출 근거를 서면으로 요청하고 철거 전 실측 후 재산정을 요구하세요. 투입 인원수와 작업일수를 견적서에 명시해달라고 요청하면 과다 청구를 방지할 수 있습니다."
+- "타일 공사: ${region} 욕실 1개 기준 평균 80만원~120만원인데 현재 견적은 185만원입니다. 타일 단가(m2당 2만원~8만원)와 시공 인건비(m2당 4만원~6만원)가 핵심인데 수입 타일이나 대형 타일은 시공 난이도가 높아 인건비가 20~40% 추가됩니다. 국산 600각 타일로 변경 시 자재비 30% 절감이 가능하고 욕실 크기를 실측해 정확한 m2 수량을 받아보세요. 견적서에 타일 브랜드명과 규격 그리고 m2당 단가가 명시되어 있는지 확인하세요."
+
+Rules:
+- Mention ACTUAL average prices for ${region} with specific ranges
+- Reference the ACTUAL amount from the estimate being analyzed  
+- Explain WHY the cost is high (labor count, material grade, quantity inflation etc)
+- Give 2 specific negotiation actions
+- End with a specific question to ask the contractor
+- Each tip must be 100-200 Korean characters
+- Focus on 비쌈 items first, then general tips for remaining slots
+- Do NOT use generic tips like just saying compare 3 companies
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡)
-Market refs(${region}): 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실100-250만 싱크대200-600만 붙박이장90cm당60-150만 전기평당10-20만
+Market refs(${region}): 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실1개100-250만 싱크대200-600만 붙박이장90cm폭당60-150만 전기평당10-20만 도장m2당2-5만
 Category options: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 기타`;
 
   const resp=await fetch('/api/analyze',{
@@ -1615,20 +1763,20 @@ function renderPaidDetail(){
   /* 협상 팁 — 카테고리별 아이콘과 함께 표시 */
   const advs=(lastResult&&lastResult.advices)||[];
   const tipMeta=[
-    {icon:'💰', label:'협상 전략'},
-    {icon:'💰', label:'협상 전략'},
-    {icon:'🪵', label:'자재 절약'},
-    {icon:'📦', label:'묶음 할인'},
-    {icon:'📅', label:'시기 할인'},
-    {icon:'🔍', label:'업체 선정'},
-    {icon:'📋', label:'계약 조건'},
-    {icon:'⚠️', label:'추가비용 방지'},
+    {icon:'🔴', label:'비쌈 항목 협상', highlight:true},
+    {icon:'🔴', label:'비쌈 항목 협상', highlight:true},
+    {icon:'🪵', label:'자재 절약 팁', highlight:false},
+    {icon:'📦', label:'묶음 할인 전략', highlight:false},
+    {icon:'📅', label:'시기 할인 팁', highlight:false},
+    {icon:'🔍', label:'업체 선정 방법', highlight:false},
+    {icon:'📋', label:'계약 조건 협상', highlight:false},
+    {icon:'⚠️', label:'추가비용 방지', highlight:false},
   ];
   document.getElementById('adviceGrid').innerHTML=advs.map((a,i)=>{
-    const meta=tipMeta[i]||{icon:'💡',label:'절약 팁'};
-    return `<div class="advice-item">
+    const meta=tipMeta[i]||{icon:'💡',label:'절약 팁',highlight:false};
+    return `<div class="advice-item${meta.highlight?' highlight':''}">
       <div class="advice-icon-wrap">
-        <span style="font-size:16px;">${meta.icon}</span>
+        <span style="font-size:15px;">${meta.icon}</span>
       </div>
       <div class="advice-content">
         <div class="advice-tag">${meta.label}</div>
