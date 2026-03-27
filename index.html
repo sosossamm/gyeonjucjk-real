@@ -1111,126 +1111,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
     <div class="progress-steps" id="progressSteps"></div>
   </div>
 
-  <!-- RESULTS -->
-  <div class="results" id="resultsWrap">
+  <!-- ERROR BOX -->
+  <div id="errorBox" style="display:none; background:#FCEAEA; border:1px solid #F0B0B0; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1rem; font-size:13px; color:#791F1F; line-height:1.6;"></div>
 
-    <!-- VERDICT BANNER -->
-    <div class="verdict-banner" id="verdictBanner">
-      <div class="verdict-icon" id="verdictIcon"></div>
-      <div>
-        <div class="verdict-label" id="verdictLabel"></div>
-        <div class="verdict-title" id="verdictTitle"></div>
-        <div class="verdict-sub" id="verdictSub"></div>
-      </div>
-      <div class="verdict-total">
-        <div class="t-label">총 견적금액</div>
-        <div class="t-amount" id="verdictTotal"></div>
-      </div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">전체 항목</div>
-        <div class="stat-val neutral" id="statTotal">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">💚 저렴</div>
-        <div class="stat-val cheap" id="statCheap">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">🟡 적정</div>
-        <div class="stat-val fair" id="statFair">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">🔴 비쌈</div>
-        <div class="stat-val exp" id="statExp">0</div>
-      </div>
-    </div>
-
-    <!-- CAT BREAKDOWN — 결제 전 금액 수정 -->
-    <div class="card" id="catEditCard">
-      <div class="card-title">카테고리별 금액 확인 및 수정</div>
-      <div class="edit-notice">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="width:14px;height:14px;flex-shrink:0;"><circle cx="7" cy="7" r="6" stroke="#1F4FD8" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#1F4FD8" stroke-width="1.3" stroke-linecap="round"/></svg>
-        AI가 금액을 잘못 인식했다면 여기서 수정하세요. 수정한 금액 기준으로 상세 분석이 진행됩니다.
-      </div>
-      <div class="cat-edit-list" id="catEditList"></div>
-      <div class="cat-total-row">
-        <span class="cat-total-label">총 견적금액</span>
-        <span class="cat-total-amount" id="catTotalAmt">—</span>
-      </div>
-    </div>
-
-    <!-- ITEMS — FREE PREVIEW + PAYWALL -->
-    <div class="paywall-wrap" id="paywallWrap">
-      <div class="paywall-preview">
-        <div class="section-header">
-          <div class="section-title">항목별 상세 분석</div>
-          <div id="paidBadgeArea"></div>
-        </div>
-      </div>
-
-      <!-- 블러 오버레이 구조 (is-locked 방식) -->
-      <div id="detailContainer" class="detail-container is-locked">
-
-        <!-- 페이월 오버레이 카드 -->
-        <div class="paywall-overlay" id="paywallGate">
-          <div class="paywall-card">
-            <div class="paywall-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="11" width="18" height="13" rx="2.5" fill="#0F0E0C"/>
-                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#0F0E0C" stroke-width="2.2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="paywall-card-title">상세 분석 잠김</div>
-            <div class="paywall-card-sub">시중가 비교, 저렴/비쌈 판정,<br>전문가 협상 팁까지 모두 확인하세요</div>
-            <div class="gate-save-msg" id="gateSaveMsg" style="display:none;">
-              최소 <span id="saveMin">—</span> ~ 최대 <span id="saveMax">—</span><br>절약할 수 있을 것 같아요!
-            </div>
-            <div class="gate-features">
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>항목별 저렴/적정/비쌈 판정</div>
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>시중 평균가 대비 % 비교 바</div>
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 4가지 상세 제공</div>
-            </div>
-            <button class="btn-pay" onclick="startPayment()">
-              상세 분석 열람하기
-              <span class="btn-pay-price">1만원</span>
-            </button>
-            <div class="refund-notice">
-              결제 완료 후 분석 결과 열람 시 환불이 불가합니다.<br>
-              <span onclick="openModal('refund')" style="text-decoration:underline;cursor:pointer;">환불정책 확인</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 블러 처리되는 상세 항목 -->
-        <div class="blur-target" style="padding:1.75rem;">
-          <div class="section-header" style="margin-bottom:1rem;">
-            <div class="section-title">항목별 상세 분석</div>
-            <div id="paidBadgeArea"></div>
-          </div>
-          <div id="itemsListFree"></div>
-        </div>
-
-        <!-- 결제 후 잠금 해제된 상세 항목 -->
-        <div style="display:none; padding:1.75rem;" id="paidDetail">
-          <div class="section-header" style="margin-bottom:1rem;">
-            <div class="section-title">항목별 상세 분석</div>
-            <div class="section-filter">
-              <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
-              <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
-              <button class="filter-btn" onclick="filterItems('fair',this)">적정</button>
-              <button class="filter-btn" onclick="filterItems('exp',this)">비쌈</button>
-            </div>
-          </div>
-          <div class="items-list" id="itemsList"></div>
-        </div>
-      </div>
-
-  <!-- PROGRESS & ERROR (입력 화면에 유지) -->
 </div><!-- /wrap -->
-
 </div><!-- /page-input -->
 
 <!-- PAGE: 결과 화면 -->
@@ -1708,7 +1592,7 @@ async function doManualAnalyze(){
   if(filledItems.length===0){ alert('최소 1개 항목의 금액을 입력해주세요.'); return; }
 
   document.getElementById('analyzeBtnM').disabled=true;
-  document.getElementById('resultsWrap').classList.remove('show');
+  
   startProgress(false);
 
   const SYS=`You are a Korean interior renovation cost analyst. Analyze each item and return ONLY valid JSON. No markdown, no explanation. Raw JSON only.
@@ -1980,7 +1864,7 @@ async function doAnalyze(){
   const isImg=!!imageBase64;
 
   document.getElementById('analyzeBtn').disabled=true;
-  document.getElementById('resultsWrap').classList.remove('show');
+  
   const eb=document.getElementById('errorBox');
   if(eb) eb.style.display='none';
   setStep(2);
@@ -2031,7 +1915,7 @@ async function doManualAnalyze(){
   if(!area){alert('공사 면적을 입력해주세요.');return;}
 
   document.getElementById('analyzeBtnM').disabled=true;
-  document.getElementById('resultsWrap').classList.remove('show');
+  
   const eb=document.getElementById('errorBox');
   if(eb) eb.style.display='none';
   startProgress(false);
