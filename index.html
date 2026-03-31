@@ -6,1012 +6,358 @@
 <title>견적분석 — 인테리어 견적 데이터 분석기</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --ink: #0F0E0C;
-  --ink2: #2A2825;
-  --ink3: #4A4743;
-  --muted: #8A8780;
-  --hint: #B8B5B0;
-  --rule: #E8E5E0;
-  --paper: #F8F6F2;
-  --surface: #FFFFFF;
-  --cheap: #1A6B3E;
-  --cheap-bg: #EBF7F0;
-  --cheap-mid: #4CAF82;
-  --fair: #7A6010;
-  --fair-bg: #FBF5E0;
-  --fair-mid: #D4A820;
-  --exp: #9A1F1F;
-  --exp-bg: #FCEAEA;
-  --exp-mid: #E04040;
-  --accent: #1F4FD8;
-  --radius: 14px;
-  --radius-sm: 8px;
+:root{
+  --ink:#0F0E0C;--ink2:#2A2825;--ink3:#4A4743;--muted:#8A8780;--hint:#B8B5B0;
+  --rule:#E8E5E0;--paper:#F8F6F2;--surface:#FFFFFF;
+  --cheap:#1A6B3E;--cheap-bg:#EBF7F0;--cheap-mid:#4CAF82;
+  --fair:#7A6010;--fair-bg:#FBF5E0;--fair-mid:#D4A820;
+  --exp:#9A1F1F;--exp-bg:#FCEAEA;--exp-mid:#E04040;
+  --accent:#1F4FD8;--radius:14px;--radius-sm:8px;
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.5;}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── 페이지 전환 ── */
+.page{display:none;}
+.page.active{display:block;}
 
-body {
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-  background: var(--paper);
-  color: var(--ink);
-  min-height: 100vh;
-  line-height: 1.5;
+/* ── 공통 헤더 ── */
+.top-bar{
+  background:var(--ink);color:#fff;
+  display:flex;align-items:center;padding:0 1.5rem;height:56px;gap:12px;
+  position:sticky;top:0;z-index:100;
 }
+.logo-mark{width:32px;height:32px;background:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-mark svg{width:22px;height:22px;}
+.logo-word{font-size:15px;font-weight:800;letter-spacing:-0.5px;color:#fff;}
+.logo-word span{color:#A0BFF8;}
+.bar-sep{flex:1;}
+.bar-tag{font-size:11px;font-weight:600;letter-spacing:0.5px;color:#A0BFF8;}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);font-family:inherit;font-size:13px;font-weight:500;padding:6px 10px 6px 4px;border-radius:6px;transition:all 0.15s;}
+.back-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.bar-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.3px;}
 
-/* ─── HEADER ─── */
-.site-header {
-  background: var(--ink);
-  color: #fff;
-  display: flex; align-items: center;
-  padding: 0 2rem;
-  height: 56px;
-  gap: 14px;
-  position: sticky; top: 0; z-index: 100;
-}
-.site-header .logo {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none; color: inherit;
-}
-.logo-icon {
-  width: 34px; height: 34px;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.logo-icon svg { width: 34px; height: 34px; }
-.logo-wordmark { font-size: 15px; font-weight: 800; letter-spacing: -0.8px; color: #fff; }
-.logo-wordmark span { color: #A0BFF8; }
-.header-sep { flex: 1; }
-.header-tag {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
-  color: #A0BFF8; text-transform: uppercase;
-}
+/* ── 입력 페이지: HERO ── */
+.hero{background:var(--ink);color:#fff;padding:3rem 1.5rem 2.5rem;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.03) 39px,rgba(255,255,255,0.03) 40px);}
+.hero-inner{max-width:820px;margin:0 auto;position:relative;}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A0BFF8;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.hero-eyebrow::before{content:'';display:block;width:16px;height:1px;background:#A0BFF8;}
+.hero h1{font-size:clamp(24px,4vw,38px);font-weight:800;letter-spacing:-1.5px;line-height:1.15;margin-bottom:0.85rem;}
+.hero h1 em{font-style:normal;color:#A0BFF8;}
+.hero-desc{font-size:14px;color:rgba(255,255,255,0.55);max-width:540px;line-height:1.7;margin-bottom:1.75rem;}
+.hero-cats{display:flex;flex-wrap:wrap;gap:6px;}
+.hero-cat{font-size:11px;font-weight:600;padding:3px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:rgba(255,255,255,0.5);}
 
-/* ─── HERO ─── */
-.hero {
-  background: var(--ink);
-  color: #fff;
-  padding: 4rem 2rem 3.5rem;
-  position: relative; overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 39px,
-    rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px
-  );
-}
-.hero-inner { max-width: 820px; margin: 0 auto; position: relative; }
-.hero-eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-  color: #A0BFF8; margin-bottom: 1.2rem;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: #A0BFF8; }
-.hero h1 {
-  font-size: clamp(26px, 4vw, 40px);
-  font-weight: 800; letter-spacing: -1.5px;
-  line-height: 1.15; margin-bottom: 1rem;
-}
-.hero h1 em { font-style: normal; color: #A0BFF8; }
-.hero-desc {
-  font-size: 15px; color: rgba(255,255,255,0.6);
-  max-width: 540px; line-height: 1.7;
-  margin-bottom: 2rem;
-}
-.hero-cats {
-  display: flex; flex-wrap: wrap; gap: 8px;
-}
-.hero-cat {
-  font-size: 12px; font-weight: 600;
-  padding: 4px 12px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 20px;
-  color: rgba(255,255,255,0.55);
-}
+/* ── wrap ── */
+.wrap{max-width:820px;margin:0 auto;padding:2rem 1.5rem;}
 
-/* ─── MAIN LAYOUT ─── */
-.wrap { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+/* ── steps ── */
+.steps{display:flex;gap:0;margin-bottom:2rem;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--hint);font-weight:600;position:relative;}
+.step::after{content:'';position:absolute;top:15px;left:calc(50% + 16px);right:calc(-50% + 16px);height:1px;background:var(--rule);}
+.step:last-child::after{display:none;}
+.step-num{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--hint);background:var(--surface);margin-bottom:5px;position:relative;z-index:1;transition:all 0.3s;}
+.step.active .step-num{background:var(--ink);color:#fff;border-color:var(--ink);}
+.step.done .step-num{background:var(--cheap);color:#fff;border-color:var(--cheap);}
+.step.active{color:var(--ink);}
+.step.done{color:var(--cheap);}
 
-/* ─── STEPS ─── */
-.steps { display: flex; gap: 0; margin-bottom: 2.5rem; }
-.step {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  font-size: 12px; color: var(--hint); font-weight: 600;
-  position: relative;
-}
-.step::after {
-  content: '';
-  position: absolute; top: 16px; left: calc(50% + 16px); right: calc(-50% + 16px);
-  height: 1px; background: var(--rule);
-}
-.step:last-child::after { display: none; }
-.step-num {
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 1.5px solid var(--rule);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: var(--hint);
-  background: var(--surface);
-  margin-bottom: 6px; position: relative; z-index: 1;
-  transition: all 0.3s;
-}
-.step.active .step-num {
-  background: var(--ink); color: #fff; border-color: var(--ink);
-}
-.step.done .step-num {
-  background: var(--cheap); color: #fff; border-color: var(--cheap);
-}
-.step.active { color: var(--ink); }
-.step.done { color: var(--cheap); }
+/* ── card ── */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;}
+.card-title{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';display:block;width:3px;height:13px;background:var(--ink);border-radius:2px;}
 
-/* ─── CARD ─── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: 1.75rem;
-  margin-bottom: 1.25rem;
-}
-.card-title {
-  font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; color: var(--muted);
-  margin-bottom: 1.25rem;
-  display: flex; align-items: center; gap: 8px;
-}
-.card-title::before {
-  content: ''; display: block;
-  width: 3px; height: 14px; background: var(--ink); border-radius: 2px;
-}
+/* ── mode toggle ── */
+.mode-toggle{display:flex;gap:8px;margin-bottom:1.25rem;}
+.mode-btn{flex:1;padding:0.85rem 1rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);transition:all 0.15s;text-align:center;}
+.mode-btn.active{border-color:var(--ink);background:var(--ink);color:#fff;}
+.mode-btn span{display:block;font-size:11px;font-weight:400;margin-top:3px;opacity:0.7;}
 
-/* ─── UPLOAD ─── */
-.upload-zone {
-  border: 2px dashed var(--rule);
-  border-radius: var(--radius-sm);
-  padding: 2.5rem 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--paper);
-  position: relative;
-}
-.upload-zone:hover, .upload-zone.over {
-  border-color: var(--accent);
-  background: #F0F4FE;
-}
-.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.upload-icon-wrap {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--rule); display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1rem;
-  transition: background 0.2s;
-}
-.upload-zone:hover .upload-icon-wrap { background: #D0DCFD; }
-.upload-icon-wrap svg { width: 24px; height: 24px; color: var(--muted); }
-.upload-zone:hover .upload-icon-wrap svg { color: var(--accent); }
-.upload-main { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-.upload-sub { font-size: 13px; color: var(--muted); }
+/* ── upload zone ── */
+.upload-zone{border:2px dashed var(--rule);border-radius:var(--radius-sm);padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--paper);position:relative;}
+.upload-zone:hover,.upload-zone.over{border-color:var(--accent);background:#F0F4FE;}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-icon-wrap{width:48px;height:48px;border-radius:50%;background:var(--rule);display:flex;align-items:center;justify-content:center;margin:0 auto 0.85rem;transition:background 0.2s;}
+.upload-zone:hover .upload-icon-wrap{background:#D0DCFD;}
+.upload-icon-wrap svg{width:22px;height:22px;color:var(--muted);}
+.upload-zone:hover .upload-icon-wrap svg{color:var(--accent);}
+.upload-main{font-size:14px;font-weight:700;margin-bottom:3px;}
+.upload-sub{font-size:12px;color:var(--muted);}
+.file-pill{display:inline-flex;align-items:center;gap:7px;margin-top:0.85rem;background:#EBF0FE;border:1px solid #C0D0FA;color:var(--accent);border-radius:6px;font-size:12px;font-weight:600;padding:5px 10px;}
+.file-pill button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 3px;}
+.file-type-badge{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-left:5px;}
+.file-type-badge.pdf{background:#FDE8E8;color:#9A1F1F;}
+.file-type-badge.img{background:#E8F0FE;color:#1F4FD8;}
+.img-preview{max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--rule);display:block;object-fit:contain;margin-top:0.85rem;}
 
-.file-pill {
-  display: inline-flex; align-items: center; gap: 8px;
-  margin-top: 1rem;
-  background: #EBF0FE; border: 1px solid #C0D0FA;
-  color: var(--accent); border-radius: 6px;
-  font-size: 13px; font-weight: 600; padding: 6px 12px;
-}
-.file-pill button {
-  background: none; border: none; color: var(--accent);
-  cursor: pointer; font-size: 18px; line-height: 1; padding: 0 0 0 4px;
-}
-.img-preview-wrap {
-  margin-top: 1rem; position: relative; display: inline-block;
-}
-.img-preview {
-  max-width: 100%; max-height: 200px;
-  border-radius: var(--radius-sm); border: 1px solid var(--rule);
-  display: block; object-fit: contain;
-}
-.img-preview-remove {
-  position: absolute; top: -8px; right: -8px;
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--ink); color: #fff;
-  border: none; cursor: pointer; font-size: 13px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-}
-.file-type-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 4px; margin-left: 8px;
-  vertical-align: middle;
-}
-.file-type-badge.pdf { background: #FDE8E8; color: #9A1F1F; }
-.file-type-badge.img { background: #E8F0FE; color: #1F4FD8; }
+/* ── form ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.form-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:5px;}
+.form-field input,.form-field select{width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
+.form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff;}
 
-/* ─── FORM GRID ─── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-.form-field label {
-  display: block; font-size: 12px; font-weight: 700;
-  color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.form-field input, .form-field select {
-  width: 100%; padding: 0.65rem 0.9rem;
-  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 14px; font-weight: 500;
-  color: var(--ink); background: var(--paper);
-  outline: none; transition: border-color 0.15s;
-  appearance: none;
-}
-.form-field input:focus, .form-field select:focus { border-color: var(--accent); background: #fff; }
+/* ── analyze btn ── */
+.btn-analyze{width:100%;padding:1rem 2rem;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:15px;font-weight:800;letter-spacing:-0.3px;cursor:pointer;transition:opacity 0.2s,transform 0.1s;margin-top:1.25rem;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-analyze:hover:not(:disabled){opacity:0.85;}
+.btn-analyze:active:not(:disabled){transform:scale(0.99);}
+.btn-analyze:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-analyze svg{width:17px;height:17px;}
 
-/* ─── ANALYZE BTN ─── */
-.btn-analyze {
-  width: 100%;
-  padding: 1.1rem 2rem;
-  background: var(--ink);
-  color: #fff;
-  border: none; border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 15px; font-weight: 800;
-  letter-spacing: -0.3px;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-  margin-top: 1.25rem;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-analyze:hover:not(:disabled) { opacity: 0.85; }
-.btn-analyze:active:not(:disabled) { transform: scale(0.99); }
-.btn-analyze:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn-analyze svg { width: 18px; height: 18px; }
+/* ── manual ── */
+.manual-card{display:none;}
+.manual-card.show{display:block;}
+.cat-section{margin-bottom:1rem;}
+.cat-section-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1.1rem;background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius-sm);cursor:pointer;transition:background 0.15s;user-select:none;}
+.cat-section-header:hover{background:var(--rule);}
+.cat-section-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.cat-section-toggle{font-size:18px;color:var(--muted);transition:transform 0.2s;}
+.cat-section-toggle.open{transform:rotate(45deg);}
+.cat-filled-badge{font-size:11px;font-weight:700;background:var(--ink);color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;}
+.cat-items-wrap{display:none;padding:1rem 1.1rem;border:1px solid var(--rule);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);background:var(--surface);}
+.cat-items-wrap.open{display:block;}
+.cost-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--rule);}
+.cost-label{font-size:13px;font-weight:700;color:var(--ink);}
+.cost-input-wrap{display:flex;align-items:center;gap:7px;}
+.cost-unit{font-size:13px;font-weight:700;color:var(--muted);min-width:28px;}
+.manual-item-input{width:110px;padding:6px 10px;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--paper);outline:none;text-align:right;transition:border-color 0.15s;}
+.manual-item-input:focus{border-color:var(--accent);background:#fff;}
+.checks-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--hint);margin-bottom:9px;}
+.checks-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.check-item{display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 11px;border:1.5px solid var(--rule);border-radius:20px;transition:all 0.15s;user-select:none;}
+.check-item:hover{border-color:var(--accent);}
+.check-item input[type=checkbox]{display:none;}
+.check-box{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--rule);background:var(--paper);flex-shrink:0;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.check-item input:checked~.check-box{background:var(--accent);border-color:var(--accent);}
+.check-item input:checked~.check-box::after{content:'✓';font-size:8px;color:#fff;font-weight:800;}
+.check-item input:checked~.check-txt{color:var(--accent);font-weight:700;}
+.check-txt{font-size:12px;color:var(--ink3);}
+.manual-total-bar{background:var(--ink);color:#fff;border-radius:var(--radius-sm);padding:0.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.manual-total-label{font-size:13px;opacity:0.7;}
+.manual-total-amount{font-size:19px;font-weight:800;letter-spacing:-1px;}
 
-/* ─── PROGRESS ─── */
-.progress-card {
-  background: var(--ink2);
-  color: #fff;
-  border-radius: var(--radius);
-  padding: 1.75rem;
-  margin-bottom: 1.25rem;
-  display: none;
-}
-.progress-card.show { display: block; }
-.progress-steps { display: flex; flex-direction: column; gap: 10px; }
-.prog-item { display: flex; align-items: center; gap: 12px; font-size: 14px; }
-.prog-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.2); flex-shrink: 0;
-  transition: background 0.3s;
-}
-.prog-dot.done { background: var(--cheap-mid); }
-.prog-dot.active {
-  background: #A0BFF8;
-  animation: pulse 1s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-.prog-label { color: rgba(255,255,255,0.7); }
-.prog-label.done { color: rgba(255,255,255,0.95); }
-.prog-label.active { color: #fff; font-weight: 600; }
+/* ── error / progress ── */
+.error-box{display:none;background:#FCEAEA;border:1px solid #F0B0B0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;font-size:13px;color:#791F1F;line-height:1.6;}
+.progress-card{background:var(--ink2);color:#fff;border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;display:none;}
+.progress-card.show{display:block;}
+.prog-item{display:flex;align-items:center;gap:12px;font-size:14px;margin-bottom:10px;}
+.prog-item:last-child{margin-bottom:0;}
+.prog-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0;transition:background 0.3s;}
+.prog-dot.done{background:var(--cheap-mid);}
+.prog-dot.active{background:#A0BFF8;animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.prog-label{color:rgba(255,255,255,0.7);}
+.prog-label.done{color:rgba(255,255,255,0.95);}
+.prog-label.active{color:#fff;font-weight:600;}
 
-/* ─── RESULTS ─── */
-.results { display: none; }
-.results.show { display: block; }
+/* ── 결과 페이지 ── */
+.result-wrap{max-width:820px;margin:0 auto;padding:2rem 1.5rem;}
 
-/* SUMMARY TOP */
-.verdict-banner {
-  border-radius: var(--radius);
-  padding: 1.5rem 1.75rem;
-  margin-bottom: 1.25rem;
-  display: flex; align-items: center; gap: 1.25rem;
-}
-.verdict-banner.cheap { background: var(--cheap-bg); border: 1px solid #B0DEC4; }
-.verdict-banner.fair  { background: var(--fair-bg);  border: 1px solid #E8D080; }
-.verdict-banner.exp   { background: var(--exp-bg);   border: 1px solid #F0B0B0; }
-.verdict-icon {
-  width: 52px; height: 52px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
-}
-.verdict-banner.cheap .verdict-icon { background: var(--cheap-bg); border: 2px solid var(--cheap-mid); }
-.verdict-banner.fair  .verdict-icon { background: var(--fair-bg);  border: 2px solid var(--fair-mid); }
-.verdict-banner.exp   .verdict-icon { background: var(--exp-bg);   border: 2px solid var(--exp-mid); }
-.verdict-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.verdict-banner.cheap .verdict-label { color: var(--cheap); }
-.verdict-banner.fair  .verdict-label { color: var(--fair); }
-.verdict-banner.exp   .verdict-label { color: var(--exp); }
-.verdict-title { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px; }
-.verdict-sub { font-size: 13px; color: var(--ink3); }
-.verdict-total {
-  margin-left: auto; text-align: right; flex-shrink: 0;
-}
-.verdict-total .t-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
-.verdict-total .t-amount { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+/* verdict banner */
+.verdict-banner{border-radius:var(--radius);padding:1.35rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1.1rem;}
+.verdict-banner.cheap{background:var(--cheap-bg);border:1px solid #B0DEC4;}
+.verdict-banner.fair{background:var(--fair-bg);border:1px solid #E8D080;}
+.verdict-banner.exp{background:var(--exp-bg);border:1px solid #F0B0B0;}
+.verdict-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.verdict-banner.cheap .verdict-icon{background:var(--cheap-bg);border:2px solid var(--cheap-mid);}
+.verdict-banner.fair .verdict-icon{background:var(--fair-bg);border:2px solid var(--fair-mid);}
+.verdict-banner.exp .verdict-icon{background:var(--exp-bg);border:2px solid var(--exp-mid);}
+.verdict-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.verdict-banner.cheap .verdict-label{color:var(--cheap);}
+.verdict-banner.fair .verdict-label{color:var(--fair);}
+.verdict-banner.exp .verdict-label{color:var(--exp);}
+.verdict-title{font-size:17px;font-weight:800;letter-spacing:-0.5px;margin-bottom:2px;}
+.verdict-sub{font-size:13px;color:var(--ink3);}
+.verdict-total{margin-left:auto;text-align:right;flex-shrink:0;}
+.verdict-total .t-label{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.verdict-total .t-amount{font-size:21px;font-weight:800;letter-spacing:-1px;}
 
-/* STATS ROW */
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-.stat-card {
-  background: var(--surface); border: 1px solid var(--rule);
-  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
-}
-.stat-label { font-size: 11px; color: var(--hint); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
-.stat-val { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
-.stat-val.cheap { color: var(--cheap); }
-.stat-val.fair  { color: var(--fair); }
-.stat-val.exp   { color: var(--exp); }
-.stat-val.neutral { color: var(--ink); }
+/* stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.stat-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:0.9rem 1.1rem;}
+.stat-label{font-size:11px;color:var(--hint);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-size:22px;font-weight:800;letter-spacing:-1px;}
+.stat-val.neutral{color:var(--ink);}
+.stat-val.cheap{color:var(--cheap);}
+.stat-val.fair{color:var(--fair);}
+.stat-val.exp{color:var(--exp);}
 
-/* ITEMS */
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem;
-}
-.section-title { font-size: 14px; font-weight: 800; letter-spacing: -0.3px; }
-.section-filter { display: flex; gap: 6px; }
-.filter-btn {
-  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
-  border: 1.5px solid var(--rule); background: none; cursor: pointer;
-  color: var(--muted); font-family: inherit; transition: all 0.15s;
-}
-.filter-btn.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+/* cat edit */
+.edit-notice{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--accent);background:#EEF3FE;border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:13px;line-height:1.5;}
+.cat-edit-list{display:flex;flex-direction:column;margin-bottom:12px;}
+.cat-edit-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--rule);}
+.cat-edit-row:last-child{border-bottom:none;}
+.cat-edit-name{font-size:14px;color:var(--ink);flex:1;font-weight:500;}
+.cat-edit-input-wrap{display:flex;align-items:center;gap:6px;background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--radius-sm);padding:5px 9px;transition:border-color 0.15s;}
+.cat-edit-input-wrap:focus-within{border-color:var(--accent);background:#fff;}
+.cat-edit-input{width:70px;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);text-align:right;}
+.cat-edit-unit{font-size:12px;color:var(--muted);}
+.cat-total-row{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-radius:var(--radius-sm);padding:11px 13px;}
+.cat-total-label{font-size:13px;color:var(--muted);font-weight:700;}
+.cat-total-amount{font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);}
 
-.items-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+/* paywall */
+.paywall-wrap{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;}
+.paywall-preview{padding:1.5rem 1.5rem 0;}
+.detail-container{position:relative;}
+.detail-container.is-locked .blur-target{filter:blur(8px);pointer-events:none;user-select:none;transition:filter 0.4s;}
+.paywall-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:10;background:rgba(248,246,242,0.6);backdrop-filter:blur(2px);padding:20px;}
+.detail-container.is-locked .paywall-overlay{display:flex;}
+.paywall-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px 20px;text-align:center;width:100%;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.paywall-card-icon{width:48px;height:48px;border-radius:50%;background:var(--paper);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.paywall-card-title{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.5px;margin-bottom:5px;}
+.paywall-card-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.gate-save-msg{font-size:13px;font-weight:700;color:var(--cheap);background:var(--cheap-bg);border:1px solid var(--cheap-mid);border-radius:8px;padding:7px 13px;margin-bottom:13px;line-height:1.5;}
+.gate-features{display:flex;flex-direction:column;gap:6px;margin-bottom:15px;text-align:left;}
+.gate-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3);}
+.gate-feat-check{width:17px;height:17px;border-radius:50%;background:var(--cheap-bg);color:var(--cheap);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-pay{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);padding:13px 0;width:100%;font-family:inherit;font-size:15px;font-weight:800;letter-spacing:-0.3px;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+.btn-pay:hover{opacity:0.85;}
+.btn-pay:active{transform:scale(0.99);}
+.btn-pay-price{background:#fff;color:var(--ink);font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;}
+.refund-notice{font-size:11px;color:rgba(0,0,0,0.4);margin-top:9px;line-height:1.6;text-align:center;}
+.refund-notice span{text-decoration:underline;cursor:pointer;color:var(--muted);}
+.blur-target{padding:1.5rem;}
+.paid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--cheap-bg);color:var(--cheap);border:1px solid var(--cheap-mid);font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px;margin-bottom:1rem;}
 
-.item-card {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
-  padding: 1rem 1.25rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto auto auto;
-  gap: 0 12px;
-  align-items: start;
-  transition: box-shadow 0.15s;
-  animation: fadeIn 0.3s ease both;
-}
-@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-.item-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+/* items */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.section-title{font-size:14px;font-weight:800;letter-spacing:-0.3px;}
+.section-filter{display:flex;gap:5px;}
+.filter-btn{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1.5px solid var(--rule);background:none;cursor:pointer;color:var(--muted);font-family:inherit;transition:all 0.15s;}
+.filter-btn.active{border-color:var(--ink);background:var(--ink);color:#fff;}
+.items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
+.item-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:1rem 1.25rem;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto;gap:0 12px;align-items:start;animation:fadeIn 0.3s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.item-card.exp{border-left:3px solid var(--exp-mid);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.item-card.fair{border-left:3px solid var(--fair-mid);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.item-card.cheap{border-left:3px solid var(--cheap-mid);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.item-verdict-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;grid-row:1;}
+.item-verdict-dot.cheap{background:var(--cheap-mid);}
+.item-verdict-dot.fair{background:var(--fair-mid);}
+.item-verdict-dot.exp{background:var(--exp-mid);}
+.item-name{font-size:14px;font-weight:700;grid-column:2;grid-row:1;}
+.item-cat-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--paper);color:var(--muted);margin-left:5px;vertical-align:middle;}
+.item-amount{font-size:15px;font-weight:800;letter-spacing:-0.5px;grid-column:3;grid-row:1;text-align:right;}
+.item-detail{font-size:12px;color:var(--muted);grid-column:2;grid-row:2;padding-top:2px;}
+.item-pill{font-size:10px;font-weight:800;letter-spacing:0.3px;padding:2px 8px;border-radius:4px;grid-column:3;grid-row:2;align-self:start;text-align:center;margin-top:2px;}
+.item-pill.cheap{background:var(--cheap-bg);color:var(--cheap);}
+.item-pill.fair{background:var(--fair-bg);color:var(--fair);}
+.item-pill.exp{background:var(--exp-bg);color:var(--exp);}
+.item-bar-row{grid-column:1/-1;grid-row:3;padding-top:8px;display:flex;gap:8px;align-items:center;}
+.item-bar-track{flex:1;height:3px;background:var(--paper);border-radius:2px;overflow:hidden;}
+.item-bar-fill{height:100%;border-radius:2px;transition:width 0.8s cubic-bezier(.4,0,.2,1);}
+.item-bar-fill.cheap{background:var(--cheap-mid);}
+.item-bar-fill.fair{background:var(--fair-mid);}
+.item-bar-fill.exp{background:var(--exp-mid);}
+.item-range{font-size:11px;color:var(--hint);white-space:nowrap;}
 
-.item-verdict-dot {
-  width: 10px; height: 10px; border-radius: 50%; margin-top: 5px;
-  flex-shrink: 0; grid-row: 1;
-}
-.item-verdict-dot.cheap { background: var(--cheap-mid); }
-.item-verdict-dot.fair  { background: var(--fair-mid); }
-.item-verdict-dot.exp   { background: var(--exp-mid); }
+/* advice */
+.advice-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;}
+.advice-item{background:var(--surface);border:0.5px solid var(--rule);border-radius:var(--radius-sm);padding:1rem 1.25rem;display:flex;gap:12px;align-items:flex-start;}
+.advice-item.highlight{border-color:var(--exp-mid);border-left:3px solid var(--exp-mid);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.advice-icon-wrap{width:33px;height:33px;border-radius:7px;background:var(--paper);border:0.5px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.advice-content{flex:1;min-width:0;}
+.advice-tag{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.advice-text{font-size:13px;line-height:1.8;color:var(--ink3);word-break:keep-all;}
 
-.item-name { font-size: 14px; font-weight: 700; grid-column: 2; grid-row: 1; }
-.item-cat-tag {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-  padding: 2px 7px; border-radius: 4px;
-  background: var(--paper); color: var(--muted);
-  margin-left: 6px; vertical-align: middle;
-}
+/* ── 약관 페이지 ── */
+.legal-wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
+.legal-body h3{font-size:15px;font-weight:700;color:var(--ink);margin:1.5rem 0 0.6rem;padding-top:1.25rem;border-top:0.5px solid var(--rule);}
+.legal-body h3:first-child{margin-top:0;padding-top:0;border-top:none;}
+.legal-body p{font-size:13px;line-height:1.8;color:var(--ink3);margin-bottom:0.75rem;}
+.legal-body ul{padding-left:1.25rem;margin-bottom:0.75rem;}
+.legal-body li{font-size:13px;line-height:1.8;color:var(--ink3);margin-bottom:3px;}
+.legal-highlight{background:var(--cheap-bg);border:1px solid var(--cheap-mid);border-radius:var(--radius-sm);padding:11px 13px;color:var(--cheap);font-weight:700;font-size:13px;margin:1rem 0;}
+.legal-warn{background:var(--exp-bg);border:1px solid var(--exp-mid);border-radius:var(--radius-sm);padding:11px 13px;color:var(--exp);font-weight:700;font-size:13px;margin:1rem 0;}
 
-.item-amount {
-  font-size: 16px; font-weight: 800; letter-spacing: -0.5px;
-  grid-column: 3; grid-row: 1; text-align: right;
-}
+/* ── 푸터 ── */
+.site-footer{background:var(--ink2);color:rgba(255,255,255,0.6);padding:2.5rem 1.5rem;}
+.footer-inner{max-width:820px;margin:0 auto;}
+.footer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.footer-logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:5px;}
+.footer-desc{font-size:12px;color:rgba(255,255,255,0.35);}
+.footer-links{display:flex;gap:14px;flex-wrap:wrap;}
+.footer-links button{background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;}
+.footer-links button:hover{color:#fff;}
+.footer-divider{height:0.5px;background:rgba(255,255,255,0.1);margin-bottom:1.25rem;}
+.footer-info-row{display:flex;flex-wrap:wrap;gap:5px;font-size:12px;margin-bottom:5px;align-items:center;}
+.footer-sep{opacity:0.3;}
+.footer-company{font-weight:700;color:rgba(255,255,255,0.75);}
+.footer-info-row a{color:rgba(255,255,255,0.5);text-decoration:none;}
+.footer-copy{font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px;line-height:1.6;}
 
-.item-detail {
-  font-size: 12px; color: var(--muted);
-  grid-column: 2; grid-row: 2; padding-top: 3px;
-}
-
-.item-pill {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 4px;
-  grid-column: 3; grid-row: 2; align-self: start; text-align: center; margin-top: 3px;
-}
-.item-pill.cheap { background: var(--cheap-bg); color: var(--cheap); }
-.item-pill.fair  { background: var(--fair-bg);  color: var(--fair); }
-.item-pill.exp   { background: var(--exp-bg);   color: var(--exp); }
-
-.item-bar-row { grid-column: 1 / -1; grid-row: 3; padding-top: 10px; display: flex; gap: 10px; align-items: center; }
-.item-bar-track {
-  flex: 1; height: 4px; background: var(--paper); border-radius: 2px; overflow: hidden;
-}
-.item-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
-.item-bar-fill.cheap { background: var(--cheap-mid); }
-.item-bar-fill.fair  { background: var(--fair-mid); }
-.item-bar-fill.exp   { background: var(--exp-mid); }
-.item-range { font-size: 11px; color: var(--hint); white-space: nowrap; }
-
-/* ADVICE */
-.advice-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
-.advice-item {
-  background: var(--surface); border: 0.5px solid var(--rule);
-  border-radius: var(--radius-sm); padding: 1.1rem 1.25rem;
-  display: flex; gap: 12px; align-items: flex-start;
-}
-.advice-item.highlight {
-  border-color: var(--exp-mid);
-  border-left: 3px solid var(--exp-mid);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
-.advice-icon-wrap {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: var(--paper); border: 0.5px solid var(--rule);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px;
-}
-.advice-content { flex: 1; min-width: 0; }
-.advice-tag {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; color: var(--muted);
-  margin-bottom: 5px;
-}
-.advice-text {
-  font-size: 13px; line-height: 1.8; color: var(--ink3);
-  word-break: keep-all;
-}
-
-/* ── CAT EDIT TABLE ── */
-.edit-notice {
-  display: flex; align-items: flex-start; gap: 8px;
-  font-size: 12px; color: var(--accent);
-  background: #EEF3FE; border-radius: var(--radius-sm);
-  padding: 10px 12px; margin-bottom: 14px; line-height: 1.5;
-}
-.cat-edit-list { display: flex; flex-direction: column; margin-bottom: 12px; }
-.cat-edit-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 0;
-  border-bottom: 0.5px solid var(--rule);
-}
-.cat-edit-row:last-child { border-bottom: none; }
-.cat-edit-name { font-size: 14px; color: var(--ink); flex: 1; font-weight: 500; }
-.cat-edit-input-wrap {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--paper); border: 1.5px solid var(--rule);
-  border-radius: var(--radius-sm); padding: 6px 10px;
-  transition: border-color 0.15s;
-}
-.cat-edit-input-wrap:focus-within {
-  border-color: var(--accent); background: #fff;
-}
-.cat-edit-input {
-  width: 72px; border: none; outline: none;
-  background: transparent; font-family: inherit;
-  font-size: 14px; font-weight: 700; color: var(--ink);
-  text-align: right;
-}
-.cat-edit-unit { font-size: 12px; color: var(--muted); }
-.cat-total-row {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--paper); border-radius: var(--radius-sm);
-  padding: 12px 14px;
-}
-.cat-total-label { font-size: 13px; color: var(--muted); font-weight: 700; }
-.cat-total-amount { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); }
-
-/* RESET BTN */
-.btn-reset {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--muted);
-  background: none; border: 1px solid var(--rule);
-  border-radius: var(--radius-sm); padding: 8px 14px;
-  cursor: pointer; font-family: inherit; transition: all 0.15s;
-  margin-top: 0.5rem;
-}
-.btn-reset:hover { color: var(--ink); border-color: var(--ink3); }
-
-/* MODE TOGGLE */
-.mode-toggle {
-  display: flex; gap: 8px; margin-bottom: 1.25rem;
-}
-.mode-btn {
-  flex: 1; padding: 0.85rem 1rem;
-  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
-  background: var(--surface); cursor: pointer; font-family: inherit;
-  font-size: 13px; font-weight: 700; color: var(--muted);
-  transition: all 0.15s; text-align: center;
-}
-.mode-btn.active {
-  border-color: var(--ink); background: var(--ink); color: #fff;
-}
-.mode-btn span { display: block; font-size: 11px; font-weight: 400; margin-top: 3px; opacity: 0.7; }
-
-/* MANUAL INPUT */
-.manual-card { display: none; }
-.manual-card.show { display: block; }
-
-.cat-section { margin-bottom: 1.25rem; }
-.cat-section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.85rem 1.25rem;
-  background: var(--paper); border: 1px solid var(--rule);
-  border-radius: var(--radius-sm); cursor: pointer;
-  transition: background 0.15s;
-  user-select: none;
-}
-.cat-section-header:hover { background: var(--rule); }
-.cat-section-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.cat-section-toggle { font-size: 18px; color: var(--muted); transition: transform 0.2s; }
-.cat-section-toggle.open { transform: rotate(45deg); }
-
-.cat-items-wrap {
-  display: none; padding: 1rem 1.25rem;
-  border: 1px solid var(--rule); border-top: none;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  background: var(--surface);
-}
-.cat-items-wrap.open { display: block; }
-
-.manual-item-row {
-  display: grid; grid-template-columns: 1fr auto auto;
-  gap: 8px; align-items: center; margin-bottom: 8px;
-}
-.manual-item-row:last-child { margin-bottom: 0; }
-.manual-item-name { font-size: 13px; font-weight: 600; color: var(--ink3); }
-.manual-item-input {
-  width: 130px; padding: 6px 10px;
-  border: 1.5px solid var(--rule); border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 13px; font-weight: 600;
-  color: var(--ink); background: var(--paper); outline: none;
-  text-align: right;
-  transition: border-color 0.15s;
-}
-.manual-item-input:focus { border-color: var(--accent); background: #fff; }
-.manual-item-unit { font-size: 12px; color: var(--muted); width: 24px; }
-
-.manual-total-bar {
-  background: var(--ink); color: #fff;
-  border-radius: var(--radius-sm); padding: 1rem 1.5rem;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-.manual-total-label { font-size: 13px; opacity: 0.7; }
-.manual-total-amount { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
-
-/* CHECK UI */
-.cat-filled-badge {
-  font-size: 11px; font-weight: 700;
-  background: var(--ink); color: #fff;
-  padding: 2px 8px; border-radius: 20px; margin-left: 6px;
-}
-.cost-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem; padding-bottom: 1rem;
-  border-bottom: 1px solid var(--rule);
-}
-.cost-label { font-size: 13px; font-weight: 700; color: var(--ink); }
-.cost-input-wrap { display: flex; align-items: center; gap: 8px; }
-.cost-unit { font-size: 13px; font-weight: 700; color: var(--muted); min-width: 28px; }
-.checks-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; color: var(--hint); margin-bottom: 10px;
-}
-.checks-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.check-item {
-  display: flex; align-items: center; gap: 6px;
-  cursor: pointer; padding: 6px 12px;
-  border: 1.5px solid var(--rule); border-radius: 20px;
-  transition: all 0.15s; user-select: none;
-}
-.check-item:hover { border-color: var(--accent); }
-.check-item input[type=checkbox] { display: none; }
-.check-box {
-  width: 14px; height: 14px; border-radius: 3px;
-  border: 1.5px solid var(--rule); background: var(--paper);
-  flex-shrink: 0; transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center;
-}
-.check-item input:checked ~ .check-box { background: var(--accent); border-color: var(--accent); }
-.check-item input:checked ~ .check-box::after { content: '✓'; font-size: 9px; color: #fff; font-weight: 800; }
-.check-item input:checked ~ .check-txt { color: var(--accent); font-weight: 700; }
-.check-txt { font-size: 13px; color: var(--ink3); }
-
-/* ── PAYWALL ── */
-.detail-container {
-  position: relative;
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 1.25rem;
-}
-.blur-target {
-  transition: filter 0.4s ease;
-}
-.detail-container.is-locked .blur-target {
-  filter: blur(8px);
-  pointer-events: none;
-  user-select: none;
-}
-.paywall-overlay {
-  position: absolute; inset: 0;
-  display: none;
-  align-items: center; justify-content: center;
-  z-index: 10;
-  background: rgba(248,246,242,0.6);
-  backdrop-filter: blur(2px);
-  padding: 20px;
-}
-.detail-container.is-locked .paywall-overlay { display: flex; }
-
-.paywall-card {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: 28px 24px;
-  text-align: center;
-  width: 100%; max-width: 340px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-}
-.paywall-card-icon {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--paper); border: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px;
-}
-.paywall-card-title {
-  font-size: 18px; font-weight: 800; color: var(--ink);
-  letter-spacing: -0.5px; margin-bottom: 6px;
-}
-.paywall-card-sub {
-  font-size: 13px; color: var(--muted);
-  line-height: 1.6; margin-bottom: 14px;
-}
-.gate-save-msg {
-  font-size: 13px; font-weight: 700; color: var(--cheap);
-  background: var(--cheap-bg); border: 1px solid var(--cheap-mid);
-  border-radius: 8px; padding: 8px 14px; margin-bottom: 14px;
-  line-height: 1.5;
-}
-.gate-features {
-  display: flex; flex-direction: column; gap: 7px;
-  margin-bottom: 18px; text-align: left;
-}
-.gate-feat { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink3); }
-.gate-feat-check {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--cheap-bg); color: var(--cheap);
-  font-size: 11px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.btn-pay {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--ink); color: #fff;
-  border: none; border-radius: var(--radius-sm);
-  padding: 14px 0; width: 100%;
-  font-family: inherit; font-size: 15px; font-weight: 800;
-  letter-spacing: -0.3px; cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-}
-.btn-pay:hover { opacity: 0.85; }
-.btn-pay:active { transform: scale(0.99); }
-.btn-pay-price {
-  background: #fff; color: var(--ink);
-  font-size: 13px; font-weight: 800;
-  padding: 3px 10px; border-radius: 20px;
-}
-.paid-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--cheap-bg); color: var(--cheap);
-  border: 1px solid var(--cheap-mid);
-  font-size: 12px; font-weight: 700;
-  padding: 4px 12px; border-radius: 20px; margin-bottom: 1rem;
-}
-
-/* ── PAGE TRANSITION ── */
-.page-input  { display: block; }
-.page-result { display: none; background: var(--paper); min-height: 100vh; }
-.page-result.active { display: block; }
-.page-input.hidden  { display: none; }
-
-.result-header {
-  background: var(--ink);
-  padding: 0 2rem;
-  height: 56px;
-  display: flex; align-items: center; gap: 14px;
-  position: sticky; top: 0; z-index: 100;
-}
-.result-back-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: none; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.7); font-family: inherit;
-  font-size: 13px; font-weight: 500;
-  padding: 6px 10px 6px 6px;
-  border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
-}
-.result-back-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.result-header-title {
-  font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
-}
-.result-wrap { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem; }
-.refund-notice {
-  font-size: 11px; color: rgba(255,255,255,0.45);
-  margin-top: 10px; line-height: 1.6; text-align: center;
-}
-.refund-notice span { color: rgba(255,255,255,0.65); }
-
-/* ── FOOTER ── */
-.site-footer {
-  background: var(--ink2); color: rgba(255,255,255,0.6);
-  margin-top: 4rem; padding: 2.5rem 2rem;
-}
-.footer-inner { max-width: 820px; margin: 0 auto; }
-.footer-top {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; gap: 2rem;
-  margin-bottom: 1.5rem; flex-wrap: wrap;
-}
-.footer-logo {
-  font-size: 16px; font-weight: 800; color: #fff;
-  letter-spacing: -0.5px; margin-bottom: 6px;
-}
-.footer-desc { font-size: 12px; color: rgba(255,255,255,0.4); }
-.footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
-.footer-links button {
-  background: none; border: none; cursor: pointer;
-  font-size: 13px; color: rgba(255,255,255,0.5);
-  font-family: inherit; padding: 0;
-  transition: color 0.15s;
-}
-.footer-links button:hover { color: #fff; }
-.footer-divider { height: 0.5px; background: rgba(255,255,255,0.1); margin-bottom: 1.25rem; }
-.footer-info-row {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  font-size: 12px; margin-bottom: 6px; align-items: center;
-}
-.footer-sep { opacity: 0.3; }
-.footer-company { font-weight: 700; color: rgba(255,255,255,0.75); }
-.footer-info-row a { color: rgba(255,255,255,0.5); text-decoration: none; }
-.footer-info-row a:hover { color: #fff; }
-.footer-copy { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 10px; line-height: 1.6; }
-
-/* ── MODAL ── */
-const MODAL_CONTENT={
-  terms:{
-    title:'이용약관',
-    body:`
-<h3>제1조 (목적)</h3>
-<p>이 약관은 (주)마인스페이스(이하 "회사")가 운영하는 견적분석 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
-
-<h3>제2조 (서비스 내용)</h3>
-<p>회사는 인테리어 견적서 분석 서비스를 제공합니다. 서비스는 다음과 같이 구성됩니다.</p>
-<ul>
-  <li>무료 제공: 전체 종합 판정, 카테고리별 금액 확인</li>
-  <li>유료 제공 (10,000원): 항목별 상세 판정, 시중가 비교, 전문가 협상 팁</li>
-</ul>
-
-<h3>제3조 (면책 조항)</h3>
-<p>본 서비스의 분석 결과는 참고용 정보이며 실제 인테리어 공사 견적과 다를 수 있습니다. 회사는 분석 결과를 근거로 발생한 손해에 대해 책임을 지지 않습니다. 지역, 공사 범위, 자재 등급에 따라 실제 시세는 상이할 수 있습니다.</p>
-
-<h3>제4조 (이용 제한)</h3>
-<p>이용자는 서비스를 상업적 목적으로 재판매하거나, 분석 결과를 무단으로 복제·배포할 수 없습니다.</p>
-
-<h3>제5조 (준거법)</h3>
-<p>이 약관에 관한 분쟁은 대한민국 법률에 따르며, 관할 법원은 회사 소재지 관할 법원으로 합니다.</p>
-
-<h3>제6조 (문의)</h3>
-<p>서비스 이용 관련 문의: info@mainspaceinc.com<br>영업시간: 평일 09:00 ~ 18:00</p>
-`
-  },
-  privacy:{
-    title:'개인정보처리방침',
-    body:`
-<h3>1. 수집하는 개인정보 항목</h3>
-<p>회사는 서비스 제공을 위해 다음과 같은 정보를 수집합니다.</p>
-<ul>
-  <li><strong>결제 시 수집:</strong> 결제수단 정보 (토스페이먼츠를 통해 처리, 회사에 저장되지 않음)</li>
-  <li><strong>서비스 이용 시 수집:</strong> 업로드한 견적서 내용 (분석 후 즉시 삭제)</li>
-  <li><strong>자동 수집:</strong> 접속 IP, 브라우저 정보, 방문 시간</li>
-</ul>
-
-<h3>2. 개인정보 수집 목적</h3>
-<ul>
-  <li>서비스 제공 및 견적 분석</li>
-  <li>결제 처리 및 환불 처리</li>
-  <li>서비스 개선 및 통계 분석</li>
-</ul>
-
-<h3>3. 개인정보 보유 및 이용 기간</h3>
-<ul>
-  <li>견적서 내용: 분석 완료 즉시 삭제</li>
-  <li>결제 정보: 전자상거래법에 따라 5년 보관</li>
-  <li>접속 로그: 3개월 보관</li>
-</ul>
-
-<h3>4. 제3자 제공</h3>
-<p>회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 단, 결제 처리를 위해 토스페이먼츠(PG사)에 필요한 최소한의 정보를 제공합니다.</p>
-
-<h3>5. 개인정보 보호 책임자</h3>
-<p>성명: 엄정현 (대표이사)<br>이메일: info@mainspaceinc.com<br>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</p>
-
-<h3>6. 권리 행사</h3>
-<p>이용자는 언제든지 개인정보 열람, 정정, 삭제, 처리 정지를 요청할 수 있습니다. 요청은 info@mainspaceinc.com으로 해주세요.</p>
-`
-  },
-  refund:{
-    title:'환불정책',
-    body:`
-<div class="modal-highlight">✓ 결제 후 분석 결과를 열람하기 전에는 전액 환불이 가능합니다.</div>
-<div class="modal-warn">✗ 분석 결과를 한 번이라도 열람한 경우 디지털 콘텐츠 특성상 환불이 불가합니다.</div>
-
-<h3>환불 가능 조건</h3>
-<ul>
-  <li>결제 완료 후 상세 분석 결과를 열람하지 않은 경우</li>
-  <li>결제 후 7일 이내 요청한 경우</li>
-  <li>기술적 오류로 서비스를 정상적으로 이용하지 못한 경우 (전액 환불)</li>
-</ul>
-
-<h3>환불 불가 조건</h3>
-<ul>
-  <li>상세 분석 결과를 한 번이라도 열람한 경우</li>
-  <li>결제 후 7일이 경과한 경우</li>
-  <li>이용자 본인의 단순 변심 (열람 후)</li>
-</ul>
-
-<h3>환불 신청 방법</h3>
-<p>환불을 원하시는 경우 아래로 문의해 주세요.</p>
-<ul>
-  <li>이메일: info@mainspaceinc.com</li>
-  <li>영업시간: 평일 09:00 ~ 18:00</li>
-  <li>결제일, 주문번호, 환불 사유를 함께 전달해 주세요.</li>
-</ul>
-
-<h3>환불 처리 기간</h3>
-<p>환불 요청 확인 후 영업일 기준 3~5일 이내에 처리됩니다. 카드사 정책에 따라 실제 반영까지 추가 시간이 소요될 수 있습니다.</p>
-
-<h3>관련 법령</h3>
-<p>본 환불정책은 전자상거래 등에서의 소비자보호에 관한 법률 제17조(청약철회 등) 및 디지털콘텐츠 관련 규정에 따라 운영됩니다.</p>
-`
-  }
-};
-
-function openModal(type){
-  const content=MODAL_CONTENT[type];
-  if(!content) return;
-  document.getElementById('modalTitle').textContent=content.title;
-  document.getElementById('modalBody').innerHTML=content.body;
-  document.getElementById('modalBackdrop').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-
-function closeModal(){
-  document.getElementById('modalBackdrop').classList.remove('open');
-  document.body.style.overflow='';
-}
-
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
-.modal-backdrop {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5); z-index: 1000;
-  align-items: center; justify-content: center;
-  padding: 20px;
-}
-.modal-backdrop.open { display: flex; }
-.modal-box {
-  background: var(--surface); border-radius: var(--radius);
-  width: 100%; max-width: 560px;
-  max-height: 80vh; display: flex; flex-direction: column;
-}
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1.25rem 1.5rem; border-bottom: 0.5px solid var(--rule);
-  flex-shrink: 0;
-}
-.modal-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
-.modal-close {
-  background: none; border: none; cursor: pointer;
-  color: var(--muted); padding: 4px;
-  display: flex; align-items: center; justify-content: center;
-}
-.modal-close:hover { color: var(--ink); }
-.modal-body {
-  padding: 1.5rem; overflow-y: auto;
-  font-size: 13px; line-height: 1.8; color: var(--ink3);
-}
-.modal-body h3 {
-  font-size: 14px; font-weight: 700; color: var(--ink);
-  margin: 1.25rem 0 0.5rem; padding-top: 1rem;
-  border-top: 0.5px solid var(--rule);
-}
-.modal-body h3:first-child { margin-top: 0; padding-top: 0; border-top: none; }
-.modal-body p { margin-bottom: 0.75rem; }
-.modal-body ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
-.modal-body li { margin-bottom: 4px; }
-.modal-highlight {
-  background: var(--cheap-bg); border: 1px solid var(--cheap-mid);
-  border-radius: var(--radius-sm); padding: 12px 14px;
-  color: var(--cheap); font-weight: 700; margin: 1rem 0;
-}
-.modal-warn {
-  background: var(--exp-bg); border: 1px solid var(--exp-mid);
-  border-radius: var(--radius-sm); padding: 12px 14px;
-  color: var(--exp); font-weight: 700; margin: 1rem 0;
-}
-
-@media (max-width: 640px) {
-  .form-grid { grid-template-columns: 1fr 1fr; }
-  .stats-row { grid-template-columns: 1fr 1fr; }
-  .cat-grid  { grid-template-columns: repeat(2, 1fr); }
-  .advice-grid { grid-template-columns: 1fr; }
-  .hero { padding: 2.5rem 1.25rem 2rem; }
-  .manual-item-row { grid-template-columns: 1fr auto; }
-  .manual-item-unit { display: none; }
-  .footer-top { flex-direction: column; gap: 1rem; }
-  .footer-info-row { flex-direction: column; gap: 4px; }
-  .footer-sep { display: none; }
+/* ── 반응형 ── */
+@media(max-width:640px){
+  .form-grid{grid-template-columns:1fr 1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .footer-top{flex-direction:column;gap:1rem;}
+  .footer-info-row{flex-direction:column;gap:3px;}
+  .footer-sep{display:none;}
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="site-header">
-  <a class="logo" href="#">
-    <div class="logo-icon">
-      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="34" height="34" rx="8" fill="#0F0E0C"/>
-        <rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/>
-        <line x1="7.5" y1="10" x2="13.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="7.5" y1="13" x2="13.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="7.5" y1="16" x2="11" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <rect x="18" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.5"/>
-        <line x1="20.5" y1="10" x2="26.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="20.5" y1="13" x2="26.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="20.5" y1="16" x2="24" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="16.5" y1="8" x2="17.5" y2="8" stroke="white" stroke-width="1" opacity="0.6"/>
-        <line x1="16.5" y1="11" x2="17.5" y2="11" stroke="white" stroke-width="1" opacity="0.6"/>
-        <line x1="16.5" y1="14" x2="17.5" y2="14" stroke="white" stroke-width="1" opacity="0.6"/>
-        <circle cx="22" cy="25" r="4.5" stroke="#E04040" stroke-width="1.8"/>
-        <line x1="25.2" y1="28.2" x2="28" y2="31" stroke="#E04040" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="20.5" y1="25" x2="23.5" y2="25" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
-        <line x1="22" y1="23.5" x2="22" y2="26.5" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <span class="logo-wordmark">견적<span>분석</span></span>
-  </a>
-  <div class="header-sep"></div>
-  <span class="header-tag">인테리어 견적 데이터 분석기</span>
+<!-- ════════════════════════════════════════
+     PAGE 1: 입력 화면
+════════════════════════════════════════ -->
+<div id="pageInput" class="page active">
+
+<header class="top-bar">
+  <div class="logo-mark">
+    <svg viewBox="0 0 34 34" fill="none">
+      <rect width="34" height="34" rx="8" fill="#0F0E0C"/>
+      <rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/>
+      <line x1="7.5" y1="10" x2="13.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="7.5" y1="13" x2="13.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="7.5" y1="16" x2="11" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <rect x="18" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.5"/>
+      <line x1="20.5" y1="10" x2="26.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="20.5" y1="13" x2="26.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="20.5" y1="16" x2="24" y2="16" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="22" cy="25" r="4.5" stroke="#E04040" stroke-width="1.8"/>
+      <line x1="25.2" y1="28.2" x2="28" y2="31" stroke="#E04040" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="20.5" y1="25" x2="23.5" y2="25" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="22" y1="23.5" x2="22" y2="26.5" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <span class="logo-word">견적<span>분석</span></span>
+  <div class="bar-sep"></div>
+  <span class="bar-tag">인테리어 견적 데이터 분석기</span>
 </header>
 
-<!-- PAGE: 입력 화면 -->
-<div class="page-input" id="pageInput">
-
-<!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-eyebrow">3,000건+ 실거래 데이터 기반</div>
     <h1>내 견적, <em>비싼 건지</em><br>알고 싶었잖아요</h1>
     <p class="hero-desc">3,000여 건의 실제 인테리어 견적 데이터를 분석해 구축한 지역별 단가 기준으로,<br>내 견적서가 적정한지 항목별로 즉시 판별해드립니다.</p>
     <div class="hero-cats">
-      <span class="hero-cat">철거/방수</span>
-      <span class="hero-cat">타일/바닥</span>
-      <span class="hero-cat">도배/도장</span>
-      <span class="hero-cat">욕실/주방</span>
-      <span class="hero-cat">가구/붙박이장</span>
-      <span class="hero-cat">전기/조명</span>
-      <span class="hero-cat">확장/설비</span>
-      <span class="hero-cat">부자재</span>
+      <span class="hero-cat">철거/방수</span><span class="hero-cat">타일/바닥</span>
+      <span class="hero-cat">도배/도장</span><span class="hero-cat">욕실/주방</span>
+      <span class="hero-cat">가구/붙박이장</span><span class="hero-cat">전기/조명</span>
+      <span class="hero-cat">창호/설비</span><span class="hero-cat">부자재</span>
     </div>
   </div>
 </section>
 
-<!-- MAIN -->
 <div class="wrap">
-  <!-- STEPS -->
-  <div class="steps" id="stepsBar">
+  <div class="steps">
     <div class="step active" id="step1"><div class="step-num">1</div>파일 업로드</div>
     <div class="step" id="step2"><div class="step-num">2</div>정보 입력</div>
     <div class="step" id="step3"><div class="step-num">3</div>분석 결과</div>
   </div>
 
-  <!-- MODE TOGGLE -->
   <div class="mode-toggle">
     <button class="mode-btn active" id="modePDF" onclick="switchMode('pdf')">
-      📄 견적서 파일 업로드
-      <span>PDF · JPG · PNG 파일로 분석</span>
+      📄 견적서 파일 업로드<span>PDF · JPG · PNG 파일로 분석</span>
     </button>
     <button class="mode-btn" id="modeManual" onclick="switchMode('manual')">
-      ✏️ 직접 입력하기
-      <span>공정별 금액을 직접 입력해서 분석</span>
+      ✏️ 직접 입력하기<span>공정별 금액을 직접 입력해서 분석</span>
     </button>
   </div>
 
-  <!-- UPLOAD CARD -->
+  <!-- PDF/이미지 업로드 -->
   <div class="card" id="uploadCard">
     <div class="card-title">견적서 업로드</div>
     <div class="upload-zone" id="uploadZone">
@@ -1028,26 +374,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
       <div class="upload-sub">PDF · JPG · PNG · WEBP · 클릭하거나 드래그 앤 드롭</div>
     </div>
     <div id="imgPreviewArea"></div>
-    <div id="filePillArea"></div>
   </div>
 
-  <!-- INFO CARD -->
   <div class="card" id="infoCard">
     <div class="card-title">공사 정보 입력</div>
     <div class="form-grid">
-      <div class="form-field">
-        <label>공사 면적</label>
-        <input type="number" id="areaNum" placeholder="예: 84" min="1" max="999">
+      <div class="form-field"><label>공사 면적</label><input type="number" id="areaNum" placeholder="예: 25" min="1" max="999"></div>
+      <div class="form-field"><label>면적 단위</label>
+        <select id="areaUnit"><option value="py">평</option><option value="m2">㎡</option></select>
       </div>
-      <div class="form-field">
-        <label>면적 단위</label>
-        <select id="areaUnit">
-          <option value="py">평</option>
-          <option value="m2">㎡ (제곱미터)</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>공사 지역</label>
+      <div class="form-field"><label>공사 지역</label>
         <select id="region">
           <option value="서울">서울</option>
           <option value="수도권">수도권 (경기/인천)</option>
@@ -1056,16 +392,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
         </select>
       </div>
     </div>
-
     <button class="btn-analyze" id="analyzeBtn" disabled onclick="doAnalyze()">
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
-      </svg>
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
       AI 견적 분석 시작하기
     </button>
   </div>
 
-  <!-- MANUAL INPUT CARD -->
+  <!-- 직접 입력 -->
   <div class="card manual-card" id="manualCard">
     <div class="card-title">공정별 견적 금액 입력</div>
     <div id="manualCats"></div>
@@ -1074,19 +407,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
       <span class="manual-total-amount" id="manualTotal">0원</span>
     </div>
     <div class="form-grid" style="margin-bottom:0;">
-      <div class="form-field">
-        <label>공사 면적</label>
-        <input type="number" id="areaNumM" placeholder="예: 84" min="1" max="999" oninput="syncArea(this)">
+      <div class="form-field"><label>공사 면적</label><input type="number" id="areaNumM" placeholder="예: 25" min="1" max="999"></div>
+      <div class="form-field"><label>면적 단위</label>
+        <select id="areaUnitM"><option value="py">평</option><option value="m2">㎡</option></select>
       </div>
-      <div class="form-field">
-        <label>면적 단위</label>
-        <select id="areaUnitM">
-          <option value="py">평</option>
-          <option value="m2">㎡ (제곱미터)</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>공사 지역</label>
+      <div class="form-field"><label>공사 지역</label>
         <select id="regionM">
           <option value="서울">서울</option>
           <option value="수도권">수도권 (경기/인천)</option>
@@ -1096,393 +421,407 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
       </div>
     </div>
     <button class="btn-analyze" id="analyzeBtnM" onclick="doManualAnalyze()" style="margin-top:1.25rem;">
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/>
-      </svg>
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
       입력 내용으로 분석하기
     </button>
   </div>
 
-  <!-- ERROR BOX -->
-  <div id="errorBox" style="display:none; background:#FCEAEA; border:1px solid #F0B0B0; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1rem; font-size:13px; color:#791F1F; line-height:1.6;"></div>
-
-  <!-- PROGRESS -->
-  <div class="progress-card" id="progressCard">
-    <div class="progress-steps" id="progressSteps"></div>
-  </div>
-
-  <!-- ERROR BOX -->
-  <div id="errorBox" style="display:none; background:#FCEAEA; border:1px solid #F0B0B0; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1rem; font-size:13px; color:#791F1F; line-height:1.6;"></div>
-
+  <div class="error-box" id="errorBox"></div>
+  <div class="progress-card" id="progressCard"><div class="progress-steps" id="progressSteps"></div></div>
 </div><!-- /wrap -->
-</div><!-- /page-input -->
 
-<!-- PAGE: 결과 화면 -->
-<div class="page-result" id="pageResult">
-
-  <!-- 결과 화면 전용 헤더 -->
-  <header class="result-header">
-    <button class="result-back-btn" onclick="doReset()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px;"><path d="M10 3L5 8l5 5"/></svg>
-      새 견적 분석하기
-    </button>
-    <div class="result-header-title" id="resultHeaderTitle">분석 결과</div>
-  </header>
-
-  <div class="result-wrap">
-
-    <!-- VERDICT BANNER -->
-    <div class="verdict-banner" id="verdictBanner">
-      <div class="verdict-icon" id="verdictIcon"></div>
-      <div>
-        <div class="verdict-label" id="verdictLabel"></div>
-        <div class="verdict-title" id="verdictTitle"></div>
-        <div class="verdict-sub" id="verdictSub"></div>
-      </div>
-      <div class="verdict-total">
-        <div class="t-label">총 견적금액</div>
-        <div class="t-amount" id="verdictTotal"></div>
-      </div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">전체 항목</div><div class="stat-val neutral" id="statTotal">—</div></div>
-      <div class="stat-card"><div class="stat-label">💚 저렴</div><div class="stat-val cheap" id="statCheap">0</div></div>
-      <div class="stat-card"><div class="stat-label">🟡 적정</div><div class="stat-val fair" id="statFair">0</div></div>
-      <div class="stat-card"><div class="stat-label">🔴 비쌈</div><div class="stat-val exp" id="statExp">0</div></div>
-    </div>
-
-    <!-- CAT BREAKDOWN — 결제 전 금액 수정 -->
-    <div class="card" id="catEditCard">
-      <div class="card-title">카테고리별 금액 확인 및 수정</div>
-      <div class="edit-notice">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="width:14px;height:14px;flex-shrink:0;"><circle cx="7" cy="7" r="6" stroke="#1F4FD8" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#1F4FD8" stroke-width="1.3" stroke-linecap="round"/></svg>
-        AI가 금액을 잘못 인식했다면 여기서 수정하세요. 수정한 금액 기준으로 상세 분석이 진행됩니다.
-      </div>
-      <div class="cat-edit-list" id="catEditList"></div>
-      <div class="cat-total-row">
-        <span class="cat-total-label">총 견적금액</span>
-        <span class="cat-total-amount" id="catTotalAmt">—</span>
-      </div>
-    </div>
-
-    <!-- ITEMS — 블러 오버레이 구조 -->
-    <div class="paywall-wrap" id="paywallWrap">
-      <div class="paywall-preview">
-        <div class="section-header">
-          <div class="section-title">항목별 상세 분석</div>
-          <div id="paidBadgeArea"></div>
-        </div>
-      </div>
-      <div id="detailContainer" class="detail-container is-locked">
-        <div class="paywall-overlay" id="paywallGate">
-          <div class="paywall-card">
-            <div class="paywall-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="11" width="18" height="13" rx="2.5" fill="#0F0E0C"/>
-                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#0F0E0C" stroke-width="2.2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="paywall-card-title">상세 분석 잠김</div>
-            <div class="paywall-card-sub">시중가 비교, 저렴/비쌈 판정,<br>전문가 협상 팁까지 모두 확인하세요</div>
-            <div class="gate-save-msg" id="gateSaveMsg" style="display:none;">
-              최소 <span id="saveMin">—</span> ~ 최대 <span id="saveMax">—</span><br>절약할 수 있을 것 같아요!
-            </div>
-            <div class="gate-features">
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>항목별 저렴/적정/비쌈 판정</div>
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>시중 평균가 대비 % 비교 바</div>
-              <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 8가지 상세 제공</div>
-            </div>
-            <button class="btn-pay" onclick="startPayment()">
-              상세 분석 열람하기
-              <span class="btn-pay-price">1만원</span>
-            </button>
-            <div class="refund-notice">
-              결제 완료 후 분석 결과 열람 시 환불이 불가합니다.<br>
-              <span onclick="openModal('refund')" style="text-decoration:underline;cursor:pointer;">환불정책 확인</span>
-            </div>
-          </div>
-        </div>
-        <div class="blur-target" style="padding:1.75rem;">
-          <div class="section-header" style="margin-bottom:1rem;">
-            <div class="section-title">항목별 상세 분석</div>
-            <div id="paidBadgeArea2"></div>
-          </div>
-          <div id="itemsListFree"></div>
-        </div>
-        <div style="display:none; padding:1.75rem;" id="paidDetail">
-          <div class="section-header" style="margin-bottom:1rem;">
-            <div class="section-title">항목별 상세 분석</div>
-            <div class="section-filter">
-              <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
-              <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
-              <button class="filter-btn" onclick="filterItems('fair',this)">적정</button>
-              <button class="filter-btn" onclick="filterItems('exp',this)">비쌈</button>
-            </div>
-          </div>
-          <div class="items-list" id="itemsList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADVICE — 결제 후 표시 -->
-    <div class="card" id="adviceCard" style="display:none;">
-      <div class="card-title">전문가 협상 팁 & 절약 가이드</div>
-      <div class="advice-grid" id="adviceGrid"></div>
-    </div>
-
-  </div><!-- /result-wrap -->
-
-</div><!-- /page-result -->
-
-<!-- FOOTER -->
+<!-- 입력 페이지 푸터 -->
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-top">
-      <div class="footer-brand">
+      <div>
         <div class="footer-logo">견적분석</div>
         <div class="footer-desc">3,000건+ 실거래 데이터 기반 인테리어 견적 분석 서비스</div>
       </div>
       <div class="footer-links">
-        <button onclick="openModal('terms')">이용약관</button>
-        <button onclick="openModal('privacy')">개인정보처리방침</button>
-        <button onclick="openModal('refund')">환불정책</button>
+        <button onclick="goLegal('terms')">이용약관</button>
+        <button onclick="goLegal('privacy')">개인정보처리방침</button>
+        <button onclick="goLegal('refund')">환불정책</button>
       </div>
     </div>
     <div class="footer-divider"></div>
     <div class="footer-info">
       <div class="footer-info-row">
-        <span class="footer-company">(주)마인스페이스</span>
-        <span class="footer-sep">|</span>
-        <span>대표자: 엄정현</span>
-        <span class="footer-sep">|</span>
-        <span>사업자등록번호: 643-87-02688</span>
-        <span class="footer-sep">|</span>
+        <span class="footer-company">(주)마인스페이스</span><span class="footer-sep">|</span>
+        <span>대표자: 엄정현</span><span class="footer-sep">|</span>
+        <span>사업자등록번호: 643-87-02688</span><span class="footer-sep">|</span>
         <span>통신판매업: 2022-광주동구-0161호</span>
       </div>
       <div class="footer-info-row">
-        <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span>
-        <span class="footer-sep">|</span>
-        <span>영업시간: 09:00 ~ 18:00</span>
-        <span class="footer-sep">|</span>
-        <span>이메일: <a href="/cdn-cgi/l/email-protection#c7aea9a1a887aaa6aea9b4b7a6a4a2aea9a4e9a4a8aa"><span class="__cf_email__" data-cfemail="b9d0d7dfd6f9d4d8d0d7cac9d8dadcd0d7da97dad6d4">[email&#160;protected]</span></a></span>
+        <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
+        <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
+        <span>이메일: info@mainspaceinc.com</span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
   </div>
 </footer>
+</div><!-- /pageInput -->
 
-<!-- MODAL -->
-<div class="modal-backdrop" id="modalBackdrop" onclick="closeModal()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title" id="modalTitle"></div>
-      <button class="modal-close" onclick="closeModal()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l12 12M14 2L2 14"/></svg>
-      </button>
+
+<!-- ════════════════════════════════════════
+     PAGE 2: 결과 화면
+════════════════════════════════════════ -->
+<div id="pageResult" class="page">
+
+<header class="top-bar">
+  <button class="back-btn" onclick="doReset()">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
+    새 견적 분석
+  </button>
+  <div class="bar-sep"></div>
+  <span class="bar-title" id="resultHeaderTitle">분석 결과</span>
+</header>
+
+<div class="result-wrap">
+
+  <div class="verdict-banner" id="verdictBanner">
+    <div class="verdict-icon" id="verdictIcon"></div>
+    <div>
+      <div class="verdict-label" id="verdictLabel"></div>
+      <div class="verdict-title" id="verdictTitle"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
     </div>
-    <div class="modal-body" id="modalBody"></div>
+    <div class="verdict-total">
+      <div class="t-label">총 견적금액</div>
+      <div class="t-amount" id="verdictTotal"></div>
+    </div>
   </div>
-</div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://js.tosspayments.com/v2/standard"></script>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">전체 항목</div><div class="stat-val neutral" id="statTotal">—</div></div>
+    <div class="stat-card"><div class="stat-label">💚 저렴</div><div class="stat-val cheap" id="statCheap">0</div></div>
+    <div class="stat-card"><div class="stat-label">🟡 적정</div><div class="stat-val fair" id="statFair">0</div></div>
+    <div class="stat-card"><div class="stat-label">🔴 비쌈</div><div class="stat-val exp" id="statExp">0</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">카테고리별 금액 확인 및 수정</div>
+    <div class="edit-notice">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="6" stroke="#1F4FD8" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#1F4FD8" stroke-width="1.3" stroke-linecap="round"/></svg>
+      AI가 금액을 잘못 인식했다면 여기서 수정하세요. 수정한 금액 기준으로 상세 분석이 진행됩니다.
+    </div>
+    <div class="cat-edit-list" id="catEditList"></div>
+    <div class="cat-total-row">
+      <span class="cat-total-label">총 견적금액</span>
+      <span class="cat-total-amount" id="catTotalAmt">—</span>
+    </div>
+  </div>
+
+  <div class="paywall-wrap">
+    <div class="paywall-preview">
+      <div class="section-header" style="margin-bottom:0;">
+        <div class="section-title">항목별 상세 분석</div>
+        <div id="paidBadgeArea"></div>
+      </div>
+    </div>
+    <div id="detailContainer" class="detail-container is-locked">
+      <div class="paywall-overlay" id="paywallGate">
+        <div class="paywall-card">
+          <div class="paywall-card-icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <rect x="2" y="10" width="18" height="12" rx="2.5" fill="#0F0E0C"/>
+              <path d="M6 10V7a5 5 0 0110 0v3" stroke="#0F0E0C" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="paywall-card-title">상세 분석 잠김</div>
+          <div class="paywall-card-sub">시중가 비교, 저렴/비쌈 판정,<br>전문가 협상 팁까지 모두 확인하세요</div>
+          <div class="gate-save-msg" id="gateSaveMsg" style="display:none;">
+            최소 <span id="saveMin">—</span> ~ 최대 <span id="saveMax">—</span><br>절약할 수 있을 것 같아요!
+          </div>
+          <div class="gate-features">
+            <div class="gate-feat"><div class="gate-feat-check">✓</div>항목별 저렴/적정/비쌈 판정</div>
+            <div class="gate-feat"><div class="gate-feat-check">✓</div>시중 평균가 대비 % 비교 바</div>
+            <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 8가지 상세 제공</div>
+          </div>
+          <button class="btn-pay" onclick="startPayment()">
+            상세 분석 열람하기 <span class="btn-pay-price">1만원</span>
+          </button>
+          <div class="refund-notice">
+            결제 완료 후 분석 결과 열람 시 환불이 불가합니다.<br>
+            <span onclick="goLegal('refund')">환불정책 확인</span>
+          </div>
+        </div>
+      </div>
+      <div class="blur-target">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div class="section-title">항목별 상세 분석</div>
+        </div>
+        <div id="itemsListFree"></div>
+      </div>
+      <div style="display:none;padding:1.5rem;" id="paidDetail">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div class="section-title">항목별 상세 분석</div>
+          <div class="section-filter">
+            <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
+            <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
+            <button class="filter-btn" onclick="filterItems('fair',this)">적정</button>
+            <button class="filter-btn" onclick="filterItems('exp',this)">비쌈</button>
+          </div>
+        </div>
+        <div class="items-list" id="itemsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="adviceCard" style="display:none;">
+    <div class="card-title">전문가 협상 팁 & 절약 가이드</div>
+    <div class="advice-grid" id="adviceGrid"></div>
+  </div>
+
+</div><!-- /result-wrap -->
+</div><!-- /pageResult -->
+
+
+<!-- ════════════════════════════════════════
+     PAGE 3: 약관/정책 화면
+════════════════════════════════════════ -->
+<div id="pageLegal" class="page">
+<header class="top-bar">
+  <button class="back-btn" onclick="goBack()">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
+    돌아가기
+  </button>
+  <div class="bar-sep"></div>
+  <span class="bar-title" id="legalTitle">이용약관</span>
+</header>
+<div class="legal-wrap">
+  <div class="legal-body" id="legalBody"></div>
+</div>
+</div><!-- /pageLegal -->
+
+
+<script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let pdfText='', imageBase64='', imageMime='', allItems=[];
-let currentLogId=null;
+/* ── 상태 ── */
+let pdfText='', imageBase64='', imageMime='', allItems=[], lastResult=null, currentLogId=null, editedCats={};
+let prevPage='pageInput';
 
-/* ── 파일 서버 저장 ── */
-async function uploadFileToServer(file, meta){
+/* ── 페이지 전환 ── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goLegal(type){
+  prevPage=document.querySelector('.page.active').id;
+  const c=LEGAL_CONTENT[type];
+  document.getElementById('legalTitle').textContent=c.title;
+  document.getElementById('legalBody').innerHTML=c.body;
+  showPage('pageLegal');
+}
+function goBack(){showPage(prevPage);}
+
+/* ── 약관 콘텐츠 ── */
+const LEGAL_CONTENT={
+  terms:{
+    title:'이용약관',
+    body:`
+<h3>제1조 (목적)</h3>
+<p>이 약관은 (주)마인스페이스(이하 "회사")가 운영하는 견적분석 서비스의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+<h3>제2조 (서비스 내용)</h3>
+<p>회사는 인테리어 견적서 분석 서비스를 제공합니다.</p>
+<ul>
+  <li>무료 제공: 전체 종합 판정, 카테고리별 금액 확인</li>
+  <li>유료 제공 (10,000원): 항목별 상세 판정, 시중가 비교, 전문가 협상 팁</li>
+</ul>
+<h3>제3조 (면책 조항)</h3>
+<p>본 서비스의 분석 결과는 참고용 정보이며 실제 인테리어 공사 견적과 다를 수 있습니다. 회사는 분석 결과를 근거로 발생한 손해에 대해 책임을 지지 않습니다. 지역, 공사 범위, 자재 등급에 따라 실제 시세는 상이할 수 있습니다.</p>
+<h3>제4조 (이용 제한)</h3>
+<p>이용자는 서비스를 상업적 목적으로 재판매하거나, 분석 결과를 무단으로 복제·배포할 수 없습니다.</p>
+<h3>제5조 (준거법)</h3>
+<p>이 약관에 관한 분쟁은 대한민국 법률에 따르며, 관할 법원은 광주지방법원으로 합니다.</p>
+<h3>제6조 (문의)</h3>
+<p>서비스 이용 관련 문의: info@mainspaceinc.com / 평일 09:00 ~ 18:00</p>`
+  },
+  privacy:{
+    title:'개인정보처리방침',
+    body:`
+<h3>1. 수집하는 개인정보 항목</h3>
+<ul>
+  <li><strong>결제 시:</strong> 결제수단 정보 (토스페이먼츠를 통해 처리, 회사 미보관)</li>
+  <li><strong>서비스 이용 시:</strong> 업로드한 견적서 내용 (서비스 개선 목적으로 저장될 수 있으며 개인식별정보는 제거됩니다)</li>
+  <li><strong>자동 수집:</strong> 접속 IP, 브라우저 정보, 방문 시간</li>
+</ul>
+<h3>2. 개인정보 수집 목적</h3>
+<ul>
+  <li>서비스 제공 및 견적 분석</li>
+  <li>결제 처리 및 환불 처리</li>
+  <li>서비스 개선 및 통계 분석</li>
+</ul>
+<h3>3. 개인정보 보유 및 이용 기간</h3>
+<ul>
+  <li>견적서 내용: 분석 완료 후 개인식별정보 제거 후 통계 목적 보관</li>
+  <li>결제 정보: 전자상거래법에 따라 5년 보관</li>
+  <li>접속 로그: 3개월 보관</li>
+</ul>
+<h3>4. 제3자 제공</h3>
+<p>원칙적으로 외부 제공 없음. 결제 처리를 위해 토스페이먼츠에 최소 정보 제공.</p>
+<h3>5. 개인정보 보호 책임자</h3>
+<p>성명: 엄정현 (대표이사)<br>이메일: info@mainspaceinc.com<br>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</p>
+<h3>6. 권리 행사</h3>
+<p>개인정보 열람·정정·삭제·처리 정지 요청: info@mainspaceinc.com</p>`
+  },
+  refund:{
+    title:'환불정책',
+    body:`
+<div class="legal-highlight">✓ 결제 후 분석 결과를 열람하기 전에는 전액 환불 가능합니다.</div>
+<div class="legal-warn">✗ 분석 결과를 한 번이라도 열람한 경우 디지털 콘텐츠 특성상 환불이 불가합니다.</div>
+<h3>환불 가능 조건</h3>
+<ul>
+  <li>결제 완료 후 상세 분석 결과를 열람하지 않은 경우</li>
+  <li>결제 후 7일 이내 요청한 경우</li>
+  <li>기술적 오류로 서비스를 정상적으로 이용하지 못한 경우 (전액 환불)</li>
+</ul>
+<h3>환불 불가 조건</h3>
+<ul>
+  <li>상세 분석 결과를 한 번이라도 열람한 경우</li>
+  <li>결제 후 7일이 경과한 경우</li>
+  <li>단순 변심 (열람 후)</li>
+</ul>
+<h3>환불 신청 방법</h3>
+<ul>
+  <li>이메일: info@mainspaceinc.com</li>
+  <li>영업시간: 평일 09:00 ~ 18:00</li>
+  <li>결제일, 주문번호, 환불 사유를 함께 전달해 주세요.</li>
+</ul>
+<h3>환불 처리 기간</h3>
+<p>환불 요청 확인 후 영업일 기준 3~5일 이내 처리. 카드사 정책에 따라 추가 시간이 소요될 수 있습니다.</p>
+<h3>관련 법령</h3>
+<p>전자상거래 등에서의 소비자보호에 관한 법률 제17조 및 디지털콘텐츠 관련 규정에 따라 운영됩니다.</p>`
+  }
+};
+
+/* ── 파일 업로드 ── */
+async function uploadFileToServer(file,meta){
   try{
     const form=new FormData();
-    form.append('file', file);
-    form.append('meta', JSON.stringify(meta));
-    const resp=await fetch('/api/upload',{ method:'POST', body:form });
+    form.append('file',file);
+    form.append('meta',JSON.stringify(meta));
+    const resp=await fetch('/api/upload',{method:'POST',body:form});
     const data=await resp.json();
     if(data.logId) currentLogId=data.logId;
-  }catch(e){
-    console.warn('파일 저장 실패 (분석은 계속 진행):', e.message);
-  }
+  }catch(e){console.warn('파일 저장 실패:',e.message);}
 }
 
-/* ── MANUAL INPUT DATA ── */
+/* ── 파일 핸들링 ── */
+const zone=document.getElementById('uploadZone');
+const finput=document.getElementById('fileInput');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+finput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+
+function isImage(f){return f.type.startsWith('image/');}
+function isPDF(f){return f.type==='application/pdf';}
+async function handleFile(file){
+  if(isPDF(file))await loadPDF(file);
+  else if(isImage(file))await loadImage(file);
+  else alert('PDF 또는 이미지 파일만 지원합니다.');
+}
+async function loadPDF(file){
+  showPill(file.name,'pdf');
+  try{
+    const ab=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    let txt='';
+    for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const tc=await p.getTextContent();txt+=tc.items.map(s=>s.str).join(' ')+'\n';}
+    pdfText=txt;imageBase64='';
+    uploadFileToServer(file,{region:document.getElementById('region')?.value||'unknown',areaPy:parseFloat(document.getElementById('areaNum')?.value)||0,totalAmount:null});
+    setStep(2);document.getElementById('analyzeBtn').disabled=false;
+  }catch(e){showPill('읽기 실패','pdf');}
+}
+async function loadImage(file){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const dataUrl=e.target.result;
+      imageBase64=dataUrl.split(',')[1];imageMime=file.type;pdfText='';
+      uploadFileToServer(file,{region:document.getElementById('region')?.value||'unknown',areaPy:parseFloat(document.getElementById('areaNum')?.value)||0,totalAmount:null});
+      const prev=document.getElementById('imgPreviewArea');
+      prev.innerHTML=`<img class="img-preview" src="${dataUrl}"><div style="margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span class="file-type-badge img">IMAGE</span>${file.name}</div>`;
+      setStep(2);document.getElementById('analyzeBtn').disabled=false;resolve();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function showPill(name,type){
+  const badge=type==='pdf'?'<span class="file-type-badge pdf">PDF</span>':'<span class="file-type-badge img">IMAGE</span>';
+  document.getElementById('imgPreviewArea').innerHTML=`<div class="file-pill"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="0.5" width="9" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>${name}${badge}<button onclick="clearFile()">×</button></div>`;
+}
+function clearFile(){pdfText='';imageBase64='';imageMime='';finput.value='';document.getElementById('imgPreviewArea').innerHTML='';document.getElementById('analyzeBtn').disabled=true;setStep(1);}
+
+/* ── steps ── */
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('step'+i);
+    el.className='step'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+/* ── mode switch ── */
+function switchMode(mode){
+  const isPDF=mode==='pdf';
+  document.getElementById('modePDF').className='mode-btn'+(isPDF?' active':'');
+  document.getElementById('modeManual').className='mode-btn'+(!isPDF?' active':'');
+  document.getElementById('uploadCard').style.display=isPDF?'':'none';
+  document.getElementById('infoCard').style.display=isPDF?'':'none';
+  document.getElementById('manualCard').className='card manual-card'+(!isPDF?' show':'');
+  if(!isPDF)buildManualCats();
+}
+
+/* ── progress ── */
+const PROG_PDF=['PDF에서 텍스트 추출 완료','공사 항목 파싱 중...','시중 단가 데이터와 비교 중...','카테고리별 분석 완료','최종 리포트 생성 중...'];
+const PROG_IMG=['이미지 업로드 완료','Claude Vision으로 텍스트 인식 중...','공사 항목 파싱 & 단가 비교 중...','카테고리별 분석 완료','최종 리포트 생성 중...'];
+let progTimer=null;
+function startProgress(isImg){
+  const STEPS=isImg?PROG_IMG:PROG_PDF;
+  const card=document.getElementById('progressCard');card.classList.add('show');
+  const el=document.getElementById('progressSteps');
+  el.innerHTML=STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
+  let cur=0;
+  document.getElementById('pd0').className='prog-dot active';document.getElementById('pl0').className='prog-label active';
+  progTimer=setInterval(()=>{
+    if(cur<STEPS.length-1){
+      document.getElementById('pd'+cur).className='prog-dot done';document.getElementById('pl'+cur).className='prog-label done';
+      cur++;document.getElementById('pd'+cur).className='prog-dot active';document.getElementById('pl'+cur).className='prog-label active';
+    }
+  },900);
+}
+function stopProgress(){clearInterval(progTimer);document.getElementById('progressCard').classList.remove('show');}
+function showError(msg){stopProgress();const eb=document.getElementById('errorBox');eb.textContent='⚠ '+msg;eb.style.display='block';}
+
+/* ── MANUAL INPUT ── */
 const MANUAL_CATS=[
-  { id:'demolition', cat:'철거/방수', icon:'🔨',
-    checks:[
-      '전체 철거 (바닥·벽·천장)',
-      '부분 철거 (욕실·주방만)',
-      '바닥 철거만',
-      '방수 공사 (욕실)',
-      '방수 공사 (발코니)',
-      '방수 공사 (다용도실)',
-      '미장 공사',
-      '폐기물 처리 포함'
-    ]
-  },
-  { id:'tile', cat:'타일', icon:'🟫',
-    checks:[
-      '욕실 타일 전체',
-      '욕실 타일 부분',
-      '주방 벽 타일',
-      '현관 바닥 타일',
-      '발코니 바닥 타일',
-      '거실 타일',
-      '외부 테라스 타일',
-      '줄눈 시공',
-      '타일 철거 포함'
-    ]
-  },
-  { id:'floor', cat:'바닥재', icon:'🪵',
-    checks:[
-      '강마루',
-      '강화마루',
-      '원목마루',
-      '헤링본 마루',
-      '장판 (PVC)',
-      '데코타일',
-      '폴리싱 타일',
-      '카펫',
-      '기존 바닥재 철거 포함'
-    ]
-  },
-  { id:'wallpaper', cat:'도배', icon:'🖼️',
-    checks:[
-      '전체 실크 도배',
-      '전체 합지 도배',
-      '실크+합지 혼합',
-      '천장 도배',
-      '벽면 도배만',
-      '포인트 벽지',
-      '방염 도배',
-      '기존 벽지 제거 포함'
-    ]
-  },
-  { id:'paint', cat:'도장 (페인트)', icon:'🎨',
-    checks:[
-      '거실 천장·벽',
-      '주방 천장·벽',
-      '방 전체',
-      '현관',
-      '발코니·다용도실',
-      '문짝 도장',
-      '몰딩 도장',
-      '방화문 도장',
-      '친환경 페인트 적용'
-    ]
-  },
-  { id:'bathroom', cat:'욕실', icon:'🚿',
-    checks:[
-      '욕실 전체 리모델링',
-      '타일 교체',
-      '양변기 교체',
-      '세면대 교체',
-      '욕조 교체',
-      '샤워부스 설치',
-      '수전 교체',
-      '수납장 교체',
-      '환풍기 교체',
-      '욕실 조명 교체',
-      '방수 재시공',
-      '악세사리 전체 교체'
-    ]
-  },
-  { id:'kitchen', cat:'주방', icon:'🍳',
-    checks:[
-      '주방 전체 리모델링',
-      '상부장 교체',
-      '하부장 교체',
-      '도어만 교체',
-      '상판 (인조대리석) 교체',
-      '상판 (세라믹) 교체',
-      '냉장고장',
-      '팬트리장',
-      '후드 교체',
-      '싱크볼 교체',
-      '수전 교체',
-      '빌트인 가전 포함'
-    ]
-  },
-  { id:'furniture', cat:'가구/붙박이장', icon:'🚪',
-    checks:[
-      '안방 붙박이장',
-      '작은방 붙박이장',
-      '드레스룸 전체',
-      '신발장',
-      '거실장·TV장',
-      '책상·서재 가구',
-      '다용도 수납장',
-      '아일랜드 식탁',
-      '현관 벤치수납',
-      '맞춤 제작 가구'
-    ]
-  },
-  { id:'electric', cat:'전기/조명', icon:'💡',
-    checks:[
-      '전기 배선 전체 교체',
-      '전기 부분 보수',
-      '분전반 교체',
-      '콘센트·스위치 전체 교체',
-      '조명 전체 교체 (LED)',
-      '거실 조명',
-      '주방 조명',
-      '욕실 조명',
-      '간접 조명 설치',
-      '스마트홈 시스템',
-      '인터폰 교체',
-      '홈네트워크 공사'
-    ]
-  },
-  { id:'window', cat:'창호/새시', icon:'🪟',
-    checks:[
-      '발코니 새시 전체',
-      '발코니 새시 부분',
-      '단열 이중창',
-      '시스템창호',
-      '방범 창살 설치',
-      '방충망 교체',
-      '현관문 교체',
-      '방화문 교체',
-      '중문 설치'
-    ]
-  },
-  { id:'balcony', cat:'확장/설비', icon:'🏗️',
-    checks:[
-      '발코니 확장',
-      '다용도실 확장',
-      '보일러 교체',
-      '배관 전체 교체',
-      '온수기 교체',
-      '에어컨 배관',
-      '세탁기 배관',
-      '가스 배관 공사',
-      '환기 시스템 설치'
-    ]
-  },
-  { id:'etc', cat:'기타/부자재', icon:'🔩',
-    checks:[
-      '몰딩 시공',
-      '걸레받이 교체',
-      '코킹·실링',
-      '문손잡이·경첩 교체',
-      '커튼박스 설치',
-      '블라인드·버티컬 설치',
-      '천장 단열재',
-      '방음 공사',
-      '청소 (입주청소 포함)'
-    ]
-  },
+  {id:'demolition',cat:'철거/방수',icon:'🔨',checks:['전체 철거 (바닥·벽·천장)','부분 철거 (욕실·주방만)','바닥 철거만','방수 공사 (욕실)','방수 공사 (발코니)','방수 공사 (다용도실)','미장 공사','폐기물 처리 포함']},
+  {id:'tile',cat:'타일',icon:'🟫',checks:['욕실 타일 전체','욕실 타일 부분','주방 벽 타일','현관 바닥 타일','발코니 바닥 타일','거실 타일','외부 테라스 타일','줄눈 시공','타일 철거 포함']},
+  {id:'floor',cat:'바닥재',icon:'🪵',checks:['강마루','강화마루','원목마루','헤링본 마루','장판 (PVC)','데코타일','폴리싱 타일','카펫','기존 바닥재 철거 포함']},
+  {id:'wallpaper',cat:'도배',icon:'🖼️',checks:['전체 실크 도배','전체 합지 도배','실크+합지 혼합','천장 도배','벽면 도배만','포인트 벽지','방염 도배','기존 벽지 제거 포함']},
+  {id:'paint',cat:'도장 (페인트)',icon:'🎨',checks:['거실 천장·벽','주방 천장·벽','방 전체','현관','발코니·다용도실','문짝 도장','몰딩 도장','방화문 도장','친환경 페인트 적용']},
+  {id:'bathroom',cat:'욕실',icon:'🚿',checks:['욕실 전체 리모델링','타일 교체','양변기 교체','세면대 교체','욕조 교체','샤워부스 설치','수전 교체','수납장 교체','환풍기 교체','욕실 조명 교체','방수 재시공','악세사리 전체 교체']},
+  {id:'kitchen',cat:'주방',icon:'🍳',checks:['주방 전체 리모델링','상부장 교체','하부장 교체','도어만 교체','상판 (인조대리석) 교체','상판 (세라믹) 교체','냉장고장','팬트리장','후드 교체','싱크볼 교체','수전 교체','빌트인 가전 포함']},
+  {id:'furniture',cat:'가구/붙박이장',icon:'🚪',checks:['안방 붙박이장','작은방 붙박이장','드레스룸 전체','신발장','거실장·TV장','책상·서재 가구','다용도 수납장','아일랜드 식탁','현관 벤치수납','맞춤 제작 가구']},
+  {id:'electric',cat:'전기/조명',icon:'💡',checks:['전기 배선 전체 교체','전기 부분 보수','분전반 교체','콘센트·스위치 전체 교체','조명 전체 교체 (LED)','거실 조명','주방 조명','욕실 조명','간접 조명 설치','스마트홈 시스템','인터폰 교체','홈네트워크 공사']},
+  {id:'window',cat:'창호/새시',icon:'🪟',checks:['발코니 새시 전체','발코니 새시 부분','단열 이중창','시스템창호','방범 창살 설치','방충망 교체','현관문 교체','방화문 교체','중문 설치']},
+  {id:'balcony',cat:'확장/설비',icon:'🏗️',checks:['발코니 확장','다용도실 확장','보일러 교체','배관 전체 교체','온수기 교체','에어컨 배관','세탁기 배관','가스 배관 공사','환기 시스템 설치']},
+  {id:'etc',cat:'기타/부자재',icon:'🔩',checks:['몰딩 시공','걸레받이 교체','코킹·실링','문손잡이·경첩 교체','커튼박스 설치','블라인드·버티컬 설치','천장 단열재','방음 공사','청소 (입주청소 포함)']},
 ];
 
 function buildManualCats(){
   const wrap=document.getElementById('manualCats');
   wrap.innerHTML=MANUAL_CATS.map((c,ci)=>`
-    <div class="cat-section" id="catsec${ci}">
+    <div class="cat-section">
       <div class="cat-section-header" onclick="toggleCat(${ci})">
         <div class="cat-section-title">
-          <span style="font-size:16px;">${c.icon}</span>
+          <span style="font-size:15px;">${c.icon}</span>
           <span>${c.cat}</span>
           <span class="cat-filled-badge" id="badge${ci}" style="display:none;"></span>
         </div>
@@ -1493,7 +832,7 @@ function buildManualCats(){
           <label class="cost-label">총 비용</label>
           <div class="cost-input-wrap">
             <input class="manual-item-input" type="number" min="0" placeholder="예: 150"
-              id="inp_${ci}" oninput="updateManualTotal(); updateBadge(${ci})">
+              id="inp_${ci}" oninput="updateManualTotal();updateBadge(${ci})">
             <span class="cost-unit">만원</span>
           </div>
         </div>
@@ -1501,7 +840,7 @@ function buildManualCats(){
         <div class="checks-grid">
           ${c.checks.map((chk,ki)=>`
             <label class="check-item">
-              <input type="checkbox" id="chk_${ci}_${ki}" onchange="updateBadge(${ci})">
+              <input type="checkbox" id="chk_${ci}_${ki}">
               <span class="check-box"></span>
               <span class="check-txt">${chk}</span>
             </label>`).join('')}
@@ -1509,293 +848,28 @@ function buildManualCats(){
       </div>
     </div>`).join('');
 }
-
+function toggleCat(ci){
+  const w=document.getElementById('catWrap'+ci),t=document.getElementById('toggle'+ci);
+  const open=w.classList.toggle('open');t.classList.toggle('open',open);
+}
 function updateBadge(ci){
   const amt=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
-  const badge=document.getElementById(`badge${ci}`);
-  if(amt>0){
-    badge.style.display='inline-block';
-    badge.textContent=Number(amt).toLocaleString('ko-KR')+'만원';
-  } else {
-    badge.style.display='none';
-  }
+  const b=document.getElementById(`badge${ci}`);
+  b.style.display=amt>0?'inline-block':'none';
+  if(amt>0)b.textContent=Number(amt).toLocaleString('ko-KR')+'만원';
 }
-
-function toggleCat(ci){
-  const wrap=document.getElementById('catWrap'+ci);
-  const tog=document.getElementById('toggle'+ci);
-  const open=wrap.classList.toggle('open');
-  tog.classList.toggle('open', open);
-}
-
 function updateManualTotal(){
-  let total=0;
-  MANUAL_CATS.forEach((_,ci)=>{
-    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
-    total+=v*10000;
-  });
-  document.getElementById('manualTotal').textContent=fmtWon(total);
+  let t=0;MANUAL_CATS.forEach((_,ci)=>{t+=(parseFloat(document.getElementById(`inp_${ci}`)?.value)||0)*10000;});
+  document.getElementById('manualTotal').textContent=fmtWon(t);
 }
-
 function fmtWon(n){
   if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
   if(n>=10000)return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
   return n.toLocaleString('ko-KR')+'원';
 }
 
-function formatInput(el){
-  /* allow raw numbers */
-}
-
-function switchMode(mode){
-  const isPDF=mode==='pdf';
-  document.getElementById('modePDF').classList.toggle('active', isPDF);
-  document.getElementById('modeManual').classList.toggle('active', !isPDF);
-  document.getElementById('uploadCard').style.display=isPDF?'':'none';
-  document.getElementById('infoCard').style.display=isPDF?'':'none';
-  document.getElementById('manualCard').classList.toggle('show', !isPDF);
-  if(!isPDF) buildManualCats();
-}
-
-function syncArea(el){
-  /* keep pdf and manual area in sync */
-  document.getElementById('areaNum').value=el.value;
-}
-
-async function doManualAnalyze(){
-  const area=parseFloat(document.getElementById('areaNumM').value)||0;
-  const unit=document.getElementById('areaUnitM').value;
-  const region=document.getElementById('regionM').value;
-  const py=unit==='py'?area:area/3.305785;
-  const m2=unit==='m2'?area:area*3.305785;
-
-  /* collect filled items */
-  const filledItems=[];
-  let totalAmount=0;
-  MANUAL_CATS.forEach((c,ci)=>{
-    const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
-    if(v>0){
-      const checkedItems=c.checks.filter((_,ki)=>
-        document.getElementById(`chk_${ci}_${ki}`)?.checked
-      );
-      filledItems.push({
-        name: c.cat,
-        category: c.cat,
-        amount: v*10000,
-        unit: '식',
-        subItems: checkedItems
-      });
-      totalAmount+=v*10000;
-    }
-  });
-
-  if(filledItems.length===0){ alert('최소 1개 항목의 금액을 입력해주세요.'); return; }
-
-  document.getElementById('analyzeBtnM').disabled=true;
-  
-  startProgress(false);
-
-  const SYS=`You are a Korean interior renovation cost analyst. Analyze each item and return ONLY valid JSON. No markdown, no explanation. Raw JSON only.
-verdict: "저렴"(20%+ below avg), "적정"(within ±20%), "비쌈"(20%+ above avg)
-reason: max 10 Korean chars, no special chars
-Region: ${region}, Area: ${Math.round(py)}평(${Math.round(m2)}㎡)
-Market rates: 철거평당15-25만,방수m2당8-15만,타일m2당6-14만,마루m2당4-12만,도배평당2.5-5만,욕실100-250만,싱크대200-600만,붙박이장90cm당60-150만,전기평당10-20만,조명개당5-30만,확장m2당25-50만
-JSON:{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평","items":[{"name":"항목명","category":"카테고리","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"이유","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4"]}`;
-
-  const itemsText=filledItems.map(i=>{
-    const sub=i.subItems&&i.subItems.length>0?` [포함: ${i.subItems.join(', ')}]`:'';
-    return `${i.name}${sub}: ${(i.amount/10000).toLocaleString()}만원`;
-  }).join('\n');
-  const USR=`다음 항목들을 분석해주세요. 총액: ${(totalAmount/10000).toLocaleString()}만원\n${itemsText}`;
-
-  try{
-    const resp=await fetch('/api/analyze',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:6000,
-        system:SYS,
-        messages:[{role:'user',content:USR}]
-      })
-    });
-    const data=await resp.json();
-    const raw=data.content.map(b=>b.text||'').join('');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const jsonMatch=clean.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('JSON 응답을 찾을 수 없습니다');
-    let result;
-    try{ result=JSON.parse(jsonMatch[0]); }
-    catch(e){
-      const fixed=jsonMatch[0].replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
-      result=JSON.parse(fixed);
-    }
-    stopProgress();
-    render(result);
-    setStep(3);
-  }catch(err){
-    stopProgress();
-    alert('분석 중 오류가 발생했습니다.\n'+err.message);
-  }finally{
-    document.getElementById('analyzeBtnM').disabled=false;
-  }
-}
-const zone=document.getElementById('uploadZone');
-const finput=document.getElementById('fileInput');
-
-zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
-zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
-zone.addEventListener('drop',e=>{
-  e.preventDefault();zone.classList.remove('over');
-  const f=e.dataTransfer.files[0];
-  if(f) handleFile(f);
-});
-finput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
-
-function isImage(file){ return file.type.startsWith('image/'); }
-function isPDF(file){ return file.type==='application/pdf'; }
-
-async function handleFile(file){
-  if(isPDF(file)) await loadPDF(file);
-  else if(isImage(file)) await loadImage(file);
-  else{ alert('PDF 또는 이미지(JPG/PNG/WEBP) 파일만 지원합니다.'); return; }
-}
-
-async function loadPDF(file){
-  showPill(file.name,'pdf');
-  try{
-    const ab=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    let txt='';
-    for(let i=1;i<=pdf.numPages;i++){
-      const p=await pdf.getPage(i);
-      const tc=await p.getTextContent();
-      txt+=tc.items.map(s=>s.str).join(' ')+'\n';
-    }
-    pdfText=txt; imageBase64='';
-    uploadFileToServer(file,{
-      region: document.getElementById('region')?.value||'unknown',
-      areaPy: parseFloat(document.getElementById('areaNum')?.value)||0,
-      totalAmount: null,
-    });
-    setStep(2);
-    document.getElementById('analyzeBtn').disabled=false;
-  }catch(e){
-    showPill('읽기 실패 — 다른 파일을 시도해주세요','pdf');
-  }
-}
-
-async function loadImage(file){
-  return new Promise(resolve=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const dataUrl=e.target.result;
-      const b64=dataUrl.split(',')[1];
-      imageBase64=b64;
-      imageMime=file.type;
-      pdfText='';
-      uploadFileToServer(file,{
-        region: document.getElementById('region')?.value||'unknown',
-        areaPy: parseFloat(document.getElementById('areaNum')?.value)||0,
-        totalAmount: null,
-      });
-      showImagePreview(dataUrl, file.name);
-      setStep(2);
-      document.getElementById('analyzeBtn').disabled=false;
-      resolve();
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function showPill(name,type){
-  const badge=type==='pdf'
-    ?'<span class="file-type-badge pdf">PDF</span>'
-    :'<span class="file-type-badge img">IMAGE</span>';
-  document.getElementById('imgPreviewArea').innerHTML=`
-    <div class="file-pill">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="0.5" width="9" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 4h5M4.5 7h5M4.5 10h3" stroke="currentColor" stroke-width="1.2"/></svg>
-      ${name}${badge}
-      <button onclick="clearFile()">×</button>
-    </div>`;
-}
-
-function showImagePreview(dataUrl, name){
-  document.getElementById('imgPreviewArea').innerHTML=`
-    <div style="margin-top:1rem;">
-      <div class="img-preview-wrap">
-        <img class="img-preview" src="${dataUrl}" alt="견적서 미리보기">
-        <button class="img-preview-remove" onclick="clearFile()">×</button>
-      </div>
-      <div style="margin-top:8px; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">
-        <span class="file-type-badge img">IMAGE</span>
-        ${name} · Claude Vision으로 텍스트 인식
-      </div>
-    </div>`;
-}
-
-function clearFile(){
-  pdfText=''; imageBase64=''; imageMime='';
-  finput.value='';
-  document.getElementById('imgPreviewArea').innerHTML='';
-  document.getElementById('analyzeBtn').disabled=true;
-  setStep(1);
-}
-
-/* ── STEPS ── */
-function setStep(n){
-  [1,2,3].forEach(i=>{
-    const el=document.getElementById('step'+i);
-    el.className='step'+(i<n?' done':i===n?' active':'');
-  });
-}
-
-/* ── PROGRESS ── */
-const PROG_STEPS_PDF=[
-  'PDF에서 텍스트 추출 완료',
-  '공사 항목 파싱 중...',
-  '시중 단가 데이터와 비교 중...',
-  '카테고리별 분석 완료',
-  '최종 리포트 생성 중...'
-];
-const PROG_STEPS_IMG=[
-  '이미지 업로드 완료',
-  'Claude Vision으로 텍스트 인식 중...',
-  '공사 항목 파싱 & 단가 비교 중...',
-  '카테고리별 분석 완료',
-  '최종 리포트 생성 중...'
-];
-let progTimer=null;
-function startProgress(isImg){
-  const STEPS=isImg?PROG_STEPS_IMG:PROG_STEPS_PDF;
-  const card=document.getElementById('progressCard');
-  card.classList.add('show');
-  const steps=document.getElementById('progressSteps');
-  steps.innerHTML=STEPS.map((s,i)=>`
-    <div class="prog-item" id="pi${i}">
-      <div class="prog-dot" id="pd${i}"></div>
-      <span class="prog-label" id="pl${i}">${s}</span>
-    </div>`).join('');
-  let cur=0;
-  document.getElementById('pd0').className='prog-dot active';
-  document.getElementById('pl0').className='prog-label active';
-  progTimer=setInterval(()=>{
-    if(cur<STEPS.length-1){
-      document.getElementById('pd'+cur).className='prog-dot done';
-      document.getElementById('pl'+cur).className='prog-label done';
-      cur++;
-      document.getElementById('pd'+cur).className='prog-dot active';
-      document.getElementById('pl'+cur).className='prog-label active';
-    }
-  },900);
-}
-function stopProgress(){
-  clearInterval(progTimer);
-  document.getElementById('progressCard').classList.remove('show');
-}
-
-/* ── SHARED API CALL ── */
-async function callAPI(userContent, region, py, m2){
+/* ── API 호출 ── */
+async function callAPI(userContent,region,py,m2){
   const SYS=`You are a senior Korean interior renovation consultant with 15+ years experience.
 Return ONLY a raw JSON object. No markdown, no explanation, nothing else.
 All strings must be in Korean. Use double quotes only. No special chars inside strings except spaces.
@@ -1806,55 +880,33 @@ JSON format:
 CRITICAL - For advices array, write exactly 8 tips. Each tip MUST follow this exact structure:
 [공정명] ${region} 기준 평균 OO만원~OO만원인데 현재 견적은 OO만원입니다. [이 공정에서 비용이 높아지는 주요 원인 2가지를 구체적으로 설명]. [절약하거나 협상할 수 있는 구체적 행동 방법 2가지]. 업체에 [구체적으로 물어봐야 할 질문]을 확인해보세요.
 
-Examples of good tips:
-- "철거 공사: ${region} 25평 기준 평균 250만원~350만원인데 현재 견적은 450만원입니다. 철거비는 인건비(1인당 하루 25만원)와 폐기물 처리비(1톤당 15만원)로 구성되는데 폐기물 처리 톤수를 실제보다 30% 과다 산정하는 경우가 많습니다. 폐기물 발생량 산출 근거를 서면으로 요청하고 철거 전 실측 후 재산정을 요구하세요. 투입 인원수와 작업일수를 견적서에 명시해달라고 요청하면 과다 청구를 방지할 수 있습니다."
-- "타일 공사: ${region} 욕실 1개 기준 평균 80만원~120만원인데 현재 견적은 185만원입니다. 타일 단가(m2당 2만원~8만원)와 시공 인건비(m2당 4만원~6만원)가 핵심인데 수입 타일이나 대형 타일은 시공 난이도가 높아 인건비가 20~40% 추가됩니다. 국산 600각 타일로 변경 시 자재비 30% 절감이 가능하고 욕실 크기를 실측해 정확한 m2 수량을 받아보세요. 견적서에 타일 브랜드명과 규격 그리고 m2당 단가가 명시되어 있는지 확인하세요."
-
 Rules:
 - Mention ACTUAL average prices for ${region} with specific ranges
-- Reference the ACTUAL amount from the estimate being analyzed  
+- Reference the ACTUAL amount from the estimate being analyzed
 - Explain WHY the cost is high (labor count, material grade, quantity inflation etc)
-- Give 2 specific negotiation actions
-- End with a specific question to ask the contractor
-- Each tip must be 100-200 Korean characters
-- Focus on 비쌈 items first, then general tips for remaining slots
-- Do NOT use generic tips like just saying compare 3 companies
+- Give 2 specific negotiation actions. End with a specific question to ask the contractor
+- Each tip must be 100-200 Korean characters. Focus on 비쌈 items first
+- Do NOT use generic tips
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡)
 Market refs(${region}): 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실1개100-250만 싱크대200-600만 붙박이장90cm폭당60-150만 전기평당10-20만 도장m2당2-5만
 Category options: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 기타`;
 
   const resp=await fetch('/api/analyze',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:6000,
-      system:SYS,
-      messages:[{role:'user',content:userContent}],
-      _logId: currentLogId||undefined,
-    })
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:6000,system:SYS,messages:[{role:'user',content:userContent}],_logId:currentLogId||undefined})
   });
   if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
   const data=await resp.json();
-  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
   const raw=data.content.map(b=>b.text||'').join('');
   const match=raw.match(/\{[\s\S]*\}/);
-  if(!match) throw new Error(`JSON 없음. AI응답: ${raw.slice(0,100)}`);
-  let s=match[0]
-    .replace(/,\s*([}\]])/g,'$1')
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'');
+  if(!match)throw new Error(`JSON 없음. AI응답: ${raw.slice(0,100)}`);
+  let s=match[0].replace(/,\s*([}\]])/g,'$1').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'');
   return JSON.parse(s);
 }
 
-function showError(msg){
-  stopProgress();
-  const eb=document.getElementById('errorBox');
-  if(eb){eb.textContent='⚠ '+msg;eb.style.display='block';}
-  else{alert(msg);}
-}
-
-/* ── ANALYZE (PDF / IMAGE) ── */
+/* ── 분석 실행 (PDF/이미지) ── */
 async function doAnalyze(){
   const area=parseFloat(document.getElementById('areaNum').value)||0;
   const unit=document.getElementById('areaUnit').value;
@@ -1862,46 +914,26 @@ async function doAnalyze(){
   const py=unit==='py'?area:area/3.305785;
   const m2=unit==='m2'?area:area*3.305785;
   const isImg=!!imageBase64;
-
   document.getElementById('analyzeBtn').disabled=true;
-  
-  const eb=document.getElementById('errorBox');
-  if(eb) eb.style.display='none';
-  setStep(2);
-  startProgress(isImg);
-
+  document.getElementById('errorBox').style.display='none';
+  setStep(2);startProgress(isImg);
   let userContent;
-  if(isImg){
-    userContent=[
-      {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
-      {type:'text',text:`견적서 이미지. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 모든 항목 금액 읽고 JSON 분석`}
-    ];
-  } else {
-    userContent=`견적서 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region}\n${pdfText.slice(0,4000)}`;
-  }
-
+  if(isImg){userContent=[{type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},{type:'text',text:`견적서 이미지. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 모든 항목 금액 읽고 JSON 분석`}];}
+  else{userContent=`견적서 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region}\n${pdfText.slice(0,4000)}`;}
   try{
     const result=await callAPI(userContent,region,py,m2);
-    stopProgress();
-    render(result);
-    setStep(3);
-  }catch(err){
-    console.error(err);
-    showError('분석 오류: '+err.message);
-    document.getElementById('analyzeBtn').disabled=false;
-  }
+    stopProgress();render(result);setStep(3);
+  }catch(err){showError('분석 오류: '+err.message);document.getElementById('analyzeBtn').disabled=false;}
 }
 
-/* ── ANALYZE (MANUAL) ── */
+/* ── 분석 실행 (직접입력) ── */
 async function doManualAnalyze(){
   const area=parseFloat(document.getElementById('areaNumM').value)||0;
   const unit=document.getElementById('areaUnitM').value;
   const region=document.getElementById('regionM').value;
   const py=unit==='py'?area:area/3.305785;
   const m2=unit==='m2'?area:area*3.305785;
-
-  const filledItems=[];
-  let totalAmount=0;
+  const filledItems=[];let totalAmount=0;
   MANUAL_CATS.forEach((c,ci)=>{
     const v=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
     if(v>0){
@@ -1910,37 +942,21 @@ async function doManualAnalyze(){
       totalAmount+=v*10000;
     }
   });
-
   if(!filledItems.length){alert('최소 1개 항목의 금액을 입력해주세요.');return;}
   if(!area){alert('공사 면적을 입력해주세요.');return;}
-
   document.getElementById('analyzeBtnM').disabled=true;
-  
-  const eb=document.getElementById('errorBox');
-  if(eb) eb.style.display='none';
+  document.getElementById('errorBox').style.display='none';
   startProgress(false);
-
-  const lines=filledItems.map(i=>{
-    const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';
-    return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;
-  }).join('\n');
+  const lines=filledItems.map(i=>{const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;}).join('\n');
   const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 총액:${Math.round(totalAmount/10000)}만원\n${lines}`;
-
   try{
     const result=await callAPI(userContent,region,py,m2);
-    stopProgress();
-    render(result);
-    setStep(3);
-  }catch(err){
-    console.error(err);
-    showError('분석 오류: '+err.message);
-  }finally{
-    document.getElementById('analyzeBtnM').disabled=false;
-  }
+    stopProgress();render(result);setStep(3);
+  }catch(err){showError('분석 오류: '+err.message);}
+  finally{document.getElementById('analyzeBtnM').disabled=false;}
 }
-/* ── EDITABLE CATS ── */
-let editedCats={};
 
+/* ── 카테고리 금액 수정 ── */
 function updateCatEdit(input){
   const cat=decodeURIComponent(input.dataset.cat);
   const val=(parseFloat(input.value)||0)*10000;
@@ -1950,7 +966,7 @@ function updateCatEdit(input){
   document.getElementById('verdictTotal').textContent=fmt(newTotal);
 }
 
-/* ── RENDER ── */
+/* ── 렌더링 ── */
 function fmt(n){
   if(!n||isNaN(n))return'—';
   if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
@@ -1958,17 +974,14 @@ function fmt(n){
   return n.toLocaleString('ko-KR')+'원';
 }
 
-let lastResult=null;
-
 function render(r){
-  allItems=r.items||[];
-  lastResult=r;
+  allItems=r.items||[];lastResult=r;
   sessionStorage.setItem('analysisResult',JSON.stringify(r));
 
   const vmap={
     '저렴':{cls:'cheap',icon:'💚',label:'전체 종합: 저렴',title:'시중 평균보다 저렴한 견적입니다'},
-    '적정':{cls:'fair', icon:'🟡',label:'전체 종합: 적정',title:'시중 평균 수준의 견적입니다'},
-    '비쌈':{cls:'exp',  icon:'🔴',label:'전체 종합: 비쌈',title:'시중 평균보다 비싼 견적입니다'},
+    '적정':{cls:'fair',icon:'🟡',label:'전체 종합: 적정',title:'시중 평균 수준의 견적입니다'},
+    '비쌈':{cls:'exp',icon:'🔴',label:'전체 종합: 비쌈',title:'시중 평균보다 비싼 견적입니다'},
   };
   const v=vmap[r.overallVerdict]||vmap['적정'];
   document.getElementById('verdictBanner').className='verdict-banner '+v.cls;
@@ -1977,39 +990,34 @@ function render(r){
   document.getElementById('verdictTitle').textContent=v.title;
   document.getElementById('verdictSub').textContent=r.overallComment||'';
   document.getElementById('verdictTotal').textContent=fmt(r.totalAmount);
+  document.getElementById('resultHeaderTitle').textContent=
+    r.overallVerdict==='비쌈'?'⚠️ 비싼 견적입니다':
+    r.overallVerdict==='저렴'?'✅ 저렴한 견적입니다':'✅ 적정한 견적입니다';
 
   const cheap=allItems.filter(i=>i.verdict==='저렴').length;
-  const fair =allItems.filter(i=>i.verdict==='적정').length;
-  const exp  =allItems.filter(i=>i.verdict==='비쌈').length;
+  const fair=allItems.filter(i=>i.verdict==='적정').length;
+  const exp=allItems.filter(i=>i.verdict==='비쌈').length;
   document.getElementById('statTotal').textContent=allItems.length+'개';
   document.getElementById('statCheap').textContent=cheap+'개';
   document.getElementById('statFair').textContent=fair+'개';
   document.getElementById('statExp').textContent=exp+'개';
 
   const cats={};
-  allItems.forEach(item=>{ const c=item.category||'기타'; cats[c]=(cats[c]||0)+item.amount; });
-
-  /* 수정 가능한 테이블형 카테고리 리스트 */
+  allItems.forEach(item=>{const c=item.category||'기타';cats[c]=(cats[c]||0)+item.amount;});
   editedCats={...cats};
   document.getElementById('catEditList').innerHTML=
     Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,amt])=>`
       <div class="cat-edit-row">
         <div class="cat-edit-name">${c}</div>
         <div class="cat-edit-input-wrap">
-          <input class="cat-edit-input" type="number" min="0"
-            value="${Math.round(amt/10000)}"
-            data-cat="${encodeURIComponent(c)}"
-            oninput="updateCatEdit(this)">
+          <input class="cat-edit-input" type="number" min="0" value="${Math.round(amt/10000)}" data-cat="${encodeURIComponent(c)}" oninput="updateCatEdit(this)">
           <span class="cat-edit-unit">만원</span>
         </div>
       </div>`).join('');
+  document.getElementById('catTotalAmt').textContent=fmt(r.totalAmount||0);
 
-  const grandTotal=Object.values(cats).reduce((a,b)=>a+b,0);
-  document.getElementById('catTotalAmt').textContent=fmt(grandTotal);
-
-  /* 무료 항목 목록 — blur-target 안에 렌더링 */
   const clsMap={저렴:'cheap',적정:'fair',비쌈:'exp'};
-  document.getElementById('itemsListFree').innerHTML=allItems.map((item)=>{
+  document.getElementById('itemsListFree').innerHTML=allItems.map(item=>{
     const c=clsMap[item.verdict]||'fair';
     const ratio=Math.min(item.ratioVsAvg||100,200);
     const barPct=Math.min(ratio/2,100);
@@ -2026,80 +1034,50 @@ function render(r){
     </div>`;
   }).join('');
 
-  /* 절약 가능 금액 계산 */
-  let saveMin=0, saveMax=0;
+  let saveMin=0,saveMax=0;
   allItems.forEach(item=>{
     if(item.verdict==='비쌈'&&item.marketMax&&item.amount>item.marketMax){
-      saveMin+=Math.max(0, item.amount-item.marketMax);
-      saveMax+=Math.max(0, item.amount-(item.marketMin||0));
+      saveMin+=Math.max(0,item.amount-item.marketMax);
+      saveMax+=Math.max(0,item.amount-(item.marketMin||0));
     }
   });
-  const gateSaveMsg=document.getElementById('gateSaveMsg');
-  if(gateSaveMsg){
-    if(saveMin>0){
-      document.getElementById('saveMin').textContent=fmt(saveMin);
-      document.getElementById('saveMax').textContent=fmt(saveMax);
-      gateSaveMsg.style.display='block';
-    } else {
-      gateSaveMsg.style.display='none';
-    }
+  const gsm=document.getElementById('gateSaveMsg');
+  if(gsm){
+    if(saveMin>0){document.getElementById('saveMin').textContent=fmt(saveMin);document.getElementById('saveMax').textContent=fmt(saveMax);gsm.style.display='block';}
+    else{gsm.style.display='none';}
   }
 
-  /* is-locked 활성화 (페이월 오버레이 표시) */
   const dc=document.getElementById('detailContainer');
-  if(dc){ dc.classList.add('is-locked'); }
+  dc.classList.add('is-locked');
   document.getElementById('paidDetail').style.display='none';
   document.getElementById('adviceCard').style.display='none';
   document.getElementById('paidBadgeArea').innerHTML='';
 
-  /* 페이지 전환 */
-  document.getElementById('pageInput').classList.add('hidden');
-  document.getElementById('pageResult').classList.add('active');
-  document.getElementById('resultHeaderTitle').textContent=
-    r.overallVerdict==='비쌈'?'⚠️ 비싼 견적입니다':
-    r.overallVerdict==='저렴'?'✅ 저렴한 견적입니다':'✅ 적정한 견적입니다';
-  window.scrollTo({top:0,behavior:'smooth'});
+  showPage('pageResult');
 }
 
 function renderPaidDetail(){
   const dc=document.getElementById('detailContainer');
-  if(dc){ dc.classList.remove('is-locked'); }
-
-  /* blur-target 숨기고 paidDetail 표시 */
-  const bt=dc&&dc.querySelector('.blur-target');
-  if(bt) bt.style.display='none';
+  dc.classList.remove('is-locked');
+  const bt=dc.querySelector('.blur-target');if(bt)bt.style.display='none';
   document.getElementById('paidDetail').style.display='block';
-  document.getElementById('paidBadgeArea').innerHTML=
-    '<div class="paid-badge">✓ 상세 분석 열람 완료</div>';
-
+  document.getElementById('paidBadgeArea').innerHTML='<div class="paid-badge">✓ 상세 분석 열람 완료</div>';
   renderItems('all');
-
-  /* 협상 팁 — 카테고리별 아이콘과 함께 표시 */
   const advs=(lastResult&&lastResult.advices)||[];
   const tipMeta=[
-    {icon:'🔴', label:'비쌈 항목 협상', highlight:true},
-    {icon:'🔴', label:'비쌈 항목 협상', highlight:true},
-    {icon:'🪵', label:'자재 절약 팁', highlight:false},
-    {icon:'📦', label:'묶음 할인 전략', highlight:false},
-    {icon:'📅', label:'시기 할인 팁', highlight:false},
-    {icon:'🔍', label:'업체 선정 방법', highlight:false},
-    {icon:'📋', label:'계약 조건 협상', highlight:false},
-    {icon:'⚠️', label:'추가비용 방지', highlight:false},
+    {icon:'🔴',label:'비쌈 항목 협상',h:true},{icon:'🔴',label:'비쌈 항목 협상',h:true},
+    {icon:'🪵',label:'자재 절약 팁',h:false},{icon:'📦',label:'묶음 할인 전략',h:false},
+    {icon:'📅',label:'시기 할인 팁',h:false},{icon:'🔍',label:'업체 선정 방법',h:false},
+    {icon:'📋',label:'계약 조건 협상',h:false},{icon:'⚠️',label:'추가비용 방지',h:false},
   ];
   document.getElementById('adviceGrid').innerHTML=advs.map((a,i)=>{
-    const meta=tipMeta[i]||{icon:'💡',label:'절약 팁',highlight:false};
-    return `<div class="advice-item${meta.highlight?' highlight':''}">
-      <div class="advice-icon-wrap">
-        <span style="font-size:15px;">${meta.icon}</span>
-      </div>
-      <div class="advice-content">
-        <div class="advice-tag">${meta.label}</div>
-        <div class="advice-text">${a}</div>
-      </div>
+    const m=tipMeta[i]||{icon:'💡',label:'절약 팁',h:false};
+    return `<div class="advice-item${m.h?' highlight':''}">
+      <div class="advice-icon-wrap"><span style="font-size:14px;">${m.icon}</span></div>
+      <div class="advice-content"><div class="advice-tag">${m.label}</div><div class="advice-text">${a}</div></div>
     </div>`;
   }).join('');
   document.getElementById('adviceCard').style.display='block';
-  setTimeout(()=>document.getElementById('adviceCard').scrollIntoView({behavior:'smooth',block:'start'}),200);
 }
 
 function renderItems(filter){
@@ -2113,13 +1091,12 @@ function renderItems(filter){
   });
   document.getElementById('itemsList').innerHTML=items.map((item,idx)=>{
     const c=cls[item.verdict]||'fair';
-    const ratio=Math.min(item.ratioVsAvg||100,200);
-    const barPct=Math.min(ratio/2,100);
-    return `<div class="item-card ${c}" style="animation-delay:${idx*40}ms">
+    const barPct=Math.min((item.ratioVsAvg||100)/2,100);
+    return `<div class="item-card ${c}" style="animation-delay:${idx*35}ms">
       <div class="item-verdict-dot ${c}"></div>
       <div class="item-name">${item.name}<span class="item-cat-tag">${item.category||''}</span></div>
       <div class="item-amount">${fmt(item.amount)}</div>
-      <div class="item-detail">${item.qty}${item.unit} · ${item.reason}</div>
+      <div class="item-detail">${item.qty||1}${item.unit||'식'} · ${item.reason||''}</div>
       <div class="item-pill ${c}">${label[item.verdict]||'적정'}</div>
       <div class="item-bar-row">
         <div class="item-bar-track"><div class="item-bar-fill ${c}" style="width:${barPct}%"></div></div>
@@ -2128,196 +1105,88 @@ function renderItems(filter){
     </div>`;
   }).join('');
 }
-
 function filterItems(filter,btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderItems(filter);
+  btn.classList.add('active');renderItems(filter);
 }
 
-/* ── TOSS PAYMENTS (v2) ── */
-const TOSS_CLIENT_KEY='test_ck_OyL0qZ4G1VO0lBb11NMroWb2MQYg';
-
+/* ── 결제 ── */
+const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy';
 async function startPayment(){
-  if(!lastResult){ alert('분석 결과가 없습니다.'); return; }
-  if(typeof TossPayments==='undefined'){
-    alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');
-    return;
-  }
-
-  /* 수정된 금액이 있으면 결과에 반영해서 저장 */
+  if(!lastResult){alert('분석 결과가 없습니다.');return;}
+  if(typeof TossPayments==='undefined'){alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');return;}
   if(Object.keys(editedCats).length>0){
     const updated={...lastResult};
     updated.items=(updated.items||[]).map(item=>{
       const cat=item.category||'기타';
       if(editedCats[cat]!==undefined){
         const ratio=editedCats[cat]/(lastResult.items.filter(i=>(i.category||'기타')===cat).reduce((a,i)=>a+i.amount,0)||1);
-        return {...item, amount:Math.round(item.amount*ratio)};
+        return {...item,amount:Math.round(item.amount*ratio)};
       }
       return item;
     });
     updated.totalAmount=Object.values(editedCats).reduce((a,b)=>a+b,0);
     sessionStorage.setItem('analysisResult',JSON.stringify(updated));
-    lastResult=updated;
-    allItems=updated.items||[];
+    lastResult=updated;allItems=updated.items||[];
   }
-
   const orderId='EST-'+Date.now();
   const baseUrl=window.location.href.split('?')[0];
   try{
-    const tossPayments=TossPayments(TOSS_CLIENT_KEY);
-    const payment=tossPayments.payment({customerKey:'GUEST-'+Date.now()});
+    const tp=TossPayments(TOSS_CLIENT_KEY);
+    const payment=tp.payment({customerKey:'GUEST-'+Date.now()});
     await payment.requestPayment({
-      method:'CARD',
-      amount:{ currency:'KRW', value:10000 },
-      orderId,
-      orderName:'인테리어 견적 상세 분석',
-      successUrl: baseUrl+'?orderId='+orderId+'&amount=10000',
-      failUrl:    baseUrl+'?payFail=1',
+      method:'CARD',amount:{currency:'KRW',value:10000},
+      orderId,orderName:'인테리어 견적 상세 분석',
+      successUrl:baseUrl+'?orderId='+orderId+'&amount=10000',
+      failUrl:baseUrl+'?payFail=1',
     });
-  }catch(err){
-    if(err.code==='USER_CANCEL') return;
-    alert('결제 오류: '+err.message);
-  }
+  }catch(err){if(err.code==='USER_CANCEL')return;alert('결제 오류: '+err.message);}
 }
 
-/* ── 결제 성공 후 URL 파라미터 감지 ── */
 async function checkPaymentReturn(){
   const params=new URLSearchParams(window.location.search);
   const paymentKey=params.get('paymentKey');
   const orderId=params.get('orderId');
   const amount=params.get('amount');
-  if(!orderId||!amount) return;
-
+  if(!orderId||!amount)return;
   window.history.replaceState({},'',window.location.pathname);
-
   const saved=sessionStorage.getItem('analysisResult');
-  if(!saved){
-    alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.');
-    return;
-  }
-
-  lastResult=JSON.parse(saved);
-  allItems=lastResult.items||[];
-
-  /* paymentKey 없어도 orderId+amount로 검증 가능 */
+  if(!saved){alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.');return;}
+  lastResult=JSON.parse(saved);allItems=lastResult.items||[];
   try{
-    const resp=await fetch('/api/verify',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        paymentKey: paymentKey||'',
-        orderId,
-        amount:parseInt(amount)
-      })
-    });
+    const resp=await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentKey:paymentKey||'',orderId,amount:parseInt(amount)})});
     const data=await resp.json();
-    if(data.success){
-      render(lastResult);
-      setTimeout(()=>renderPaidDetail(), 400);
-    } else {
-      alert('결제 검증 실패: '+(data.message||'다시 시도해주세요'));
-    }
-  }catch(e){
-    render(lastResult);
-    setTimeout(()=>renderPaidDetail(), 400);
-  }
+    if(data.success){render(lastResult);setTimeout(()=>renderPaidDetail(),400);}
+    else{alert('결제 검증 실패: '+(data.message||'다시 시도해주세요'));}
+  }catch(e){render(lastResult);setTimeout(()=>renderPaidDetail(),400);}
 }
+window.addEventListener('load',checkPaymentReturn);
 
-window.addEventListener('load', checkPaymentReturn);
-
+/* ── 리셋 ── */
 function doReset(){
-  pdfText=''; imageBase64=''; imageMime=''; allItems=[]; lastResult=null; currentLogId=null;
+  pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
   sessionStorage.removeItem('analysisResult');
   document.getElementById('imgPreviewArea').innerHTML='';
-  document.getElementById('fileInput').value='';
+  finput.value='';
   document.getElementById('areaNum').value='';
   document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('errorBox').style.display='none';
   document.getElementById('detailContainer').classList.add('is-locked');
   document.getElementById('paidDetail').style.display='none';
   document.getElementById('adviceCard').style.display='none';
   document.getElementById('paidBadgeArea').innerHTML='';
-
-  /* 페이지 전환: 결과 → 입력 */
-  document.getElementById('pageResult').classList.remove('active');
-  document.getElementById('pageInput').classList.remove('hidden');
-
   const isManual=document.getElementById('modeManual').classList.contains('active');
   if(isManual){
-    document.querySelectorAll('.manual-item-input').forEach(el=>el.value='');
+    MANUAL_CATS.forEach((_,ci)=>{
+      const inp=document.getElementById(`inp_${ci}`);if(inp)inp.value='';
+      document.getElementById(`badge${ci}`).style.display='none';
+    });
     document.querySelectorAll('.cat-items-wrap input[type=checkbox]').forEach(el=>el.checked=false);
-    document.querySelectorAll('.cat-filled-badge').forEach(el=>el.style.display='none');
     document.getElementById('manualTotal').textContent='0원';
   }
   setStep(1);
-  window.scrollTo({top:0,behavior:'smooth'});
+  showPage('pageInput');
 }
-
-/* ── MODAL ── */
-const MODAL_CONTENT={
-  terms:{
-    title:'이용약관',
-    body:`<h3>제1조 (목적)</h3>
-<p>이 약관은 (주)마인스페이스(이하 "회사")가 운영하는 견적분석 서비스의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
-<h3>제2조 (서비스 내용)</h3>
-<p>회사는 인테리어 견적서 분석 서비스를 제공합니다.</p>
-<ul><li>무료 제공: 전체 종합 판정, 카테고리별 금액 확인</li><li>유료 제공 (10,000원): 항목별 상세 판정, 시중가 비교, 전문가 협상 팁</li></ul>
-<h3>제3조 (면책 조항)</h3>
-<p>본 서비스의 분석 결과는 참고용 정보이며 실제 인테리어 공사 견적과 다를 수 있습니다. 회사는 분석 결과를 근거로 발생한 손해에 대해 책임을 지지 않습니다. 지역, 공사 범위, 자재 등급에 따라 실제 시세는 상이할 수 있습니다.</p>
-<h3>제4조 (이용 제한)</h3>
-<p>이용자는 서비스를 상업적 목적으로 재판매하거나, 분석 결과를 무단으로 복제·배포할 수 없습니다.</p>
-<h3>제5조 (준거법)</h3>
-<p>이 약관에 관한 분쟁은 대한민국 법률에 따르며, 관할 법원은 광주지방법원으로 합니다.</p>
-<h3>제6조 (문의)</h3>
-<p>서비스 이용 관련 문의: info@mainspaceinc.com / 평일 09:00 ~ 18:00</p>`
-  },
-  privacy:{
-    title:'개인정보처리방침',
-    body:`<h3>1. 수집하는 개인정보 항목</h3>
-<ul><li><strong>결제 시:</strong> 결제수단 정보 (토스페이먼츠를 통해 처리, 회사에 저장 안 됨)</li><li><strong>서비스 이용 시:</strong> 업로드한 견적서 내용 (분석 후 즉시 삭제)</li><li><strong>자동 수집:</strong> 접속 IP, 브라우저 정보, 방문 시간</li></ul>
-<h3>2. 개인정보 수집 목적</h3>
-<ul><li>서비스 제공 및 견적 분석</li><li>결제 처리 및 환불 처리</li><li>서비스 개선 및 통계 분석</li></ul>
-<h3>3. 개인정보 보유 및 이용 기간</h3>
-<ul><li>견적서 내용: 분석 완료 즉시 삭제</li><li>결제 정보: 전자상거래법에 따라 5년 보관</li><li>접속 로그: 3개월 보관</li></ul>
-<h3>4. 제3자 제공</h3>
-<p>원칙적으로 외부 제공 없음. 결제 처리를 위해 토스페이먼츠에 최소 정보 제공.</p>
-<h3>5. 개인정보 보호 책임자</h3>
-<p>성명: 엄정현 (대표이사)<br>이메일: info@mainspaceinc.com<br>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</p>
-<h3>6. 권리 행사</h3>
-<p>개인정보 열람·정정·삭제·처리 정지 요청: info@mainspaceinc.com</p>`
-  },
-  refund:{
-    title:'환불정책',
-    body:`<div class="modal-highlight">✓ 결제 후 분석 결과를 열람하기 전에는 전액 환불 가능합니다.</div>
-<div class="modal-warn">✗ 분석 결과를 한 번이라도 열람한 경우 디지털 콘텐츠 특성상 환불이 불가합니다.</div>
-<h3>환불 가능 조건</h3>
-<ul><li>결제 완료 후 상세 분석 결과를 열람하지 않은 경우</li><li>결제 후 7일 이내 요청한 경우</li><li>기술적 오류로 서비스를 정상적으로 이용하지 못한 경우 (전액 환불)</li></ul>
-<h3>환불 불가 조건</h3>
-<ul><li>상세 분석 결과를 한 번이라도 열람한 경우</li><li>결제 후 7일이 경과한 경우</li><li>단순 변심 (열람 후)</li></ul>
-<h3>환불 신청 방법</h3>
-<ul><li>이메일: info@mainspaceinc.com</li><li>영업시간: 평일 09:00 ~ 18:00</li><li>결제일, 주문번호, 환불 사유를 함께 전달해 주세요.</li></ul>
-<h3>환불 처리 기간</h3>
-<p>환불 요청 확인 후 영업일 기준 3~5일 이내 처리. 카드사 정책에 따라 추가 시간이 소요될 수 있습니다.</p>
-<h3>관련 법령</h3>
-<p>전자상거래 등에서의 소비자보호에 관한 법률 제17조 및 디지털콘텐츠 관련 규정에 따라 운영됩니다.</p>`
-  }
-};
-
-function openModal(type){
-  const content=MODAL_CONTENT[type];
-  if(!content) return;
-  document.getElementById('modalTitle').textContent=content.title;
-  document.getElementById('modalBody').innerHTML=content.body;
-  document.getElementById('modalBackdrop').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-
-function closeModal(){
-  document.getElementById('modalBackdrop').classList.remove('open');
-  document.body.style.overflow='';
-}
-
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 </script>
 </body>
 </html>
