@@ -92,7 +92,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .img-preview{max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--rule);display:block;object-fit:contain;margin-top:0.85rem;}
 
 /* ── form ── */
-.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;}
 .form-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:5px;}
 .form-field input,.form-field select{width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
 .form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff;}
@@ -111,8 +111,18 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .cat-section-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1.1rem;background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius-sm);cursor:pointer;transition:background 0.15s;user-select:none;}
 .cat-section-header:hover{background:var(--rule);}
 .cat-section-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.cat-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink3);}
+.cat-icon svg{width:18px;height:18px;}
 .cat-section-toggle{font-size:18px;color:var(--muted);transition:transform 0.2s;}
 .cat-section-toggle.open{transform:rotate(45deg);}
+
+/* ── 목공 서브탭 ── */
+.sub-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.sub-tab{font-size:12px;font-weight:700;padding:5px 13px;border-radius:20px;border:1.5px solid var(--rule);background:none;cursor:pointer;color:var(--muted);font-family:inherit;transition:all 0.15s;white-space:nowrap;}
+.sub-tab.active{border-color:var(--ink);background:var(--ink);color:#fff;}
+.sub-tab-panel{display:none;}
+.sub-tab-panel.active{display:block;}
+.sub-panel-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--hint);margin-bottom:8px;}
 .cat-filled-badge{font-size:11px;font-weight:700;background:var(--ink);color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;}
 .cat-items-wrap{display:none;padding:1rem 1.1rem;border:1px solid var(--rule);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);background:var(--surface);}
 .cat-items-wrap.open{display:block;}
@@ -288,12 +298,32 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .footer-copy{font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px;line-height:1.6;}
 
 /* ── 반응형 ── */
+/* 기업이윤 항목 강조 */
+.item-card .item-cat-tag[data-cat="기업이윤"]{
+  background:#F0E8FE; color:#5B21B6;
+}
+.profit-input-wrap{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-top:1rem; padding:0.9rem 1.1rem;
+  background:var(--paper); border:1.5px dashed var(--rule);
+  border-radius:var(--radius-sm);
+}
+.profit-label-wrap{display:flex;flex-direction:column;gap:3px;flex:1;}
+.profit-label{font-size:13px;font-weight:700;color:var(--ink);}
+.profit-hint{font-size:11px;color:var(--muted);}
+.profit-field{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.profit-input{
+  width:100px; padding:6px 10px;
+  border:1.5px solid var(--rule); border-radius:var(--radius-sm);
+  font-family:inherit; font-size:14px; font-weight:700;
+  color:var(--ink); background:#fff; outline:none;
+  text-align:right; transition:border-color 0.15s;
+}
+.profit-input:focus{border-color:var(--accent);}
+.profit-unit{font-size:13px;font-weight:700;color:var(--muted);}
+
 @media(max-width:640px){
-  .form-grid{grid-template-columns:1fr 1fr;}
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .footer-top{flex-direction:column;gap:1rem;}
-  .footer-info-row{flex-direction:column;gap:3px;}
-  .footer-sep{display:none;}
+  .profit-input-wrap{flex-direction:column;align-items:flex-start;}
 }
 </style>
 </head>
@@ -383,6 +413,24 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="form-field"><label>면적 단위</label>
         <select id="areaUnit"><option value="py">평</option><option value="m2">㎡</option></select>
       </div>
+      <div class="form-field">
+        <label>방 수</label>
+        <select id="roomCount">
+          <option value="1">1개</option>
+          <option value="2">2개</option>
+          <option value="3" selected>3개</option>
+          <option value="4">4개</option>
+          <option value="5">5개 이상</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>화장실 수</label>
+        <select id="bathCount">
+          <option value="1" selected>1개</option>
+          <option value="2">2개</option>
+          <option value="3">3개 이상</option>
+        </select>
+      </div>
       <div class="form-field"><label>공사 지역</label>
         <select id="region">
           <option value="서울">서울</option>
@@ -411,6 +459,24 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="form-field"><label>면적 단위</label>
         <select id="areaUnitM"><option value="py">평</option><option value="m2">㎡</option></select>
       </div>
+      <div class="form-field">
+        <label>방 수</label>
+        <select id="roomCountM">
+          <option value="1">1개</option>
+          <option value="2">2개</option>
+          <option value="3" selected>3개</option>
+          <option value="4">4개</option>
+          <option value="5">5개 이상</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>화장실 수</label>
+        <select id="bathCountM">
+          <option value="1" selected>1개</option>
+          <option value="2">2개</option>
+          <option value="3">3개 이상</option>
+        </select>
+      </div>
       <div class="form-field"><label>공사 지역</label>
         <select id="regionM">
           <option value="서울">서울</option>
@@ -418,6 +484,16 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
           <option value="광역시">광역시</option>
           <option value="기타">기타 지역</option>
         </select>
+      </div>
+    </div>
+    <div class="profit-input-wrap">
+      <div class="profit-label-wrap">
+        <span class="profit-label">기업이윤 (선택)</span>
+        <span class="profit-hint">견적서에 기업이윤이 별도로 표시된 경우에만 입력하세요</span>
+      </div>
+      <div class="profit-field">
+        <input type="number" id="profitM" min="0" placeholder="예: 150" class="profit-input">
+        <span class="profit-unit">만원</span>
       </div>
     </div>
     <button class="btn-analyze" id="analyzeBtnM" onclick="doManualAnalyze()" style="margin-top:1.25rem;">
@@ -455,7 +531,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="footer-info-row">
         <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
         <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
-        <span>이메일: info@mainspaceinc.com</span>
+        <span>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bbd2d5ddd4fbd6dad2d5c8cbdad8ded2d5d895d8d4d6">[email&#160;protected]</a></span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
@@ -596,7 +672,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div><!-- /pageLegal -->
 
 
-<script src="https://js.tosspayments.com/v2/standard"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -799,29 +875,117 @@ function startProgress(isImg){
 function stopProgress(){clearInterval(progTimer);document.getElementById('progressCard').classList.remove('show');}
 function showError(msg){stopProgress();const eb=document.getElementById('errorBox');eb.textContent='⚠ '+msg;eb.style.display='block';}
 
+/* ── 카테고리 아이콘 SVG ── */
+const CAT_ICONS={
+  demolition:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l4-4M10 4l4 4-7 7-4-4 7-7z"/><path d="M14 4l1-1M4 14l-1 1"/></svg>`,
+  window:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="1.5"/><line x1="9" y1="2" x2="9" y2="16"/><line x1="2" y1="9" x2="16" y2="9"/><path d="M5 5.5h1.5M5 7h1.5" stroke-width="1.2"/><path d="M11.5 5.5H13M11.5 7H13" stroke-width="1.2"/><path d="M5 11.5h1.5M5 13h1.5" stroke-width="1.2"/><path d="M11.5 11.5H13M11.5 13H13" stroke-width="1.2"/></svg>`,
+  balcony:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="14" height="6" rx="1"/><path d="M5 10V6a4 4 0 018 0v4"/><line x1="9" y1="6" x2="9" y2="10"/><line x1="6" y1="10" x2="6" y2="16"/><line x1="12" y1="10" x2="12" y2="16"/></svg>`,
+  mokgong:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="4" rx="1"/><rect x="2" y="8" width="9" height="8" rx="1"/><path d="M13 8v8M13 8l3-3M13 12h3M13 16h3"/></svg>`,
+  floor:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="12" width="14" height="4" rx="1"/><path d="M2 12l4-8h6l4 8"/><line x1="6" y1="8" x2="12" y2="8" stroke-width="1.2"/></svg>`,
+  wallpaper:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="1.5"/><path d="M5 6h8M5 9h8M5 12h5" stroke-width="1.3"/></svg>`,
+  paint:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14l8-8-2-2-8 8 2 2z"/><path d="M12 4l2 2"/><circle cx="14" cy="14" r="2"/><path d="M12 12c0-1 1-2 2-2s2 1 2 2" stroke-dasharray="2 1"/></svg>`,
+  tile:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="6" height="6" rx="0.8"/><rect x="10" y="2" width="6" height="6" rx="0.8"/><rect x="2" y="10" width="6" height="6" rx="0.8"/><rect x="10" y="10" width="6" height="6" rx="0.8"/></svg>`,
+  bathroom:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h12v4a3 3 0 01-3 3H6a3 3 0 01-3-3V9z"/><path d="M3 9V5a2 2 0 014 0v4"/><circle cx="13" cy="5" r="1.2" fill="currentColor"/></svg>`,
+  kitchen:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="14" height="6" rx="1"/><rect x="2" y="4" width="6" height="6" rx="1"/><rect x="10" y="4" width="6" height="6" rx="1"/><circle cx="6" cy="16" r="0.8" fill="currentColor"/><circle cx="12" cy="16" r="0.8" fill="currentColor"/></svg>`,
+  furniture:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="1.5"/><line x1="9" y1="2" x2="9" y2="16"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="11" cy="9" r="1" fill="currentColor"/></svg>`,
+  electric:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M9 12v4M6 16h6"/><path d="M7.5 7l1.5 2 1.5-4" stroke-width="1.3"/></svg>`,
+  etc:`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="13" cy="9" r="1.2" fill="currentColor"/></svg>`,
+};
+
 /* ── MANUAL INPUT ── */
 const MANUAL_CATS=[
-  {id:'demolition',cat:'철거/방수',icon:'🔨',checks:['전체 철거 (바닥·벽·천장)','부분 철거 (욕실·주방만)','바닥 철거만','방수 공사 (욕실)','방수 공사 (발코니)','방수 공사 (다용도실)','미장 공사','폐기물 처리 포함']},
-  {id:'tile',cat:'타일',icon:'🟫',checks:['욕실 타일 전체','욕실 타일 부분','주방 벽 타일','현관 바닥 타일','발코니 바닥 타일','거실 타일','외부 테라스 타일','줄눈 시공','타일 철거 포함']},
-  {id:'floor',cat:'바닥재',icon:'🪵',checks:['강마루','강화마루','원목마루','헤링본 마루','장판 (PVC)','데코타일','폴리싱 타일','카펫','기존 바닥재 철거 포함']},
-  {id:'wallpaper',cat:'도배',icon:'🖼️',checks:['전체 실크 도배','전체 합지 도배','실크+합지 혼합','천장 도배','벽면 도배만','포인트 벽지','방염 도배','기존 벽지 제거 포함']},
-  {id:'paint',cat:'도장 (페인트)',icon:'🎨',checks:['거실 천장·벽','주방 천장·벽','방 전체','현관','발코니·다용도실','문짝 도장','몰딩 도장','방화문 도장','친환경 페인트 적용']},
-  {id:'bathroom',cat:'욕실',icon:'🚿',checks:['욕실 전체 리모델링','타일 교체','양변기 교체','세면대 교체','욕조 교체','샤워부스 설치','수전 교체','수납장 교체','환풍기 교체','욕실 조명 교체','방수 재시공','악세사리 전체 교체']},
-  {id:'kitchen',cat:'주방',icon:'🍳',checks:['주방 전체 리모델링','상부장 교체','하부장 교체','도어만 교체','상판 (인조대리석) 교체','상판 (세라믹) 교체','냉장고장','팬트리장','후드 교체','싱크볼 교체','수전 교체','빌트인 가전 포함']},
-  {id:'furniture',cat:'가구/붙박이장',icon:'🚪',checks:['안방 붙박이장','작은방 붙박이장','드레스룸 전체','신발장','거실장·TV장','책상·서재 가구','다용도 수납장','아일랜드 식탁','현관 벤치수납','맞춤 제작 가구']},
-  {id:'electric',cat:'전기/조명',icon:'💡',checks:['전기 배선 전체 교체','전기 부분 보수','분전반 교체','콘센트·스위치 전체 교체','조명 전체 교체 (LED)','거실 조명','주방 조명','욕실 조명','간접 조명 설치','스마트홈 시스템','인터폰 교체','홈네트워크 공사']},
-  {id:'window',cat:'창호/새시',icon:'🪟',checks:['발코니 새시 전체','발코니 새시 부분','단열 이중창','시스템창호','방범 창살 설치','방충망 교체','현관문 교체','방화문 교체','중문 설치']},
-  {id:'balcony',cat:'확장/설비',icon:'🏗️',checks:['발코니 확장','다용도실 확장','보일러 교체','배관 전체 교체','온수기 교체','에어컨 배관','세탁기 배관','가스 배관 공사','환기 시스템 설치']},
-  {id:'etc',cat:'기타/부자재',icon:'🔩',checks:['몰딩 시공','걸레받이 교체','코킹·실링','문손잡이·경첩 교체','커튼박스 설치','블라인드·버티컬 설치','천장 단열재','방음 공사','청소 (입주청소 포함)']},
+  {id:'demolition',cat:'철거/방수',checks:['전체 철거 (바닥·벽·천장)','부분 철거 (욕실·주방만)','바닥 철거만','방수 공사 (욕실)','방수 공사 (발코니)','방수 공사 (다용도실)','미장 공사','폐기물 처리 포함']},
+  {id:'window',cat:'창호/샷시',checks:['발코니 새시 전체','발코니 새시 부분','단열 이중창','시스템창호','방범 창살 설치','방충망 교체','현관문 교체','방화문 교체','중문 설치']},
+  {id:'balcony',cat:'확장/설비',checks:['발코니 확장','다용도실 확장','보일러 교체','배관 전체 교체','온수기 교체','에어컨 배관','세탁기 배관','가스 배관 공사','환기 시스템 설치']},
+  {id:'floor',cat:'바닥재',checks:['강마루','강화마루','원목마루','헤링본 마루','장판 (PVC)','데코타일','폴리싱 타일','카펫','기존 바닥재 철거 포함']},
+  {id:'wallpaper',cat:'도배',checks:['전체 실크 도배','전체 합지 도배','실크+합지 혼합','천장 도배','벽면 도배만','포인트 벽지','방염 도배','기존 벽지 제거 포함']},
+  {id:'paint',cat:'도장 (페인트)',checks:['거실 천장·벽','주방 천장·벽','방 전체','현관','발코니·다용도실','문짝 도장','몰딩 도장','방화문 도장','친환경 페인트 적용']},
+  {id:'tile',cat:'타일',checks:['욕실 타일 전체','욕실 타일 부분','주방 벽 타일','현관 바닥 타일','발코니 바닥 타일','거실 타일','외부 테라스 타일','줄눈 시공','타일 철거 포함']},
+  {id:'bathroom',cat:'욕실',checks:['욕실 전체 리모델링','타일 교체','양변기 교체','세면대 교체','욕조 교체','샤워부스 설치','수전 교체','수납장 교체','환풍기 교체','욕실 조명 교체','방수 재시공','악세사리 전체 교체']},
+  {id:'kitchen',cat:'주방',checks:['주방 전체 리모델링','상부장 교체','하부장 교체','도어만 교체','상판 (인조대리석) 교체','상판 (세라믹) 교체','냉장고장','팬트리장','후드 교체','싱크볼 교체','수전 교체','빌트인 가전 포함']},
+  {id:'furniture',cat:'가구/붙박이장',checks:['안방 붙박이장','작은방 붙박이장','드레스룸 전체','신발장','거실장·TV장','책상·서재 가구','다용도 수납장','아일랜드 식탁','현관 벤치수납','맞춤 제작 가구']},
+  {id:'electric',cat:'조명/전기',checks:['전기 배선 전체 교체','전기 부분 보수','분전반 교체','콘센트·스위치 전체 교체','조명 전체 교체 (LED)','거실 조명','주방 조명','욕실 조명','간접 조명 설치','스마트홈 시스템','인터폰 교체','홈네트워크 공사']},
+  {id:'etc',cat:'기타/부자재',checks:['몰딩 시공','걸레받이 교체','코킹·실링','문손잡이·경첩 교체','커튼박스 설치','블라인드·버티컬 설치','천장 단열재','방음 공사','청소 (입주청소 포함)']},
 ];
+
+/* 목공 — 서브탭 구조 */
+const MOKGONG={
+  id:'mokgong', cat:'목공', icon:'🪚',
+  subTabs:[
+    { id:'ceiling', label:'천장', checks:[
+      '천장 보강','평천장 석고보드 공사','우물천장 제작','우물천장 철거 및 평탄화',
+      '마이너스/무몰딩 (천장 라인)','간접·라인조명 박스 제작',
+      '에어컨 내림 및 단차 작업','TV 매립 박스 제작','커튼박스 제작 및 보강'
+    ]},
+    { id:'wall', label:'벽체', checks:[
+      '벽면 수평·평탄화 작업','가벽 제작','단열 목공','방음 목공',
+      '템바보드 시공','아치형(곡선) 제작'
+    ]},
+    { id:'door', label:'문·문선', checks:[
+      '실내문 교체','방화문 교체','히든도어 제작·설치',
+      '문선 작업 (문틀·문선 교체)','몰딩·걸레받이 교체'
+    ]},
+    { id:'art', label:'가구·아트', checks:[
+      '목공 가구 제작 (붙박이형)','목공 아트월·침대헤드',
+      '계단 난간 교체'
+    ]},
+  ]
+};
 
 function buildManualCats(){
   const wrap=document.getElementById('manualCats');
-  wrap.innerHTML=MANUAL_CATS.map((c,ci)=>`
+
+  /* 일반 카테고리 + 목공(서브탭) 순서대로 렌더링
+     순서: 철거→창호→확장→[목공]→바닥→도배→페인트→타일→욕실→주방→가구→조명→기타 */
+
+  /* 목공 — 서브탭 카테고리 */
+  const mokHTML=`
+    <div class="cat-section">
+      <div class="cat-section-header" onclick="toggleCatMok()">
+        <div class="cat-section-title">
+          <span class="cat-icon">${CAT_ICONS.mokgong}</span>
+          <span>${MOKGONG.cat}</span>
+          <span class="cat-filled-badge" id="badgeMok" style="display:none;"></span>
+        </div>
+        <span class="cat-section-toggle" id="toggleMok">+</span>
+      </div>
+      <div class="cat-items-wrap" id="catWrapMok">
+        <div class="cost-row">
+          <label class="cost-label">총 비용</label>
+          <div class="cost-input-wrap">
+            <input class="manual-item-input" type="number" min="0" placeholder="예: 200"
+              id="inp_mok" oninput="updateManualTotal();updateMokBadge()">
+            <span class="cost-unit">만원</span>
+          </div>
+        </div>
+        <div class="checks-label">세부 항목 선택</div>
+        <div class="sub-tabs">
+          ${MOKGONG.subTabs.map((tab,ti)=>`
+            <button class="sub-tab${ti===0?' active':''}" onclick="switchSubTab('${tab.id}',this)">${tab.label}</button>
+          `).join('')}
+        </div>
+        ${MOKGONG.subTabs.map((tab,ti)=>`
+          <div class="sub-tab-panel${ti===0?' active':''}" id="subpanel-${tab.id}">
+            <div class="checks-grid">
+              ${tab.checks.map((chk,ki)=>`
+                <label class="check-item">
+                  <input type="checkbox" id="mok-${tab.id}-${ki}">
+                  <span class="check-box"></span>
+                  <span class="check-txt">${chk}</span>
+                </label>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  /* 순서: 철거→창호→확장→목공→바닥→도배→페인트→타일→욕실→주방→가구→조명→기타
+     MANUAL_CATS index: 0=철거 1=창호 2=확장 3=바닥 4=도배 5=페인트 6=타일 7=욕실 8=주방 9=가구 10=조명 11=기타
+     목공은 index 2(확장) 다음, index 3(바닥) 앞에 삽입 */
+  const catSections = MANUAL_CATS.map((c,ci)=>`
     <div class="cat-section">
       <div class="cat-section-header" onclick="toggleCat(${ci})">
         <div class="cat-section-title">
-          <span style="font-size:15px;">${c.icon}</span>
+          <span class="cat-icon">${CAT_ICONS[c.id]||''}</span>
           <span>${c.cat}</span>
           <span class="cat-filled-badge" id="badge${ci}" style="display:none;"></span>
         </div>
@@ -846,11 +1010,34 @@ function buildManualCats(){
             </label>`).join('')}
         </div>
       </div>
-    </div>`).join('');
+    </div>`);
+
+  /* 확장/설비(index 2) 뒤에 목공 삽입 */
+  catSections.splice(3, 0, mokHTML);
+  wrap.innerHTML = catSections.join('');
 }
+
 function toggleCat(ci){
   const w=document.getElementById('catWrap'+ci),t=document.getElementById('toggle'+ci);
   const open=w.classList.toggle('open');t.classList.toggle('open',open);
+}
+function toggleCatMok(){
+  const w=document.getElementById('catWrapMok'),t=document.getElementById('toggleMok');
+  const open=w.classList.toggle('open');t.classList.toggle('open',open);
+}
+function switchSubTab(tabId, btn){
+  /* 탭 버튼 활성화 */
+  btn.closest('.cat-items-wrap').querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  /* 패널 전환 */
+  btn.closest('.cat-items-wrap').querySelectorAll('.sub-tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('subpanel-'+tabId).classList.add('active');
+}
+function updateMokBadge(){
+  const amt=parseFloat(document.getElementById('inp_mok')?.value)||0;
+  const b=document.getElementById('badgeMok');
+  b.style.display=amt>0?'inline-block':'none';
+  if(amt>0)b.textContent=Number(amt).toLocaleString('ko-KR')+'만원';
 }
 function updateBadge(ci){
   const amt=parseFloat(document.getElementById(`inp_${ci}`)?.value)||0;
@@ -859,7 +1046,9 @@ function updateBadge(ci){
   if(amt>0)b.textContent=Number(amt).toLocaleString('ko-KR')+'만원';
 }
 function updateManualTotal(){
-  let t=0;MANUAL_CATS.forEach((_,ci)=>{t+=(parseFloat(document.getElementById(`inp_${ci}`)?.value)||0)*10000;});
+  let t=0;
+  MANUAL_CATS.forEach((_,ci)=>{t+=(parseFloat(document.getElementById(`inp_${ci}`)?.value)||0)*10000;});
+  t+=(parseFloat(document.getElementById('inp_mok')?.value)||0)*10000;
   document.getElementById('manualTotal').textContent=fmtWon(t);
 }
 function fmtWon(n){
@@ -869,32 +1058,79 @@ function fmtWon(n){
 }
 
 /* ── API 호출 ── */
-async function callAPI(userContent,region,py,m2){
-  const SYS=`You are a senior Korean interior renovation consultant with 15+ years experience.
+async function callAPI(userContent,region,py,m2,roomCount=3,bathCount=1){
+
+  /* 세부항목 전체 목록 — 판별 기준 매핑용 */
+  const ALL_ITEMS_REF=`
+[판별 가능한 세부항목 목록 — 아래 항목 이름이 견적서에 나오면 반드시 개별 항목으로 분리해서 순서 유지]
+철거/방수: 전체철거 부분철거 바닥철거 욕실방수 발코니방수 다용도실방수 미장 폐기물처리
+타일: 욕실타일전체 욕실타일부분 주방벽타일 현관타일 발코니타일 거실타일 줄눈
+바닥재: 강마루 강화마루 원목마루 헤링본마루 장판 데코타일 폴리싱타일 카펫
+도배: 실크도배 합지도배 혼합도배 포인트벽지 방염도배
+도장: 거실도장 주방도장 방도장 현관도장 발코니도장 문짝도장 몰딩도장
+욕실: 욕실전체리모델링 욕실타일교체 양변기교체 세면대교체 욕조교체 샤워부스 수전교체 수납장교체 환풍기교체 욕실조명 방수재시공
+주방: 주방전체 상부장 하부장 도어교체 인조대리석상판 세라믹상판 냉장고장 팬트리장 후드교체 싱크볼 주방수전 빌트인가전
+가구/붙박이장: 안방붙박이장 작은방붙박이장 드레스룸 신발장 거실장 TV장 서재가구 아일랜드식탁
+전기/조명: 전기배선전체 전기부분보수 분전반 콘센트스위치 LED조명전체 거실조명 주방조명 욕실조명 간접조명 스마트홈 인터폰
+목공(천장): 천장보강 평천장 우물천장제작 우물천장철거 마이너스몰딩 무몰딩 간접조명박스 라인조명박스 에어컨내림단차 TV매립박스 커튼박스
+목공(벽체): 벽면수평 가벽제작 단열목공 방음목공 템바보드 아치형제작
+목공(문문선): 실내문교체 방화문교체 히든도어 문선작업 몰딩걸레받이교체
+목공(가구아트): 목공가구제작 아트월침대헤드 계단난간
+창호/새시: 발코니새시전체 발코니새시부분 단열이중창 시스템창호 방범창살 방충망 현관문교체 중문설치
+확장/설비: 발코니확장 다용도실확장 보일러교체 배관전체 온수기 에어컨배관 세탁기배관 가스배관 환기시스템
+기타/부자재: 몰딩시공 걸레받이 코킹실링 문손잡이경첩 블라인드버티컬 천장단열재 입주청소`;
+
+  const SYS=`You are a senior Korean interior renovation cost analyst with 15+ years experience.
 Return ONLY a raw JSON object. No markdown, no explanation, nothing else.
 All strings must be in Korean. Use double quotes only. No special chars inside strings except spaces.
 
-JSON format:
-{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4","팁5","팁6","팁7","팁8"]}
+PROFIT MARGIN DETECTION:
+- If the estimate contains a line item named 기업이윤, 이윤, 이익, 일반관리비, 간접비, 제경비, 이윤및간접비 or similar → include it as a separate item in the items array
+- category: "기업이윤"
+- Normal range: 공사비 합계의 5~15%. Below 5% = 저렴, 5~15% = 적정, above 15% = 비쌈
+- reason: state the percentage vs total construction cost (e.g. "공사비의 18%로 높은 편")
+- If NO separate profit line exists, do NOT invent one. Many estimates include profit within each line item.
 
-CRITICAL - For advices array, write exactly 8 tips. Each tip MUST follow this exact structure:
-[공정명] ${region} 기준 평균 OO만원~OO만원인데 현재 견적은 OO만원입니다. [이 공정에서 비용이 높아지는 주요 원인 2가지를 구체적으로 설명]. [절약하거나 협상할 수 있는 구체적 행동 방법 2가지]. 업체에 [구체적으로 물어봐야 할 질문]을 확인해보세요.
 
-Rules:
-- Mention ACTUAL average prices for ${region} with specific ranges
-- Reference the ACTUAL amount from the estimate being analyzed
-- Explain WHY the cost is high (labor count, material grade, quantity inflation etc)
-- Give 2 specific negotiation actions. End with a specific question to ask the contractor
-- Each tip must be 100-200 Korean characters. Focus on 비쌈 items first
-- Do NOT use generic tips
+1. PRESERVE ORDER: Output items in the EXACT same order they appear in the estimate document. Do NOT reorder or group.
+2. SPLIT ALL LINE ITEMS: Every single line item in the estimate must become a separate item in the JSON. Never merge multiple line items into one.
+3. MAP TO REFERENCE: For each item, find the closest match from the reference list below and use that to determine marketMin/marketMax.
+4. ITEM NAME: Use the EXACT name from the original estimate document, not the reference name.
 
-region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡)
-Market refs(${region}): 철거평당15-25만 방수m2당8-15만 타일m2당6-14만 마루m2당4-12만 도배평당2.5-5만 욕실1개100-250만 싱크대200-600만 붙박이장90cm폭당60-150만 전기평당10-20만 도장m2당2-5만
-Category options: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 기타`;
+JSON format — items array MUST preserve original document order:
+{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4","팁5","팁6","팁7","팁8"]}
+
+Verdict rules:
+- 저렴: amount < marketMin × 0.9
+- 적정: marketMin × 0.9 ≤ amount ≤ marketMax × 1.1
+- 비쌈: amount > marketMax × 1.1
+- ratioVsAvg: (amount / ((marketMin+marketMax)/2)) × 100
+
+${ALL_ITEMS_REF}
+
+For advices, write exactly 8 tips. Each tip MUST follow this structure:
+[공정명] ${region} 기준 평균 OO만원~OO만원인데 현재 견적은 OO만원입니다. [비용이 높아지는 주요 원인 2가지]. [절약·협상할 수 있는 구체적 행동 2가지]. 업체에 [구체적으로 물어봐야 할 질문]을 확인해보세요.
+
+region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
+Market refs per 평 (${region}기준):
+· 철거 평당15~25만 · 방수(발코니) m2당8~15만
+· 욕실타일 개소당100~200만 · 주방벽타일 m2당6~12만 · 거실타일 m2당6~14만
+· 강마루 m2당4~8만 · 원목마루 m2당8~15만 · 장판 m2당2~4만
+· 도배(실크) 평당3~5만 · 도배(합지) 평당2~3만
+· 도장 m2당2~4만
+· 욕실리모델링 개소당250~600만 · 양변기 30~80만 · 세면대 20~60만
+· 싱크대상부장 m당30~80만 · 싱크대하부장 m당40~100만 · 싱크대상판 m당20~50만
+· 붙박이장 90cm폭당60~150만 · 드레스룸 200~600만/식
+· 전기배선 평당10~20만 · 조명교체 평당3~7만 · 간접조명박스 평당4~9만
+· 발코니새시 150~400만/식 · 현관문 80~200만
+· 목공(몰딩·걸레받이) 평당5~11만 · 목공(무몰딩) 평당9~22만
+· 목공(우물천장) m2당10~22만 · 목공(가벽) m2당10~22만 · 히든도어 짝당80~200만
+· 보일러 50~150만/식 · 발코니확장 평당150~350만
+Category: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 목공 창호/새시 확장/설비 기타`;
 
   const resp=await fetch('/api/analyze',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:6000,system:SYS,messages:[{role:'user',content:userContent}],_logId:currentLogId||undefined})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:SYS,messages:[{role:'user',content:userContent}],_logId:currentLogId||undefined})
   });
   if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
   const data=await resp.json();
@@ -911,6 +1147,8 @@ async function doAnalyze(){
   const area=parseFloat(document.getElementById('areaNum').value)||0;
   const unit=document.getElementById('areaUnit').value;
   const region=document.getElementById('region').value;
+  const roomCount=document.getElementById('roomCount').value;
+  const bathCount=document.getElementById('bathCount').value;
   const py=unit==='py'?area:area/3.305785;
   const m2=unit==='m2'?area:area*3.305785;
   const isImg=!!imageBase64;
@@ -918,10 +1156,16 @@ async function doAnalyze(){
   document.getElementById('errorBox').style.display='none';
   setStep(2);startProgress(isImg);
   let userContent;
-  if(isImg){userContent=[{type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},{type:'text',text:`견적서 이미지. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 모든 항목 금액 읽고 JSON 분석`}];}
-  else{userContent=`견적서 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region}\n${pdfText.slice(0,4000)}`;}
-  try{
-    const result=await callAPI(userContent,region,py,m2);
+  const orderInstruction=`면적: ${Math.round(m2)}㎡(${Math.round(py)}평) / 지역: ${region} / 방: ${roomCount}개 / 화장실: ${bathCount}개\n[중요] 견적서 항목을 위→아래 순서 그대로 모두 JSON items에 담아주세요. 항목을 합치거나 순서를 바꾸지 마세요. 금액이 적힌 모든 라인을 개별 항목으로 분리해주세요.`;
+  if(isImg){
+    userContent=[
+      {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
+      {type:'text',text:orderInstruction}
+    ];
+  } else {
+    userContent=`${orderInstruction}\n\n--- 견적서 원본 ---\n${pdfText.slice(0,5000)}`;
+  }  try{
+    const result=await callAPI(userContent,region,py,m2,roomCount,bathCount);
     stopProgress();render(result);setStep(3);
   }catch(err){showError('분석 오류: '+err.message);document.getElementById('analyzeBtn').disabled=false;}
 }
@@ -931,6 +1175,8 @@ async function doManualAnalyze(){
   const area=parseFloat(document.getElementById('areaNumM').value)||0;
   const unit=document.getElementById('areaUnitM').value;
   const region=document.getElementById('regionM').value;
+  const roomCount=document.getElementById('roomCountM').value;
+  const bathCount=document.getElementById('bathCountM').value;
   const py=unit==='py'?area:area/3.305785;
   const m2=unit==='m2'?area:area*3.305785;
   const filledItems=[];let totalAmount=0;
@@ -942,15 +1188,30 @@ async function doManualAnalyze(){
       totalAmount+=v*10000;
     }
   });
+  /* 목공 수집 */
+  const mokAmt=parseFloat(document.getElementById('inp_mok')?.value)||0;
+  if(mokAmt>0){
+    const mokSubs=[];
+    MOKGONG.subTabs.forEach(tab=>{
+      tab.checks.forEach((chk,ki)=>{
+        if(document.getElementById(`mok-${tab.id}-${ki}`)?.checked) mokSubs.push(`[${tab.label}] ${chk}`);
+      });
+    });
+    filledItems.push({name:'목공',category:'목공',amount:mokAmt*10000,subItems:mokSubs});
+    totalAmount+=mokAmt*10000;
+  }
   if(!filledItems.length){alert('최소 1개 항목의 금액을 입력해주세요.');return;}
   if(!area){alert('공사 면적을 입력해주세요.');return;}
+  const profitAmt=(parseFloat(document.getElementById('profitM')?.value)||0)*10000;
+  const profitStr=profitAmt>0?` 기업이윤:${Math.round(profitAmt/10000)}만원`:'';
   document.getElementById('analyzeBtnM').disabled=true;
   document.getElementById('errorBox').style.display='none';
   startProgress(false);
   const lines=filledItems.map(i=>{const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;}).join('\n');
-  const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 총액:${Math.round(totalAmount/10000)}만원\n${lines}`;
+  const profitLine=profitAmt>0?`\n기업이윤 (별도 표시됨): ${Math.round(profitAmt/10000)}만원`:'';
+  const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 방:${roomCount}개 화장실:${bathCount}개 총액:${Math.round((totalAmount+profitAmt)/10000)}만원${profitStr}\n${lines}${profitLine}`;
   try{
-    const result=await callAPI(userContent,region,py,m2);
+    const result=await callAPI(userContent,region,py,m2,roomCount,bathCount);
     stopProgress();render(result);setStep(3);
   }catch(err){showError('분석 오류: '+err.message);}
   finally{document.getElementById('analyzeBtnM').disabled=false;}
@@ -1111,7 +1372,7 @@ function filterItems(filter,btn){
 }
 
 /* ── 결제 ── */
-const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy';
+const TOSS_CLIENT_KEY='test_ck_OyL0qZ4G1VO0lBb11NMroWb2MQYg';
 async function startPayment(){
   if(!lastResult){alert('분석 결과가 없습니다.');return;}
   if(typeof TossPayments==='undefined'){alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');return;}
@@ -1181,6 +1442,9 @@ function doReset(){
       const inp=document.getElementById(`inp_${ci}`);if(inp)inp.value='';
       document.getElementById(`badge${ci}`).style.display='none';
     });
+       const mokInp=document.getElementById('inp_mok');if(mokInp)mokInp.value='';
+    const mokBadge=document.getElementById('badgeMok');if(mokBadge)mokBadge.style.display='none';
+    const profitInp=document.getElementById('profitM');if(profitInp)profitInp.value='';
     document.querySelectorAll('.cat-items-wrap input[type=checkbox]').forEach(el=>el.checked=false);
     document.getElementById('manualTotal').textContent='0원';
   }
