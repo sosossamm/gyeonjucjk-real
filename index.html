@@ -767,15 +767,11 @@ const LEGAL_CONTENT={
 };
 
 /* ── 파일 업로드 ── */
-async function uploadFileToServer(file,meta){
-  try{
-    const form=new FormData();
-    form.append('file',file);
-    form.append('meta',JSON.stringify(meta));
-    const resp=await fetch('/api/upload',{method:'POST',body:form});
-    const data=await resp.json();
-    if(data.logId) currentLogId=data.logId;
-  }catch(e){console.warn('파일 저장 실패:',e.message);}
+/* ── 파일 메타 저장 (analyze API에서 처리) ── */
+async function uploadFileToServer(file, meta){
+  /* Storage 업로드 제거 — analyze.js에서 DB 직접 저장 */
+  currentLogId = null;
+  window._currentMeta = meta; // 분석 시 _meta로 전달
 }
 
 /* ── 파일 핸들링 ── */
@@ -810,11 +806,32 @@ async function loadImage(file){
     const reader=new FileReader();
     reader.onload=e=>{
       const dataUrl=e.target.result;
-      imageBase64=dataUrl.split(',')[1];imageMime=file.type;pdfText='';
-      uploadFileToServer(file,{region:document.getElementById('region')?.value||'unknown',areaPy:parseFloat(document.getElementById('areaNum')?.value)||0,totalAmount:null});
-      const prev=document.getElementById('imgPreviewArea');
-      prev.innerHTML=`<img class="img-preview" src="${dataUrl}"><div style="margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span class="file-type-badge img">IMAGE</span>${file.name}</div>`;
-      setStep(2);document.getElementById('analyzeBtn').disabled=false;resolve();
+      /* Canvas로 리사이즈 — Claude API 최대 7900px 제한 */
+      const img=new Image();
+      img.onload=()=>{
+        const MAX=7900;
+        let w=img.width, h=img.height;
+        /* 8000px 초과 시 비율 유지하며 축소 */
+        if(w>MAX||h>MAX){
+          if(w>h){ h=Math.round(h*(MAX/w)); w=MAX; }
+          else    { w=Math.round(w*(MAX/h)); h=MAX; }
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        /* JPEG으로 변환 (품질 0.92) */
+        const resizedDataUrl=canvas.toDataURL('image/jpeg',0.92);
+        imageBase64=resizedDataUrl.split(',')[1];
+        imageMime='image/jpeg';
+        pdfText='';
+        uploadFileToServer(file,{region:document.getElementById('region')?.value||'unknown',areaPy:parseFloat(document.getElementById('areaNum')?.value)||0,totalAmount:null});
+        const prev=document.getElementById('imgPreviewArea');
+        const sizeInfo=img.width!==w?` (리사이즈: ${img.width}×${img.height} → ${w}×${h})`:'';
+        prev.innerHTML=`<img class="img-preview" src="${resizedDataUrl}"><div style="margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span class="file-type-badge img">IMAGE</span>${file.name}${sizeInfo}</div>`;
+        setStep(2);document.getElementById('analyzeBtn').disabled=false;resolve();
+      };
+      img.src=dataUrl;
     };
     reader.readAsDataURL(file);
   });
@@ -1136,7 +1153,7 @@ Category: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박�
 
   const resp=await fetch('/api/analyze',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:SYS,messages:[{role:'user',content:userContent}],_logId:currentLogId||undefined,_region:region})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:SYS,messages:[{role:'user',content:userContent}],_logId:currentLogId||undefined,_region:region,_meta:window._currentMeta||{}})
   });
   if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
   const data=await resp.json();
@@ -1216,6 +1233,7 @@ async function doManualAnalyze(){
   const lines=filledItems.map(i=>{const sub=i.subItems.length?` [${i.subItems.join(',')}]`:'';return `${i.name}${sub}: ${Math.round(i.amount/10000)}만원`;}).join('\n');
   const profitLine=profitAmt>0?`\n기업이윤 (별도 표시됨): ${Math.round(profitAmt/10000)}만원`:'';
   const userContent=`인테리어 견적 항목 분석. 면적:${Math.round(m2)}㎡(${Math.round(py)}평) 지역:${region} 방:${roomCount}개 화장실:${bathCount}개 총액:${Math.round((totalAmount+profitAmt)/10000)}만원${profitStr}\n${lines}${profitLine}`;
+  window._currentMeta={areaPy:py, fileType:'manual', totalAmount:totalAmount+profitAmt};
   try{
     const result=await callAPI(userContent,region,py,m2,roomCount,bathCount);
     stopProgress();render(result);setStep(3);
