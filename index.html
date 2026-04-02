@@ -707,7 +707,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
             <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 8가지 상세 제공</div>
           </div>
           <button class="btn-pay" onclick="startPayment()">
-            상세 분석 열람하기 <span class="btn-pay-price">10,000원</span>
+            상세 분석 열람하기 <span class="btn-pay-price">10,000</span>
           </button>
           <div class="refund-notice">
             결제 완료 후 분석 결과 열람 시 환불이 불가합니다.<br>
@@ -809,6 +809,12 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
+window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -854,21 +860,17 @@ function updateHeaderUser() {
 
 async function restoreAuth() {
   try {
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    if (token && user) {
-      /* 서버에서 유효성 확인 */
-      const resp = await fetch('/api/auth?action=me', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        currentUser = data.user;
-        authToken = token;
-        updateHeaderUser();
-      } else {
-        clearAuth();
-      }
+    const { data: { session } } = await window._supabase.auth.getSession();
+    if (session?.user) {
+      currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.full_name
+          || session.user.user_metadata?.name
+          || session.user.email?.split('@')[0] || '회원'
+      };
+      authToken = session.access_token;
+      updateHeaderUser();
     }
   } catch(e) { clearAuth(); }
 }
@@ -965,65 +967,45 @@ async function doEmailAuth() {
 }
 
 async function doSocialAuth(provider) {
-  /* Supabase 소셜 로그인은 리다이렉트 방식 */
-  const redirectTo = encodeURIComponent(window.location.origin + '?socialLogin=1');
-  const supabaseUrl = 'https://YOUR_PROJECT.supabase.co'; // Vercel 환경변수로 대체
-  window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
+  document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=true; b.style.opacity='0.6'; });
+  try {
+    const { error } = await window._supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin + '/?socialLogin=1' }
+    });
+    if (error) {
+      showAuthError('소셜 로그인 오류: ' + error.message);
+      document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=false; b.style.opacity='1'; });
+    }
+  } catch(err) {
+    showAuthError('오류: ' + err.message);
+    document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=false; b.style.opacity='1'; });
+  }
 }
 
 async function doLogout() {
-  try {
-    await fetch('/api/auth?action=logout', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + authToken }
-    });
-  } catch(e) {}
+  try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
 
-/* ── 분석 버튼 게이트: 비로그인 시 모달 표시 ── */
-function gateAnalyze() {
-  if (currentUser) {
-    doAnalyze();
-  } else {
-    openAuthModal('login', 'analyze');
-  }
-}
-function gateManualAnalyze() {
-  if (currentUser) {
-    doManualAnalyze();
-  } else {
-    openAuthModal('login', 'analyzeManual');
-  }
-}
-
-/* 소셜 로그인 리다이렉트 처리 */
 async function checkSocialLoginReturn() {
   const params = new URLSearchParams(window.location.search);
   if (!params.get('socialLogin')) return;
   window.history.replaceState({}, '', window.location.pathname);
-  /* Supabase가 URL에 access_token 포함해서 리다이렉트 */
-  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
-  const token = hashParams.get('access_token');
-  if (token) {
-    const resp = await fetch('/api/auth?action=me', { headers: { 'Authorization': 'Bearer ' + token } });
-    if (resp.ok) {
-      const data = await resp.json();
-      saveAuth(data.user, token);
-      if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
-    }
-  }
-}
-
-
-let pdfText='', imageBase64='', imageMime='', allItems=[], lastResult=null, currentLogId=null, editedCats={};
-let prevPage='pageInput';
-
-/* ── 페이지 전환 ── */
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
+  try {
+    const { data: { session } } = await window._supabase.auth.getSession();
+    if (!session) return;
+    const user = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.user_metadata?.full_name
+        || session.user.user_metadata?.name
+        || session.user.email?.split('@')[0] || '회원'
+    };
+    saveAuth(user, session.access_token);
+    if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
+    else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
+  } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
 }
 function goLegal(type){
   prevPage=document.querySelector('.page.active').id;
