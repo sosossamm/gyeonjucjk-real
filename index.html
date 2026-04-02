@@ -370,6 +370,32 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .profit-input:focus{border-color:var(--accent);}
 .profit-unit{font-size:13px;font-weight:700;color:var(--muted);}
 
+/* ── 마이페이지 기록 카드 ── */
+.mp-hist-card{border:1px solid var(--rule);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:10px;transition:border-color .15s;}
+.mp-hist-card:hover{border-color:var(--ink3);}
+.mp-hist-card.exp{border-left:3px solid var(--exp-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.mp-hist-card.fair{border-left:3px solid var(--fair-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.mp-hist-card.cheap{border-left:3px solid var(--cheap-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.mp-hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap;}
+.mp-hist-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.mp-date{font-size:11px;color:var(--muted);}
+.mp-region{font-size:11px;font-weight:700;color:var(--ink3);background:var(--paper);padding:2px 8px;border-radius:4px;}
+.mp-area{font-size:11px;color:var(--hint);}
+.mp-vpill{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.mp-vpill.exp{background:var(--exp-bg);color:var(--exp);}
+.mp-vpill.fair{background:var(--fair-bg);color:var(--fair);}
+.mp-vpill.cheap{background:var(--cheap-bg);color:var(--cheap);}
+.mp-amount{font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--ink);margin-bottom:8px;}
+.mp-dots{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.mp-dot-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink3);}
+.mp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.mp-dot.exp{background:var(--exp-mid);}.mp-dot.fair{background:var(--fair-mid);}.mp-dot.cheap{background:var(--cheap-mid);}
+.mp-actions{display:flex;gap:7px;border-top:0.5px solid var(--rule);padding-top:10px;}
+.mp-btn-view{flex:1;height:36px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mp-btn-view:hover{background:var(--rule);}
+.mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mp-btn-share:hover{opacity:.85;}
+
 @media(max-width:640px){
   .profit-input-wrap{flex-direction:column;align-items:flex-start;}
 }
@@ -763,6 +789,49 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div><!-- /pageLegal -->
 
 
+<!-- ════════════════════════════════════════
+     PAGE 4: 마이페이지
+════════════════════════════════════════ -->
+<div id="pageMypage" class="page">
+<header class="top-bar">
+  <button class="back-btn" onclick="goBack()">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
+    돌아가기
+  </button>
+  <div class="bar-sep"></div>
+  <span class="bar-title">마이페이지</span>
+</header>
+<div class="result-wrap">
+
+  <!-- 프로필 -->
+  <div class="card" style="display:flex;align-items:center;gap:16px;padding:1.25rem 1.5rem;">
+    <div id="mpAvatar" style="width:46px;height:46px;border-radius:50%;background:#0F0E0C;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;"></div>
+    <div>
+      <div id="mpName" style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.3px;margin-bottom:3px;"></div>
+      <div id="mpEmail" style="font-size:12px;color:var(--muted);"></div>
+    </div>
+    <button onclick="doLogout()" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0;">로그아웃</button>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stats-row" id="mpStats">
+    <div class="stat-card"><div class="stat-label">총 분석</div><div class="stat-val neutral" id="mpTotal">—</div></div>
+    <div class="stat-card"><div class="stat-label">🔴 비쌈 판정</div><div class="stat-val exp" id="mpExp">—</div></div>
+    <div class="stat-card"><div class="stat-label">🔗 공유 링크</div><div class="stat-val neutral" id="mpShare">—</div></div>
+  </div>
+
+  <!-- 분석 기록 -->
+  <div class="card">
+    <div class="card-title">분석 기록</div>
+    <div id="mpHistoryList">
+      <div style="text-align:center;padding:2rem;color:var(--muted);font-size:14px;">불러오는 중...</div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /pageMypage -->
+
+
 <!-- ══ 인증 모달 ══ -->
 <div class="auth-overlay" id="authOverlay" onclick="handleOverlayClick(event)">
   <div class="auth-sheet" style="position:relative;">
@@ -849,8 +918,10 @@ function updateHeaderUser() {
   if (currentUser) {
     const name = currentUser.name || currentUser.email?.split('@')[0] || '회원';
     area.innerHTML = `
-      <span class="bar-user-name">${name}</span>
-      <button class="bar-logout-btn" onclick="doLogout()">로그아웃</button>`;
+      <button class="bar-login-btn" onclick="goMypage()" style="display:flex;align-items:center;gap:5px;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.4" stroke-linecap="round"><circle cx="6.5" cy="4.5" r="2.5"/><path d="M1.5 11.5a5 5 0 0110 0"/></svg>
+        ${name}
+      </button>`;
   } else {
     area.innerHTML = `<button class="bar-login-btn" onclick="openAuthModal('login')">로그인</button>`;
   }
@@ -1958,6 +2029,138 @@ function shareTwitter(){
   if(!currentShareUrl) return;
   const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적분석 서비스에서 확인했어요 👇`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
+}
+
+/* ── 마이페이지 ── */
+async function goMypage() {
+  if (!currentUser) { openAuthModal('login'); return; }
+  prevPage = document.querySelector('.page.active').id;
+  showPage('pageMypage');
+  loadMypage();
+}
+
+async function loadMypage() {
+  if (!currentUser || !authToken) return;
+
+  /* 프로필 */
+  const name = currentUser.name || currentUser.email?.split('@')[0] || '회원';
+  const initial = name.charAt(0).toUpperCase();
+  const av = document.getElementById('mpAvatar');
+  const nm = document.getElementById('mpName');
+  const em = document.getElementById('mpEmail');
+  if (av) av.textContent = initial;
+  if (nm) nm.textContent = name;
+  if (em) em.textContent = currentUser.email || '';
+
+  /* 기록 불러오기 */
+  try {
+    const resp = await fetch('/api/mypage?action=history', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || '불러오기 실패');
+
+    /* 통계 */
+    const s = data.stats || {};
+    const el = id => document.getElementById(id);
+    if (el('mpTotal')) el('mpTotal').textContent = (s.total || 0) + '건';
+    if (el('mpExp'))   el('mpExp').textContent   = (s.exp_count || 0) + '건';
+    if (el('mpShare')) el('mpShare').textContent = (s.share_count || 0) + '건';
+
+    /* 기록 목록 */
+    const list = document.getElementById('mpHistoryList');
+    if (!list) return;
+
+    const history = data.history || [];
+    if (history.length === 0) {
+      list.innerHTML = `
+        <div style="text-align:center;padding:2.5rem 1rem;color:var(--muted);">
+          <div style="font-size:32px;margin-bottom:10px;">📋</div>
+          <div style="font-size:14px;font-weight:700;color:var(--ink3);margin-bottom:5px;">아직 분석 기록이 없어요</div>
+          <div style="font-size:12px;line-height:1.6;">견적서를 업로드하고 분석해보세요</div>
+          <button onclick="goBack()" style="margin-top:14px;background:var(--ink);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">견적 분석하기</button>
+        </div>`;
+      return;
+    }
+
+    const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
+    const fmtDate = d => { const dt = new Date(d); return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`; };
+
+    list.innerHTML = history.map(h => {
+      const c = clsMap[h.verdict] || 'fair';
+      const amt = h.total_amount ? Math.round(h.total_amount/10000).toLocaleString('ko-KR')+'만원' : '—';
+      return `
+        <div class="mp-hist-card ${c}">
+          <div class="mp-hist-top">
+            <div class="mp-hist-meta">
+              <span class="mp-date">${fmtDate(h.created_at)}</span>
+              ${h.region ? `<span class="mp-region">${h.region}</span>` : ''}
+              ${h.area_py ? `<span class="mp-area">${Math.round(h.area_py)}평</span>` : ''}
+            </div>
+            <span class="mp-vpill ${c}">${h.verdict==='비쌈'?'🔴 비쌈':h.verdict==='저렴'?'💚 저렴':'🟡 적정'}</span>
+          </div>
+          <div class="mp-amount">${amt}</div>
+          ${h.item_count ? `
+          <div class="mp-dots">
+            <span class="mp-dot-item"><span class="mp-dot exp"></span>비쌈 ${h.exp_count}개</span>
+            <span class="mp-dot-item"><span class="mp-dot fair"></span>적정 ${h.fair_count}개</span>
+            <span class="mp-dot-item"><span class="mp-dot cheap"></span>저렴 ${h.cheap_count}개</span>
+          </div>` : ''}
+          <div class="mp-actions">
+            <button class="mp-btn-view" onclick="viewHistory('${h.id}')">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg>
+              결과 보기
+            </button>
+            <button class="mp-btn-share" onclick="shareHistory('${h.id}')">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
+              이 견적 공유하고 1회 무료 견적분석 받기
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(err) {
+    const list = document.getElementById('mpHistoryList');
+    if (list) list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--exp);font-size:13px;">불러오기 실패: ${err.message}</div>`;
+  }
+}
+
+async function viewHistory(logId) {
+  try {
+    const resp = await fetch(`/api/mypage?action=detail&id=${logId}`, {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.result) throw new Error(data.error || '불러오기 실패');
+    lastResult = data.result;
+    allItems = data.result.items || [];
+    render(data.result);
+  } catch(err) {
+    alert('결과를 불러올 수 없어요: ' + err.message);
+  }
+}
+
+async function shareHistory(logId) {
+  const btn = event.currentTarget;
+  const origText = btn.innerHTML;
+  btn.disabled = true; btn.style.opacity = '0.6';
+  try {
+    const resp = await fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logId })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || '링크 생성 실패');
+    currentShareUrl = data.url;
+    await navigator.clipboard.writeText(currentShareUrl);
+    btn.innerHTML = '✓ 링크 복사됨!';
+    btn.style.background = 'var(--cheap)';
+    setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = '1'; btn.style.background = ''; }, 3000);
+  } catch(err) {
+    alert('링크 생성 실패: ' + err.message);
+    btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = '1';
+  }
 }
 
 /* ── 리셋 ── */
