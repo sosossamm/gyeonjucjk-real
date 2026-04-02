@@ -228,7 +228,21 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .refund-notice{font-size:11px;color:rgba(0,0,0,0.4);margin-top:9px;line-height:1.6;text-align:center;}
 .refund-notice span{text-decoration:underline;cursor:pointer;color:var(--muted);}
 .blur-target{padding:1.5rem;}
-.paid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--cheap-bg);color:var(--cheap);border:1px solid var(--cheap-mid);font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px;margin-bottom:1rem;}
+.paid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--cheap-bg);color:var(--cheap);border:1px solid var(--cheap-mid);font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px;}
+.share-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;}
+.btn-share{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border:none;border-radius:20px;font-family:inherit;font-size:12px;font-weight:700;padding:5px 14px;cursor:pointer;transition:opacity 0.15s;}
+.btn-share:hover{opacity:0.8;}
+.btn-share svg{width:13px;height:13px;}
+.share-link-wrap{display:none;margin-top:8px;background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:10px 14px;width:100%;}
+.share-link-url{font-size:12px;color:var(--accent);word-break:break-all;margin-bottom:8px;}
+.share-copy-row{display:flex;gap:8px;}
+.btn-copy{font-size:11px;font-weight:700;padding:4px 12px;border:1.5px solid var(--rule);border-radius:20px;background:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all 0.15s;}
+.btn-copy:hover{border-color:var(--ink);color:var(--ink);}
+.btn-copy.copied{border-color:var(--cheap);color:var(--cheap);}
+.share-soc{display:flex;gap:6px;}
+.btn-soc{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;}
+.btn-soc.kakao{background:#FEE500;color:#3C1E1E;}
+.btn-soc.twitter{background:#1DA1F2;color:#fff;}
 
 /* items */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
@@ -262,14 +276,48 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .item-bar-fill.exp{background:var(--exp-mid);}
 .item-range{font-size:11px;color:var(--hint);white-space:nowrap;}
 
-/* advice */
-.advice-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;}
-.advice-item{background:var(--surface);border:0.5px solid var(--rule);border-radius:var(--radius-sm);padding:1rem 1.25rem;display:flex;gap:12px;align-items:flex-start;}
-.advice-item.highlight{border-color:var(--exp-mid);border-left:3px solid var(--exp-mid);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
-.advice-icon-wrap{width:33px;height:33px;border-radius:7px;background:var(--paper);border:0.5px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.advice-content{flex:1;min-width:0;}
-.advice-tag{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
-.advice-text{font-size:13px;line-height:1.8;color:var(--ink3);word-break:keep-all;}
+/* ── 전문가 팁 카드 ── */
+.tip-card{background:var(--surface);border:0.5px solid var(--rule);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;animation:fadeIn 0.3s ease both;}
+.tip-card.exp{border-left:3px solid var(--exp-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.tip-card.fair{border-left:3px solid var(--fair-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.tip-card.cheap{border-left:3px solid var(--cheap-mid);border-radius:0 var(--radius) var(--radius) 0;}
+.tip-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 11px;border-bottom:0.5px solid var(--rule);gap:12px;}
+.tip-header-left{display:flex;align-items:center;gap:10px;}
+.tip-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.tip-icon.exp{background:var(--exp-bg);}
+.tip-icon.fair{background:var(--fair-bg);}
+.tip-icon.cheap{background:var(--cheap-bg);}
+.tip-icon.neutral{background:var(--paper);}
+.tip-cat{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.tip-name{font-size:14px;font-weight:700;color:var(--ink);}
+.tip-amounts{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:4px;}
+.tip-current{font-size:17px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);}
+.tip-diff{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.tip-diff.exp{background:var(--exp-bg);color:var(--exp);}
+.tip-diff.fair{background:var(--fair-bg);color:var(--fair);}
+.tip-diff.cheap{background:var(--cheap-bg);color:var(--cheap);}
+.tip-market{display:flex;align-items:center;gap:8px;padding:7px 16px;background:var(--paper);border-bottom:0.5px solid var(--rule);}
+.tip-market-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.tip-market-range{font-size:12px;font-weight:700;color:var(--ink3);white-space:nowrap;}
+.tip-bar-wrap{flex:1;height:4px;background:var(--rule);border-radius:2px;overflow:hidden;}
+.tip-bar-fill{height:100%;border-radius:2px;}
+.tip-bar-fill.exp{background:var(--exp-mid);}
+.tip-bar-fill.fair{background:var(--fair-mid);}
+.tip-bar-fill.cheap{background:var(--cheap-mid);}
+.tip-ratio{font-size:11px;font-weight:700;white-space:nowrap;}
+.tip-ratio.exp{color:var(--exp);}
+.tip-ratio.fair{color:var(--fair);}
+.tip-ratio.cheap{color:var(--cheap);}
+.tip-body{padding:12px 16px 14px;}
+.tip-ways-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.tip-way{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--rule);}
+.tip-way:last-of-type{border-bottom:none;padding-bottom:0;}
+.tip-way-num{width:20px;height:20px;border-radius:50%;background:var(--paper);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.tip-way-num.exp{background:var(--exp-bg);color:var(--exp);}
+.tip-way-num.fair{background:var(--fair-bg);color:var(--fair);}
+.tip-way-text{font-size:13px;color:var(--ink3);line-height:1.65;word-break:keep-all;}
+.tip-question{margin-top:10px;padding:9px 12px;background:var(--paper);border-radius:var(--radius-sm);border:0.5px solid var(--rule);font-size:12px;color:var(--ink3);line-height:1.6;}
+.tip-question-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
 
 /* ── 약관 페이지 ── */
 .legal-wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
@@ -325,6 +373,56 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 @media(max-width:640px){
   .profit-input-wrap{flex-direction:column;align-items:flex-start;}
 }
+
+/* ── 인증 모달 ── */
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(15,14,12,0.55);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.auth-overlay.show{display:flex;}
+@media(min-width:560px){
+  .auth-overlay{align-items:center;}
+  .auth-sheet{border-radius:var(--radius)!important;max-width:400px;}
+}
+.auth-sheet{
+  background:var(--surface);width:100%;
+  border-radius:20px 20px 0 0;
+  padding:20px 20px 32px;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.auth-handle{width:36px;height:4px;background:var(--rule);border-radius:2px;margin:0 auto 18px;}
+.auth-icon{width:48px;height:48px;border-radius:50%;background:var(--paper);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;}
+.auth-title{font-size:17px;font-weight:800;color:var(--ink);text-align:center;letter-spacing:-.5px;margin-bottom:5px;}
+.auth-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:16px;}
+.auth-tabs{display:flex;gap:0;background:var(--paper);border-radius:var(--radius-sm);padding:3px;margin-bottom:16px;}
+.auth-tab{flex:1;padding:7px;border:none;background:none;border-radius:calc(var(--radius-sm) - 2px);font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;}
+.auth-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.auth-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.auth-input{width:100%;padding:11px 14px;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;color:var(--ink);background:var(--paper);outline:none;transition:border-color .15s;}
+.auth-input:focus{border-color:var(--accent);background:#fff;}
+.auth-input.error{border-color:var(--exp-mid);}
+.auth-error{font-size:12px;color:var(--exp);background:var(--exp-bg);border-radius:var(--radius-sm);padding:8px 12px;display:none;}
+.auth-error.show{display:block;}
+.btn-auth{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:opacity .15s;}
+.btn-auth:hover{opacity:.85;}
+.btn-auth:disabled{opacity:.4;cursor:not-allowed;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:4px 0;}
+.auth-divider-line{flex:1;height:0.5px;background:var(--rule);}
+.auth-divider-text{font-size:11px;color:var(--hint);}
+.btn-social-auth{width:100%;padding:11px;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .15s;margin-bottom:8px;}
+.btn-social-auth:hover{border-color:var(--ink);}
+.btn-social-auth.kakao{background:#FEE500;border-color:#FEE500;color:#3C1E1E;}
+.btn-social-auth.kakao:hover{border-color:#D4BE00;}
+.auth-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:none;background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;}
+
+/* 헤더 유저 영역 */
+.bar-user{display:flex;align-items:center;gap:8px;}
+.bar-user-name{font-size:12px;color:rgba(255,255,255,.7);font-weight:500;}
+.bar-login-btn{font-size:12px;font-weight:700;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background .15s;}
+.bar-login-btn:hover{background:rgba(255,255,255,.18);}
+.bar-logout-btn{font-size:11px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;font-family:inherit;}
 </style>
 </head>
 <body>
@@ -355,6 +453,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <span class="logo-word">견적<span>분석</span></span>
   <div class="bar-sep"></div>
   <span class="bar-tag">인테리어 견적 데이터 분석기</span>
+  <div class="bar-user" id="headerUserArea">
+    <button class="bar-login-btn" onclick="openAuthModal('login')">로그인</button>
+  </div>
 </header>
 
 <section class="hero">
@@ -440,7 +541,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
         </select>
       </div>
     </div>
-    <button class="btn-analyze" id="analyzeBtn" disabled onclick="doAnalyze()">
+    <button class="btn-analyze" id="analyzeBtn" disabled onclick="gateAnalyze()">
       <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
       AI 견적 분석 시작하기
     </button>
@@ -486,7 +587,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
         </select>
       </div>
     </div>
-    <button class="btn-analyze" id="analyzeBtnM" onclick="doManualAnalyze()" style="margin-top:1.25rem;">
+    <button class="btn-analyze" id="analyzeBtnM" onclick="gateManualAnalyze()" style="margin-top:1.25rem;">
       <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
       입력 내용으로 분석하기
     </button>
@@ -636,8 +737,8 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
 
   <div class="card" id="adviceCard" style="display:none;">
-    <div class="card-title">전문가 협상 팁 & 절약 가이드</div>
-    <div class="advice-grid" id="adviceGrid"></div>
+    <div class="card-title">전문가 팁 — 공종별 절약 가이드</div>
+    <div id="adviceGrid"></div>
   </div>
 
 </div><!-- /result-wrap -->
@@ -662,12 +763,259 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div><!-- /pageLegal -->
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://js.tosspayments.com/v2/standard"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><!-- ══ 인증 모달 ══ -->
+<div class="auth-overlay" id="authOverlay" onclick="handleOverlayClick(event)">
+  <div class="auth-sheet" style="position:relative;">
+    <button class="auth-close" onclick="closeAuthModal()">×</button>
+    <div class="auth-handle"></div>
+    <div class="auth-icon" id="authIcon">🔐</div>
+    <div class="auth-title" id="authTitle">분석 결과 확인하기</div>
+    <div class="auth-sub" id="authSub">로그인하고 견적 분석 결과를 확인하세요</div>
+
+    <div class="auth-tabs" id="authTabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login',this)">로그인</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup',this)">회원가입</button>
+    </div>
+
+    <!-- 소셜 로그인 -->
+    <button class="btn-social-auth kakao" onclick="doSocialAuth('kakao')">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.134 1 1 3.471 1 6.5c0 1.924 1.152 3.614 2.9 4.634L3.2 14l3.45-2.27c.44.06.89.09 1.35.09 3.866 0 7-2.471 7-5.5S11.866 1 8 1z" fill="#3C1E1E"/></svg>
+      카카오로 계속하기
+    </button>
+    <button class="btn-social-auth" onclick="doSocialAuth('google')">
+      <svg width="16" height="16" viewBox="0 0 16 16"><path d="M15.545 6.558a9.42 9.42 0 010 2.884H8.18v-2.884h4.157a4.44 4.44 0 00-.632-1.94L8.18 7.558V4.558l2.93-.001a7.5 7.5 0 014.435 2z" fill="#4285F4"/><path d="M8.18 15.5c2.07 0 3.806-.686 5.074-1.857l-2.47-1.94c-.685.46-1.56.73-2.604.73a4.513 4.513 0 01-4.257-3.115H1.4v2.004A7.5 7.5 0 008.18 15.5z" fill="#34A853"/><path d="M3.923 9.318A4.5 4.5 0 013.68 8a4.5 4.5 0 01.243-1.318V4.678H1.4A7.5 7.5 0 00.68 8c0 1.21.29 2.356.8 3.322l2.444-2.004z" fill="#FBBC05"/><path d="M8.18 3.5a4.09 4.09 0 012.883 1.127l2.16-2.16A7.27 7.27 0 008.18.5a7.5 7.5 0 00-6.78 4.178l2.523 1.96A4.513 4.513 0 018.18 3.5z" fill="#EA4335"/></svg>
+      Google로 계속하기
+    </button>
+
+    <div class="auth-divider">
+      <div class="auth-divider-line"></div>
+      <span class="auth-divider-text">또는 이메일로</span>
+      <div class="auth-divider-line"></div>
+    </div>
+
+    <div class="auth-form">
+      <div id="nameFieldWrap" style="display:none;">
+        <input class="auth-input" type="text" id="authName" placeholder="이름 (선택)">
+      </div>
+      <input class="auth-input" type="email" id="authEmail" placeholder="이메일">
+      <input class="auth-input" type="password" id="authPassword" placeholder="비밀번호 (6자 이상)">
+      <div class="auth-error" id="authError"></div>
+      <button class="btn-auth" id="btnAuthSubmit" onclick="doEmailAuth()">로그인</button>
+    </div>
+
+    <div style="text-align:center;font-size:12px;color:var(--muted);" id="authSwitchText">
+      계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab('signup',null)">회원가입</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ── 상태 ── */
+/* ══ AUTH 상태 ══ */
+let currentUser = null;
+let authToken = null;
+let authPendingAction = null; // 로그인 후 실행할 액션
+
+function saveAuth(user, token) {
+  currentUser = user;
+  authToken = token;
+  try {
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_user', JSON.stringify(user));
+  } catch(e) {}
+  updateHeaderUser();
+}
+
+function clearAuth() {
+  currentUser = null;
+  authToken = null;
+  try {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+  } catch(e) {}
+  updateHeaderUser();
+}
+
+function updateHeaderUser() {
+  const area = document.getElementById('headerUserArea');
+  if (!area) return;
+  if (currentUser) {
+    const name = currentUser.name || currentUser.email?.split('@')[0] || '회원';
+    area.innerHTML = `
+      <span class="bar-user-name">${name}</span>
+      <button class="bar-logout-btn" onclick="doLogout()">로그아웃</button>`;
+  } else {
+    area.innerHTML = `<button class="bar-login-btn" onclick="openAuthModal('login')">로그인</button>`;
+  }
+}
+
+async function restoreAuth() {
+  try {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('auth_user');
+    if (token && user) {
+      /* 서버에서 유효성 확인 */
+      const resp = await fetch('/api/auth?action=me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        currentUser = data.user;
+        authToken = token;
+        updateHeaderUser();
+      } else {
+        clearAuth();
+      }
+    }
+  } catch(e) { clearAuth(); }
+}
+
+/* ── 모달 제어 ── */
+let currentAuthTab = 'login';
+
+function openAuthModal(tab = 'login', pendingAction = null) {
+  authPendingAction = pendingAction;
+  switchAuthTab(tab, null);
+  document.getElementById('authOverlay').classList.add('show');
+  document.getElementById('authError').classList.remove('show');
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authName').value = '';
+}
+
+function closeAuthModal() {
+  document.getElementById('authOverlay').classList.remove('show');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('authOverlay')) closeAuthModal();
+}
+
+function switchAuthTab(tab, btn) {
+  currentAuthTab = tab;
+  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.auth-tab');
+    tabs.forEach(t => { if ((tab==='login'&&t.textContent==='로그인')||(tab==='signup'&&t.textContent==='회원가입')) t.classList.add('active'); });
+  }
+  const isSignup = tab === 'signup';
+  document.getElementById('nameFieldWrap').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('btnAuthSubmit').textContent = isSignup ? '회원가입' : '로그인';
+  document.getElementById('authSwitchText').innerHTML = isSignup
+    ? '이미 계정이 있으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'login\',null)">로그인</span>'
+    : '계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'signup\',null)">회원가입</span>';
+  document.getElementById('authError').classList.remove('show');
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doEmailAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('authName').value.trim();
+  const btn = document.getElementById('btnAuthSubmit');
+
+  if (!email || !password) return showAuthError('이메일과 비밀번호를 입력해주세요');
+  if (password.length < 6) return showAuthError('비밀번호는 6자 이상이어야 해요');
+
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
+
+  try {
+    const action = currentAuthTab === 'signup' ? 'signup' : 'login';
+    const resp = await fetch(`/api/auth?action=${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.success) {
+      showAuthError(data.error || '오류가 발생했어요');
+      btn.disabled = false;
+      btn.textContent = currentAuthTab === 'signup' ? '회원가입' : '로그인';
+      return;
+    }
+
+    saveAuth(data.user, data.access_token);
+    closeAuthModal();
+
+    /* 로그인 후 pending 액션 실행 */
+    if (authPendingAction === 'analyze') {
+      authPendingAction = null;
+      doAnalyze();
+    } else if (authPendingAction === 'analyzeManual') {
+      authPendingAction = null;
+      doManualAnalyze();
+    }
+
+  } catch(err) {
+    showAuthError('네트워크 오류가 발생했어요');
+    btn.disabled = false;
+    btn.textContent = currentAuthTab === 'signup' ? '회원가입' : '로그인';
+  }
+}
+
+async function doSocialAuth(provider) {
+  /* Supabase 소셜 로그인은 리다이렉트 방식 */
+  const redirectTo = encodeURIComponent(window.location.origin + '?socialLogin=1');
+  const supabaseUrl = 'https://YOUR_PROJECT.supabase.co'; // Vercel 환경변수로 대체
+  window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
+}
+
+async function doLogout() {
+  try {
+    await fetch('/api/auth?action=logout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+  } catch(e) {}
+  clearAuth();
+}
+
+/* ── 분석 버튼 게이트: 비로그인 시 모달 표시 ── */
+function gateAnalyze() {
+  if (currentUser) {
+    doAnalyze();
+  } else {
+    openAuthModal('login', 'analyze');
+  }
+}
+function gateManualAnalyze() {
+  if (currentUser) {
+    doManualAnalyze();
+  } else {
+    openAuthModal('login', 'analyzeManual');
+  }
+}
+
+/* 소셜 로그인 리다이렉트 처리 */
+async function checkSocialLoginReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get('socialLogin')) return;
+  window.history.replaceState({}, '', window.location.pathname);
+  /* Supabase가 URL에 access_token 포함해서 리다이렉트 */
+  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+  const token = hashParams.get('access_token');
+  if (token) {
+    const resp = await fetch('/api/auth?action=me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (resp.ok) {
+      const data = await resp.json();
+      saveAuth(data.user, token);
+      if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
+    }
+  }
+}
+
+
 let pdfText='', imageBase64='', imageMime='', allItems=[], lastResult=null, currentLogId=null, editedCats={};
 let prevPage='pageInput';
 
@@ -1121,7 +1469,7 @@ PROFIT MARGIN DETECTION:
 4. ITEM NAME: Use the EXACT name from the original estimate document, not the reference name.
 
 JSON format — items array MUST preserve original document order:
-{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"advices":["팁1","팁2","팁3","팁4","팁5","팁6","팁7","팁8"]}
+{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"tips":[{"category":"철거/방수","itemName":"전체철거","icon":"🔨","verdict":"비쌈","currentAmount":0,"marketMin":0,"marketMax":0,"diffAmount":0,"ways":["절약방법1","절약방법2","절약방법3"],"question":"업체에 물어볼 질문"}]}
 
 Verdict rules:
 - 저렴: amount < marketMin × 0.9
@@ -1131,8 +1479,18 @@ Verdict rules:
 
 ${ALL_ITEMS_REF}
 
-For advices, write exactly 8 tips. Each tip MUST follow this structure:
-[공정명] ${region} 기준 평균 OO만원~OO만원인데 현재 견적은 OO만원입니다. [비용이 높아지는 주요 원인 2가지]. [절약·협상할 수 있는 구체적 행동 2가지]. 업체에 [구체적으로 물어봐야 할 질문]을 확인해보세요.
+For tips array, write one tip object per 비쌈 item (max 8), then fill remaining slots with 적정 items.
+Each tip object MUST have:
+- category: 공정 카테고리명
+- itemName: 견적서 항목명 (원본 그대로)
+- icon: 해당 공종 이모지 (🔨철거 🪟창호 🏗️설비 🪚목공 🪵바닥 🖼️도배 🎨도장 🟫타일 🚿욕실 🍳주방 🚪가구 💡전기 💰기업이윤 🔩기타)
+- verdict: 저렴/적정/비쌈
+- currentAmount: 현재 견적 금액 (원)
+- marketMin: 시중가 최저 (원)
+- marketMax: 시중가 최고 (원)
+- diffAmount: currentAmount - (marketMin+marketMax)/2 양수면 초과 음수면 절감
+- ways: 절약 방법 3~5가지 배열. 각 항목은 구체적 금액·브랜드·수량 포함 (각 40~80자)
+- question: 업체에 반드시 물어봐야 할 핵심 질문 1개 (30~60자)
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
 Market refs per 평 (${region}기준):
@@ -1261,7 +1619,7 @@ function fmt(n){
 
 function render(r){
   allItems=r.items||[];lastResult=r;
-  sessionStorage.setItem('analysisResult',JSON.stringify(r));
+  /* sessionStorage는 결제 후 복귀 시에만 사용 — 일반 분석 후엔 저장 안 함 */
 
   const vmap={
     '저렴':{cls:'cheap',icon:'💚',label:'전체 종합: 저렴',title:'시중 평균보다 저렴한 견적입니다'},
@@ -1346,22 +1704,98 @@ function renderPaidDetail(){
   dc.classList.remove('is-locked');
   const bt=dc.querySelector('.blur-target');if(bt)bt.style.display='none';
   document.getElementById('paidDetail').style.display='block';
-  document.getElementById('paidBadgeArea').innerHTML='<div class="paid-badge">✓ 상세 분석 열람 완료</div>';
-  renderItems('all');
-  const advs=(lastResult&&lastResult.advices)||[];
-  const tipMeta=[
-    {icon:'🔴',label:'비쌈 항목 협상',h:true},{icon:'🔴',label:'비쌈 항목 협상',h:true},
-    {icon:'🪵',label:'자재 절약 팁',h:false},{icon:'📦',label:'묶음 할인 전략',h:false},
-    {icon:'📅',label:'시기 할인 팁',h:false},{icon:'🔍',label:'업체 선정 방법',h:false},
-    {icon:'📋',label:'계약 조건 협상',h:false},{icon:'⚠️',label:'추가비용 방지',h:false},
-  ];
-  document.getElementById('adviceGrid').innerHTML=advs.map((a,i)=>{
-    const m=tipMeta[i]||{icon:'💡',label:'절약 팁',h:false};
-    return `<div class="advice-item${m.h?' highlight':''}">
-      <div class="advice-icon-wrap"><span style="font-size:14px;">${m.icon}</span></div>
-      <div class="advice-content"><div class="advice-tag">${m.label}</div><div class="advice-text">${a}</div></div>
+  document.getElementById('paidBadgeArea').innerHTML=`
+    <div class="share-row">
+      <div class="paid-badge">✓ 상세 분석 열람 완료</div>
+      <button class="btn-share" onclick="createShareLink()">
+        <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="10" cy="2.5" r="1.5"/><circle cx="2.5" cy="6.5" r="1.5"/><circle cx="10" cy="10.5" r="1.5"/>
+          <path d="M4 7.5l4.5 2M8.5 3.5L4 5.5"/>
+        </svg>
+        공유 링크 만들기
+      </button>
+    </div>
+    <div class="share-link-wrap" id="shareLinkWrap">
+      <div class="share-link-url" id="shareLinkUrl"></div>
+      <div class="share-copy-row">
+        <button class="btn-copy" id="btnCopy" onclick="copyShareLink()">링크 복사</button>
+        <div class="share-soc">
+          <button class="btn-soc kakao" onclick="shareKakao()">카카오 공유</button>
+          <button class="btn-soc twitter" onclick="shareTwitter()">트위터</button>
+        </div>
+      </div>
     </div>`;
-  }).join('');
+
+  renderItems('all');
+
+  const tips=(lastResult&&lastResult.tips)||[];
+  const clsMap={비쌈:'exp',적정:'fair',저렴:'cheap'};
+
+  if(tips.length>0){
+    document.getElementById('adviceGrid').innerHTML=tips.map((tip,idx)=>{
+      const c=clsMap[tip.verdict]||'fair';
+      const barPct=Math.min(((tip.ratioVsAvg||(tip.marketMin&&tip.marketMax?(tip.currentAmount/((tip.marketMin+tip.marketMax)/2)*100):100))||100)/2,100);
+      const avg=tip.marketMin&&tip.marketMax?Math.round((tip.marketMin+tip.marketMax)/2):0;
+      const diff=tip.diffAmount||0;
+      const diffAbs=Math.abs(diff);
+      const diffSign=diff>0?'+':diff<0?'-':'';
+      const diffLabel=diff>0?`적정가 대비 +${fmt(diffAbs)}`
+        :diff<0?`적정가 대비 ${fmt(diffAbs)} 절감`
+        :'시중가 적정 수준';
+      const arrowUp=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 8V2M2 5l3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+      const arrowOk=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+      const arrowDn=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 2v6M2 5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+      const arrow=diff>0?arrowUp:diff<0?arrowDn:arrowOk;
+      const ratioNum=tip.marketMin&&tip.marketMax?Math.round(tip.currentAmount/((tip.marketMin+tip.marketMax)/2)*100):0;
+      const ratioLabel=ratioNum?`${ratioNum}%`:(c==='exp'?'비쌈':c==='cheap'?'저렴':'적정');
+
+      return `<div class="tip-card ${c}" style="animation-delay:${idx*50}ms">
+        <div class="tip-header">
+          <div class="tip-header-left">
+            <div class="tip-icon ${c}">${tip.icon||'💡'}</div>
+            <div>
+              <div class="tip-cat">${tip.category||''}</div>
+              <div class="tip-name">${tip.itemName||''}</div>
+            </div>
+          </div>
+          <div class="tip-amounts">
+            <div class="tip-current">${fmt(tip.currentAmount)}</div>
+            <div class="tip-diff ${c}">${arrow} ${diffLabel}</div>
+          </div>
+        </div>
+        ${tip.marketMin&&tip.marketMax?`
+        <div class="tip-market">
+          <div class="tip-market-label">시중가 범위</div>
+          <div class="tip-market-range">${fmt(tip.marketMin)} ~ ${fmt(tip.marketMax)}</div>
+          <div class="tip-bar-wrap"><div class="tip-bar-fill ${c}" style="width:${barPct}%"></div></div>
+          <div class="tip-ratio ${c}">${ratioLabel}</div>
+        </div>`:''}
+        <div class="tip-body">
+          ${tip.ways&&tip.ways.length?`
+          <div class="tip-ways-label">절약 방법</div>
+          ${tip.ways.map((w,wi)=>`
+            <div class="tip-way">
+              <div class="tip-way-num ${c}">${wi+1}</div>
+              <div class="tip-way-text">${w}</div>
+            </div>`).join('')}`:''}
+          ${tip.question?`
+          <div class="tip-question">
+            <div class="tip-question-label">업체에 물어보세요</div>
+            ${tip.question}
+          </div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    /* tips 없고 구버전 advices만 있을 때 fallback */
+    const advs=(lastResult&&lastResult.advices)||[];
+    document.getElementById('adviceGrid').innerHTML=advs.map((a,i)=>`
+      <div class="tip-card" style="animation-delay:${i*50}ms">
+        <div class="tip-body" style="padding:14px 16px;">
+          <div class="tip-way-text">${a}</div>
+        </div>
+      </div>`).join('');
+  }
   document.getElementById('adviceCard').style.display='block';
 }
 
@@ -1430,12 +1864,21 @@ async function startPayment(){
 
 async function checkPaymentReturn(){
   const params=new URLSearchParams(window.location.search);
-  const paymentKey=params.get('paymentKey');
   const orderId=params.get('orderId');
   const amount=params.get('amount');
-  if(!orderId||!amount)return;
+
+  /* 결제 파라미터 없으면 즉시 종료 + 남은 세션 데이터 정리 */
+  if(!orderId||!amount){
+    sessionStorage.removeItem('analysisResult');
+    return;
+  }
+
+  const paymentKey=params.get('paymentKey');
   window.history.replaceState({},'',window.location.pathname);
+
   const saved=sessionStorage.getItem('analysisResult');
+  sessionStorage.removeItem('analysisResult'); /* 사용 후 즉시 삭제 */
+
   if(!saved){alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.');return;}
   lastResult=JSON.parse(saved);allItems=lastResult.items||[];
   try{
@@ -1445,8 +1888,7 @@ async function checkPaymentReturn(){
       body:JSON.stringify({paymentKey:paymentKey||'',orderId,amount:parseInt(amount)})
     });
     let data={success:false};
-    try{ data=await resp.json(); }catch(jsonErr){ /* 빈 응답 무시 */ }
-    /* 응답이 비어있거나 서버 오류여도 결제 완료 처리 (토스 결제는 이미 완료됨) */
+    try{ data=await resp.json(); }catch(jsonErr){}
     if(data.success||resp.ok||!paymentKey){
       render(lastResult);
       setTimeout(()=>renderPaidDetail(),400);
@@ -1454,12 +1896,56 @@ async function checkPaymentReturn(){
       alert('결제 검증 실패: '+(data.message||'다시 시도해주세요'));
     }
   }catch(e){
-    /* 네트워크 오류여도 결제는 완료됐으므로 열람 허용 */
     render(lastResult);
     setTimeout(()=>renderPaidDetail(),400);
   }
 }
-window.addEventListener('load',checkPaymentReturn);
+window.addEventListener('load', async () => {
+  await restoreAuth();
+  await checkSocialLoginReturn();
+  await checkPaymentReturn();
+});
+
+/* ── 공유 링크 ── */
+let currentShareUrl = '';
+async function createShareLink(){
+  const btn = document.querySelector('.btn-share');
+  if(btn){ btn.textContent='생성 중...'; btn.disabled=true; }
+  try{
+    const resp = await fetch('/api/share', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ analysisResult: lastResult })
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || '링크 생성 실패');
+    currentShareUrl = data.url;
+    document.getElementById('shareLinkUrl').textContent = currentShareUrl;
+    document.getElementById('shareLinkWrap').style.display = 'block';
+    if(btn){ btn.innerHTML='✓ 링크 생성됨'; btn.style.background='var(--cheap)'; }
+  }catch(err){
+    alert('링크 생성 실패: ' + err.message);
+    if(btn){ btn.textContent='공유 링크 만들기'; btn.disabled=false; }
+  }
+}
+function copyShareLink(){
+  if(!currentShareUrl) return;
+  navigator.clipboard.writeText(currentShareUrl).then(()=>{
+    const btn = document.getElementById('btnCopy');
+    btn.textContent='복사됨!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='링크 복사'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function shareKakao(){
+  if(!currentShareUrl) return;
+  const text = `내 인테리어 견적 분석 결과를 공유해요!\n총 견적: ${document.getElementById('verdictTotal')?.textContent||''}\n판정: ${lastResult?.overallVerdict||''}\n${currentShareUrl}`;
+  window.open(`https://accounts.kakao.com/login?continue=${encodeURIComponent(currentShareUrl)}`, '_blank');
+}
+function shareTwitter(){
+  if(!currentShareUrl) return;
+  const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적분석 서비스에서 확인했어요 👇`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
+}
 
 /* ── 리셋 ── */
 function doReset(){
