@@ -763,7 +763,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div><!-- /pageLegal -->
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><!-- ══ 인증 모달 ══ -->
+<!-- ══ 인증 모달 ══ -->
 <div class="auth-overlay" id="authOverlay" onclick="handleOverlayClick(event)">
   <div class="auth-sheet" style="position:relative;">
     <button class="auth-close" onclick="closeAuthModal()">×</button>
@@ -810,14 +810,12 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
 window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<script src="https://js.tosspayments.com/v2/standard"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* ══ AUTH 상태 ══ */
@@ -1721,7 +1719,7 @@ function renderPaidDetail(){
           <circle cx="10" cy="2.5" r="1.5"/><circle cx="2.5" cy="6.5" r="1.5"/><circle cx="10" cy="10.5" r="1.5"/>
           <path d="M4 7.5l4.5 2M8.5 3.5L4 5.5"/>
         </svg>
-        공유 링크 만들기
+        공유하고 견적분석 1회 무료로 받기
       </button>
     </div>
     <div class="share-link-wrap" id="shareLinkWrap">
@@ -1926,6 +1924,12 @@ async function createShareLink(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ analysisResult: lastResult })
     });
+    /* JSON 파싱 전 Content-Type 확인 */
+    const ct = resp.headers.get('content-type')||'';
+    if(!ct.includes('application/json')){
+      const text = await resp.text();
+      throw new Error('서버 응답 오류 (share.js 파일이 api/ 폴더에 없을 수 있어요): ' + text.slice(0,80));
+    }
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || '링크 생성 실패');
     currentShareUrl = data.url;
@@ -1934,7 +1938,7 @@ async function createShareLink(){
     if(btn){ btn.innerHTML='✓ 링크 생성됨'; btn.style.background='var(--cheap)'; }
   }catch(err){
     alert('링크 생성 실패: ' + err.message);
-    if(btn){ btn.textContent='공유 링크 만들기'; btn.disabled=false; }
+    if(btn){ btn.textContent='공유하고 견적분석 1회 무료로 받기'; btn.disabled=false; }
   }
 }
 function copyShareLink(){
