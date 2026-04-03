@@ -370,7 +370,33 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .profit-input:focus{border-color:var(--accent);}
 .profit-unit{font-size:13px;font-weight:700;color:var(--muted);}
 
-/* ── 마이페이지 기록 카드 ── */
+/* ── OCR 편집 ── */
+.ocr-row{display:grid;grid-template-columns:1fr 150px 120px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--rule);transition:background .1s;}
+.ocr-row:last-child{border-bottom:none;}
+.ocr-row:hover{background:var(--paper);}
+.ocr-name{font-size:12px;font-weight:600;color:var(--ink);padding-right:8px;line-height:1.4;}
+.ocr-cat-cell{display:flex;justify-content:center;padding:0 8px;}
+.ocr-amt-cell{display:flex;align-items:center;justify-content:center;gap:3px;padding:0 8px;}
+.ocr-select{
+  width:100%;padding:6px 8px;
+  border:1.5px solid #E8E5E0;border-radius:7px;
+  font-family:inherit;font-size:11px;color:var(--ink3);
+  background:#F0EEE9;
+  outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;
+  text-align:center;transition:all .15s;
+}
+.ocr-select:hover{background:#E8E5DF;border-color:#D0CEC9;}
+.ocr-select:focus{background:#fff;border-color:var(--accent);}
+.ocr-amt-input{
+  width:65px;padding:6px 8px;
+  border:1.5px solid #E8E5E0;border-radius:7px;
+  font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);
+  background:#F0EEE9;
+  outline:none;text-align:right;transition:all .15s;
+}
+.ocr-amt-input:hover{background:#E8E5DF;border-color:#D0CEC9;}
+.ocr-amt-input:focus{background:#fff;border-color:var(--accent);}
+.ocr-unit{font-size:10px;color:var(--hint);white-space:nowrap;}
 .mp-hist-card{border:1px solid var(--rule);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:10px;transition:border-color .15s;}
 .mp-hist-card:hover{border-color:var(--ink3);}
 .mp-hist-card.exp{border-left:3px solid var(--exp-mid);border-radius:0 var(--radius) var(--radius) 0;}
@@ -769,6 +795,52 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 </div><!-- /result-wrap -->
 </div><!-- /pageResult -->
+
+
+<!-- ════════════════════════════════════════
+     PAGE: OCR 편집
+════════════════════════════════════════ -->
+<div id="pageOcrEdit" class="page">
+<header class="top-bar">
+  <div class="logo-mark">
+    <svg viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="8" fill="#0F0E0C"/><rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/><line x1="7.5" y1="10" x2="13.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/><line x1="7.5" y1="13" x2="13.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/><rect x="18" y="14" width="11" height="14" rx="1.5" fill="white" opacity="0.6"/></svg>
+  </div>
+  <span class="logo-word">견적<span>분석</span></span>
+  <div class="bar-sep"></div>
+  <span class="bar-tag">인식 결과 확인</span>
+  <div class="bar-user" id="headerUserAreaOcr"></div>
+</header>
+<div class="result-wrap">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:0.75rem;">공종 분류 확인</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종 분류와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
+
+    <!-- 컬럼 헤더 -->
+    <div style="display:grid;grid-template-columns:1fr 150px 120px;padding:6px 0;border-bottom:1.5px solid var(--rule);margin-bottom:2px;">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);">항목명</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">공종 분류</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">금액</span>
+    </div>
+
+    <!-- 항목 목록 -->
+    <div id="ocrEditList"></div>
+
+    <!-- 총액 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 0;border-top:1px solid var(--rule);margin-top:4px;">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);">총 견적금액</span>
+      <span style="font-size:18px;font-weight:800;letter-spacing:-1px;color:var(--ink);" id="ocrTotalAmt">—</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:0.25rem;">
+    <button class="btn-analyze" style="flex:1;background:var(--surface);color:var(--ink);border:1.5px solid var(--rule);font-size:13px;" onclick="showPage('pageInput')">다시 업로드</button>
+    <button class="btn-analyze" style="flex:2;" id="ocrConfirmBtn" onclick="doAnalyzeFromOcr()">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
+      이 내용으로 AI 분석 시작
+    </button>
+  </div>
+</div>
+</div><!-- /pageOcrEdit -->
 
 
 <!-- ════════════════════════════════════════
@@ -1615,8 +1687,17 @@ async function doAnalyze(){
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('errorBox').style.display='none';
   setStep(2);startProgress(isImg);
+
+  /* OCR 파싱용 프롬프트 — 공종 분류 포함한 항목 목록만 추출 */
+  const ocrPrompt=`Return ONLY a raw JSON array. No markdown, no explanation.
+Extract ALL line items from this interior renovation estimate.
+For each item return: {"name":"항목명","category":"공종","amount":숫자(만원단위)}
+category must be one of: 철거/방수 창호/샷시 확장/설비 목공 바닥재 도배 도장 타일 욕실 주방 가구/붙박이장 조명/전기 기업이윤 기타
+amount must be a number in 만원 units (e.g. 150 for 150만원, 1500000원 → 150)
+Preserve original document order.`;
+
   let userContent;
-  const orderInstruction=`면적: ${Math.round(m2)}㎡(${Math.round(py)}평) / 지역: ${region} / 방: ${roomCount}개 / 화장실: ${bathCount}개\n[중요] 견적서 항목을 위→아래 순서 그대로 모두 JSON items에 담아주세요. 항목을 합치거나 순서를 바꾸지 마세요. 금액이 적힌 모든 라인을 개별 항목으로 분리해주세요.`;
+  const orderInstruction=`면적: ${Math.round(m2)}㎡(${Math.round(py)}평) / 지역: ${region} / 방: ${roomCount}개 / 화장실: ${bathCount}개\n${ocrPrompt}`;
   if(isImg){
     userContent=[
       {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
@@ -1624,10 +1705,114 @@ async function doAnalyze(){
     ];
   } else {
     userContent=`${orderInstruction}\n\n--- 견적서 원본 ---\n${pdfText.slice(0,5000)}`;
-  }  try{
-    const result=await callAPI(userContent,region,py,m2,roomCount,bathCount);
+  }
+
+  try{
+    /* OCR 파싱 단계 */
+    const resp=await fetch('/api/analyze',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:4000,
+        messages:[{role:'user',content:userContent}],
+        _region:region,_meta:{areaPy:py,fileType:isImg?'image':'pdf'}
+      })
+    });
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
+    const raw=data.content.map(b=>b.text||'').join('');
+    const match=raw.match(/\[[\s\S]*\]/);
+    if(!match)throw new Error('항목 인식 실패. 다시 시도해주세요.');
+    let items=JSON.parse(match[0]);
+
+    stopProgress();
+
+    /* 분석 파라미터 저장 */
+    window._ocrParams={area,unit,region,roomCount,bathCount,py,m2,isImg};
+    /* OCR 편집 화면 표시 */
+    showOcrEdit(items);
+
+  }catch(err){
+    stopProgress();
+    showError('분석 오류: '+err.message);
+    document.getElementById('analyzeBtn').disabled=false;
+  }
+}
+
+/* OCR 편집 화면 렌더링 */
+const OCR_CATS=['철거/방수','창호/샷시','확장/설비','목공','바닥재','도배','도장','타일','욕실','주방','가구/붙박이장','조명/전기','기업이윤','기타'];
+
+function showOcrEdit(items){
+  window._ocrItems=items;
+  showPage('pageOcrEdit');
+  /* 헤더 유저 복사 */
+  const src=document.getElementById('headerUserArea');
+  const dst=document.getElementById('headerUserAreaOcr');
+  if(src&&dst) dst.innerHTML=src.innerHTML;
+  renderOcrList();
+}
+
+function renderOcrList(){
+  const items=window._ocrItems||[];
+  const list=document.getElementById('ocrEditList');
+  if(!list)return;
+
+  list.innerHTML=items.map((item,i)=>{
+    const amtWan=item.amount||0;
+    const catOpts=OCR_CATS.map(c=>`<option value="${c}"${c===item.category?' selected':''}>${c}</option>`).join('');
+    return `<div class="ocr-row">
+      <div class="ocr-name">${item.name||''}</div>
+      <div class="ocr-cat-cell">
+        <select class="ocr-select" onchange="ocrUpdateCat(${i},this.value)">${catOpts}</select>
+      </div>
+      <div class="ocr-amt-cell">
+        <input class="ocr-amt-input" type="number" value="${amtWan}" min="0"
+          oninput="ocrUpdateAmt(${i},this.value)">
+        <span class="ocr-unit">만원</span>
+      </div>
+    </div>`;
+  }).join('');
+  updateOcrTotal();
+}
+
+function ocrUpdateCat(i,val){
+  if(window._ocrItems&&window._ocrItems[i]) window._ocrItems[i].category=val;
+}
+function ocrUpdateAmt(i,val){
+  if(window._ocrItems&&window._ocrItems[i]){
+    window._ocrItems[i].amount=parseFloat(val)||0;
+    updateOcrTotal();
+  }
+}
+function updateOcrTotal(){
+  const items=window._ocrItems||[];
+  const total=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  const el=document.getElementById('ocrTotalAmt');
+  if(el) el.textContent=total?Math.round(total).toLocaleString('ko-KR')+'만원':'—';
+}
+
+/* OCR 편집 완료 → 본분석 */
+async function doAnalyzeFromOcr(){
+  const items=window._ocrItems||[];
+  const p=window._ocrParams||{};
+  if(!items.length){alert('항목이 없어요');return;}
+
+  const btn=document.getElementById('ocrConfirmBtn');
+  if(btn){btn.disabled=true;}
+  showPage('pageResult');
+  setStep(2);startProgress(false);
+
+  const lines=items.map(it=>`[${it.category||'기타'}] ${it.name}: ${it.amount||0}만원`).join('\n');
+  const userContent=`면적: ${Math.round(p.m2||0)}㎡(${Math.round(p.py||0)}평) / 지역: ${p.region||''} / 방: ${p.roomCount||3}개 / 화장실: ${p.bathCount||1}개\n총액: ${items.reduce((s,i)=>s+(i.amount||0),0)}만원\n\n--- 견적 항목 (공종 분류 확정) ---\n${lines}`;
+
+  try{
+    const result=await callAPI(userContent,p.region,p.py,p.m2,p.roomCount,p.bathCount);
     stopProgress();render(result);setStep(3);
-  }catch(err){showError('분석 오류: '+err.message);document.getElementById('analyzeBtn').disabled=false;}
+  }catch(err){
+    stopProgress();
+    showError('분석 오류: '+err.message);
+    if(btn){btn.disabled=false;}
+  }
 }
 
 /* ── 분석 실행 (직접입력) ── */
