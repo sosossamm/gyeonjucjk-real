@@ -732,6 +732,24 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     </div>
   </div>
 
+  <!-- 공유 CTA 버튼 -->
+  <div id="shareCTAWrap" style="margin-bottom:1.25rem;display:none;">
+    <button onclick="createShareLink()" style="width:100%;padding:1rem;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="3" r="1.8"/><circle cx="3" cy="8" r="1.8"/><circle cx="12" cy="13" r="1.8"/><path d="M4.7 9l5.7 3M10.4 4L4.7 7"/></svg>
+      견적 공유하고 상세분석 무료 1회 받기
+    </button>
+    <div class="share-link-wrap" id="shareLinkWrap" style="display:none;margin-top:8px;">
+      <div class="share-link-url" id="shareLinkUrl"></div>
+      <div class="share-copy-row">
+        <button class="btn-copy" id="btnCopy" onclick="copyShareLink()">링크 복사</button>
+        <div class="share-soc">
+          <button class="btn-soc kakao" onclick="shareKakao()">카카오 공유</button>
+          <button class="btn-soc twitter" onclick="shareTwitter()">트위터</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="paywall-wrap">
     <div class="paywall-preview">
       <div class="section-header" style="margin-bottom:0;">
@@ -1105,6 +1123,10 @@ async function doEmailAuth() {
     } else if (authPendingAction === 'analyzeManual') {
       authPendingAction = null;
       doManualAnalyze();
+    } else if (authPendingAction && authPendingAction.startsWith('share:')) {
+      const shareId = authPendingAction.replace('share:', '');
+      authPendingAction = null;
+      loadSharedResult(shareId);
     }
 
   } catch(err) {
@@ -1153,6 +1175,11 @@ async function checkSocialLoginReturn() {
     saveAuth(user, session.access_token);
     if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
+    else if (authPendingAction && authPendingAction.startsWith('share:')) {
+      const shareId = authPendingAction.replace('share:', '');
+      authPendingAction = null;
+      loadSharedResult(shareId);
+    }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
 }
 /* ── 분석 버튼 게이트: 비로그인 시 모달 표시 ── */
@@ -1970,6 +1997,10 @@ function render(r){
   allItems=r.items||[];lastResult=r;
   /* sessionStorage는 결제 후 복귀 시에만 사용 — 일반 분석 후엔 저장 안 함 */
 
+  /* 공유 CTA 버튼 표시 */
+  const shareCTA=document.getElementById('shareCTAWrap');
+  if(shareCTA) shareCTA.style.display='block';
+
   const vmap={
     '저렴':{cls:'cheap',icon:'💚',label:'전체 종합: 저렴',title:'시중 평균보다 저렴한 견적입니다'},
     '적정':{cls:'fair',icon:'🟡',label:'전체 종합: 적정',title:'시중 평균 수준의 견적입니다'},
@@ -2056,23 +2087,6 @@ function renderPaidDetail(){
   document.getElementById('paidBadgeArea').innerHTML=`
     <div class="share-row">
       <div class="paid-badge">✓ 상세 분석 열람 완료</div>
-      <button class="btn-share" onclick="createShareLink()">
-        <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <circle cx="10" cy="2.5" r="1.5"/><circle cx="2.5" cy="6.5" r="1.5"/><circle cx="10" cy="10.5" r="1.5"/>
-          <path d="M4 7.5l4.5 2M8.5 3.5L4 5.5"/>
-        </svg>
-        공유하고 견적분석 1회 무료로 받기
-      </button>
-    </div>
-    <div class="share-link-wrap" id="shareLinkWrap">
-      <div class="share-link-url" id="shareLinkUrl"></div>
-      <div class="share-copy-row">
-        <button class="btn-copy" id="btnCopy" onclick="copyShareLink()">링크 복사</button>
-        <div class="share-soc">
-          <button class="btn-soc kakao" onclick="shareKakao()">카카오 공유</button>
-          <button class="btn-soc twitter" onclick="shareTwitter()">트위터</button>
-        </div>
-      </div>
     </div>`;
 
   renderItems('all');
@@ -2266,7 +2280,62 @@ window.addEventListener('load', async () => {
   await restoreAuth();
   await checkSocialLoginReturn();
   await checkPaymentReturn();
+  await checkShareReturn();   /* 공유 링크로 가입/로그인 후 복귀 처리 */
 });
+
+/* ── 공유 링크로 가입/로그인 후 복귀 처리 ── */
+async function checkShareReturn(){
+  const params = new URLSearchParams(window.location.search);
+  const from = params.get('from');
+  const shareId = params.get('shareId');
+  const action = params.get('action'); /* login | signup */
+
+  if(from !== 'share' || !shareId) return;
+
+  /* URL 파라미터 제거 */
+  window.history.replaceState({}, '', window.location.pathname);
+
+  /* 비로그인이면 로그인 모달 띄우기 */
+  if(!currentUser){
+    openAuthModal(action === 'signup' ? 'signup' : 'login', 'share:' + shareId);
+    return;
+  }
+
+  /* 이미 로그인 상태면 바로 공유 결과 열람 */
+  await loadSharedResult(shareId);
+}
+
+async function loadSharedResult(shareId){
+  try{
+    const resp = await fetch(`/api/share?id=${shareId}`);
+    const json = await resp.json();
+    if(!resp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
+
+    /* 공유 결과를 lastResult 형태로 변환해서 렌더링 */
+    const d = json.data;
+    const fakeResult = {
+      totalAmount: d.totalAmount,
+      overallVerdict: d.overallVerdict,
+      overallComment: d.overallComment,
+      items: d.previewItems || [],
+    };
+    render(fakeResult);
+    showPage('pageResult');
+    setStep(3);
+
+    /* 상단 안내 */
+    const eb = document.getElementById('errorBox');
+    if(eb){
+      eb.style.display='block';
+      eb.style.background='#EBF7F0';
+      eb.style.borderColor='#4CAF82';
+      eb.style.color='#1A6B3E';
+      eb.textContent='✓ 공유된 견적 분석 결과예요. 상세 분석을 보려면 결제가 필요해요.';
+    }
+  }catch(err){
+    console.error('공유 결과 로드 실패:', err);
+  }
+}
 
 /* ── 공유 링크 ── */
 let currentShareUrl = '';
@@ -2429,15 +2498,27 @@ async function shareHistory(logId) {
   const origText = btn.innerHTML;
   btn.disabled = true; btn.style.opacity = '0.6';
   try {
+    /* 분석 결과 먼저 가져오기 */
+    let analysisResult = null;
+    if (authToken) {
+      const detailResp = await fetch(`/api/mypage?action=detail&id=${logId}`, {
+        headers: { 'Authorization': 'Bearer ' + authToken }
+      });
+      if (detailResp.ok) {
+        const detailData = await detailResp.json();
+        analysisResult = detailData.result || null;
+      }
+    }
+
     const resp = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logId })
+      body: JSON.stringify({ logId, analysisResult })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || '링크 생성 실패');
     currentShareUrl = data.url;
-    await navigator.clipboard.writeText(currentShareUrl);
+    await navigator.clipboard.writeText(currentShareUrl).catch(()=>{});
     btn.innerHTML = '✓ 링크 복사됨!';
     btn.style.background = 'var(--cheap)';
     setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = '1'; btn.style.background = ''; }, 3000);
@@ -2451,6 +2532,10 @@ async function shareHistory(logId) {
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
   sessionStorage.removeItem('analysisResult');
+  const shareCTA=document.getElementById('shareCTAWrap');
+  if(shareCTA){shareCTA.style.display='none';}
+  const shareLinkWrap=document.getElementById('shareLinkWrap');
+  if(shareLinkWrap){shareLinkWrap.style.display='none';}
   document.getElementById('imgPreviewArea').innerHTML='';
   finput.value='';
   document.getElementById('areaNum').value='';
