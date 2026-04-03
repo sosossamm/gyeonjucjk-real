@@ -2193,7 +2193,7 @@ function filterItems(filter,btn){
 }
 
 /* ── 결제 ── */
-const TOSS_CLIENT_KEY='live_ck_ZORzdMaqN3wjk4WoPq85AkYXQGwy';
+const TOSS_CLIENT_KEY='test_ck_OyL0qZ4G1VO0lBb11NMroWb2MQYg';
 async function startPayment(){
   if(!lastResult){alert('분석 결과가 없습니다.');return;}
   if(typeof TossPayments==='undefined'){alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');return;}
@@ -2340,7 +2340,15 @@ async function loadSharedResult(shareId){
 /* ── 공유 링크 ── */
 let currentShareUrl = '';
 async function createShareLink(){
-  const btn = document.querySelector('.btn-share');
+  /* 이미 생성된 링크가 있으면 재사용 */
+  if(currentShareUrl){
+    document.getElementById('shareLinkUrl').textContent = currentShareUrl;
+    document.getElementById('shareLinkWrap').style.display = 'block';
+    copyShareLink();
+    return;
+  }
+
+  const btn = document.querySelector('#shareCTAWrap button');
   if(btn){ btn.textContent='생성 중...'; btn.disabled=true; }
   try{
     const resp = await fetch('/api/share', {
@@ -2348,21 +2356,23 @@ async function createShareLink(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ analysisResult: lastResult })
     });
-    /* JSON 파싱 전 Content-Type 확인 */
     const ct = resp.headers.get('content-type')||'';
     if(!ct.includes('application/json')){
       const text = await resp.text();
-      throw new Error('서버 응답 오류 (share.js 파일이 api/ 폴더에 없을 수 있어요): ' + text.slice(0,80));
+      throw new Error('서버 응답 오류: ' + text.slice(0,80));
     }
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || '링크 생성 실패');
+
+    /* 링크 저장 — 이후 클릭 시 재사용 */
     currentShareUrl = data.url;
     document.getElementById('shareLinkUrl').textContent = currentShareUrl;
     document.getElementById('shareLinkWrap').style.display = 'block';
-    if(btn){ btn.innerHTML='✓ 링크 생성됨'; btn.style.background='var(--cheap)'; }
+    if(btn){ btn.innerHTML='✓ 링크 복사됨'; btn.style.background='var(--cheap)'; btn.disabled=false; }
+    copyShareLink();
   }catch(err){
     alert('링크 생성 실패: ' + err.message);
-    if(btn){ btn.textContent='공유하고 견적분석 1회 무료로 받기'; btn.disabled=false; }
+    if(btn){ btn.textContent='견적 공유하고 상세분석 무료 1회 받기'; btn.disabled=false; }
   }
 }
 function copyShareLink(){
@@ -2531,6 +2541,7 @@ async function shareHistory(logId) {
 /* ── 리셋 ── */
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
+  currentShareUrl='';
   sessionStorage.removeItem('analysisResult');
   const shareCTA=document.getElementById('shareCTAWrap');
   if(shareCTA){shareCTA.style.display='none';}
