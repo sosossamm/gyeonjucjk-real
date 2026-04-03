@@ -78,6 +78,7 @@ export default async function handler(req, res) {
       area_py:      _meta?.areaPy || null,
       total_amount: _meta?.totalAmount || null,
       user_ip:      ip,
+      user_id:      _meta?.userId || null,
       analysis_result: null,
       created_at:   new Date().toISOString(),
     };
