@@ -811,34 +811,40 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <div class="bar-user" id="headerUserAreaOcr"></div>
 </header>
 <div class="result-wrap">
-  <div class="card">
-    <div class="card-title" style="margin-bottom:0.75rem;">공종 분류 확인</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종 분류와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
 
-    <!-- 컬럼 헤더 -->
-    <div style="display:grid;grid-template-columns:1fr 150px 120px;padding:6px 0;border-bottom:1.5px solid var(--rule);margin-bottom:2px;">
-      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);">항목명</span>
-      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">공종 분류</span>
-      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">금액</span>
+  <!-- 최종 분석 로딩 카드 -->
+  <div class="progress-card" id="progressCardFinal">
+    <div class="progress-steps" id="progressStepsFinal"></div>
+  </div>
+
+  <div id="ocrEditContent">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:0.75rem;">공종 분류 확인</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종 분류와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 150px 120px;padding:6px 0;border-bottom:1.5px solid var(--rule);margin-bottom:2px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);">항목명</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">공종 분류</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">금액</span>
+      </div>
+
+      <div id="ocrEditList"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 0;border-top:1px solid var(--rule);margin-top:4px;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">총 견적금액</span>
+        <span style="font-size:18px;font-weight:800;letter-spacing:-1px;color:var(--ink);" id="ocrTotalAmt">—</span>
+      </div>
     </div>
 
-    <!-- 항목 목록 -->
-    <div id="ocrEditList"></div>
-
-    <!-- 총액 -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 0;border-top:1px solid var(--rule);margin-top:4px;">
-      <span style="font-size:12px;font-weight:700;color:var(--muted);">총 견적금액</span>
-      <span style="font-size:18px;font-weight:800;letter-spacing:-1px;color:var(--ink);" id="ocrTotalAmt">—</span>
+    <div style="display:flex;gap:10px;margin-top:0.25rem;">
+      <button class="btn-analyze" style="flex:1;background:var(--surface);color:var(--ink);border:1.5px solid var(--rule);font-size:13px;" onclick="showPage('pageInput')">다시 업로드</button>
+      <button class="btn-analyze" style="flex:2;" id="ocrConfirmBtn" onclick="doAnalyzeFromOcr()">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
+        이 내용으로 분석하기
+      </button>
     </div>
   </div>
 
-  <div style="display:flex;gap:10px;margin-top:0.25rem;">
-    <button class="btn-analyze" style="flex:1;background:var(--surface);color:var(--ink);border:1.5px solid var(--rule);font-size:13px;" onclick="showPage('pageInput')">다시 업로드</button>
-    <button class="btn-analyze" style="flex:2;" id="ocrConfirmBtn" onclick="doAnalyzeFromOcr()">
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M14 14l3 3"/></svg>
-      이 내용으로 AI 분석 시작
-    </button>
-  </div>
 </div>
 </div><!-- /pageOcrEdit -->
 
@@ -1361,20 +1367,43 @@ function switchMode(mode){
 }
 
 /* ── progress ── */
+const PROG_OCR_PDF=[
+  'PDF 업로드 완료',
+  '텍스트 인식 중...',
+  '공사 항목 파싱 & 단가 비교 중...',
+  '카테고리별 분석 완료'
+];
+const PROG_OCR_IMG=[
+  '이미지 업로드 완료',
+  '텍스트 인식 중...',
+  '공사 항목 파싱 & 단가 비교 중...',
+  '카테고리별 분석 완료'
+];
+const PROG_FINAL=[
+  '수정된 항목 확인 중...',
+  '시중 단가 데이터와 비교 중...',
+  '항목별 판정 생성 중...',
+  '최종 리포트 생성 중...'
+];
 const PROG_PDF=['PDF에서 텍스트 추출 완료','공사 항목 파싱 중...','시중 단가 데이터와 비교 중...','카테고리별 분석 완료','최종 리포트 생성 중...'];
 const PROG_IMG=['이미지 업로드 완료','Claude Vision으로 텍스트 인식 중...','공사 항목 파싱 & 단가 비교 중...','카테고리별 분석 완료','최종 리포트 생성 중...'];
 let progTimer=null;
-function startProgress(isImg){
-  const STEPS=isImg?PROG_IMG:PROG_PDF;
+
+function startProgress(isImg, mode='ocr'){
+  const STEPS = mode==='final' ? PROG_FINAL : (isImg ? PROG_OCR_IMG : PROG_OCR_PDF);
   const card=document.getElementById('progressCard');card.classList.add('show');
   const el=document.getElementById('progressSteps');
   el.innerHTML=STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
   let cur=0;
-  document.getElementById('pd0').className='prog-dot active';document.getElementById('pl0').className='prog-label active';
+  document.getElementById('pd0').className='prog-dot active';
+  document.getElementById('pl0').className='prog-label active';
   progTimer=setInterval(()=>{
     if(cur<STEPS.length-1){
-      document.getElementById('pd'+cur).className='prog-dot done';document.getElementById('pl'+cur).className='prog-label done';
-      cur++;document.getElementById('pd'+cur).className='prog-dot active';document.getElementById('pl'+cur).className='prog-label active';
+      document.getElementById('pd'+cur).className='prog-dot done';
+      document.getElementById('pl'+cur).className='prog-label done';
+      cur++;
+      document.getElementById('pd'+cur).className='prog-dot active';
+      document.getElementById('pl'+cur).className='prog-label active';
     }
   },900);
 }
@@ -1614,7 +1643,8 @@ PROFIT MARGIN DETECTION:
 - If NO separate profit line exists, do NOT invent one. Many estimates include profit within each line item.
 
 
-1. PRESERVE ORDER: Output items in the EXACT same order they appear in the estimate document. Do NOT reorder or group.
+1. PRESERVE ORDER: Output items in the EXACT same order they appear in the input. Do NOT reorder, group, sort, or merge items under any circumstances. If the input has numbered items (1. 2. 3...), follow that numbering exactly.
+2. PRESERVE AMOUNTS: Use the exact amounts from the input. Do NOT recalculate or adjust amounts.
 2. SPLIT ALL LINE ITEMS: Every single line item in the estimate must become a separate item in the JSON. Never merge multiple line items into one.
 3. MAP TO REFERENCE: For each item, find the closest match from the reference list below and use that to determine marketMin/marketMax.
 4. ITEM NAME: Use the EXACT name from the original estimate document, not the reference name.
@@ -1689,47 +1719,62 @@ async function doAnalyze(){
   setStep(2);startProgress(isImg);
 
   /* OCR 파싱용 프롬프트 — 공종 분류 포함한 항목 목록만 추출 */
-  const ocrPrompt=`Return ONLY a raw JSON array. No markdown, no explanation.
-Extract ALL line items from this interior renovation estimate.
-For each item return: {"name":"항목명","category":"공종","amount":숫자(만원단위)}
-category must be one of: 철거/방수 창호/샷시 확장/설비 목공 바닥재 도배 도장 타일 욕실 주방 가구/붙박이장 조명/전기 기업이윤 기타
-amount must be a number in 만원 units (e.g. 150 for 150만원, 1500000원 → 150)
-Preserve original document order.`;
+  const ocrSystem=`You are an OCR parser for Korean interior renovation estimates.
+Return ONLY a valid JSON array, nothing else. No markdown, no explanation, no code blocks.
+Example: [{"name":"전체철거","category":"철거/방수","amount":480},{"name":"강마루","category":"바닥재","amount":320}]
+Rules:
+- name: exact item name from document (Korean)
+- category: must be exactly one of: 철거/방수 창호/샷시 확장/설비 목공 바닥재 도배 도장 타일 욕실 주방 가구/붙박이장 조명/전기 기업이윤 기타
+- amount: number in 만원 units (1500000원 → 150, 150만원 → 150)
+- Preserve original document order exactly`;
 
   let userContent;
-  const orderInstruction=`면적: ${Math.round(m2)}㎡(${Math.round(py)}평) / 지역: ${region} / 방: ${roomCount}개 / 화장실: ${bathCount}개\n${ocrPrompt}`;
+  const orderInstruction=`면적: ${Math.round(m2)}㎡(${Math.round(py)}평) / 지역: ${region}\n아래 견적서의 모든 금액 항목을 JSON 배열로 추출해주세요.`;
   if(isImg){
     userContent=[
       {type:'image',source:{type:'base64',media_type:imageMime,data:imageBase64}},
       {type:'text',text:orderInstruction}
     ];
   } else {
-    userContent=`${orderInstruction}\n\n--- 견적서 원본 ---\n${pdfText.slice(0,5000)}`;
+    userContent=`${orderInstruction}\n\n--- 견적서 원본 ---\n${pdfText.slice(0,6000)}`;
   }
 
   try{
-    /* OCR 파싱 단계 */
+    /* OCR 파싱 — system prompt 포함해서 직접 호출 */
     const resp=await fetch('/api/analyze',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:4000,
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system: ocrSystem,
         messages:[{role:'user',content:userContent}],
-        _region:region,_meta:{areaPy:py,fileType:isImg?'image':'pdf'}
+        _region:region,
+        _meta:{areaPy:py,fileType:isImg?'image':'pdf'}
       })
     });
     if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(`서버오류 ${resp.status}: ${e.error||''}`);}
     const data=await resp.json();
     if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
-    const raw=data.content.map(b=>b.text||'').join('');
-    const match=raw.match(/\[[\s\S]*\]/);
-    if(!match)throw new Error('항목 인식 실패. 다시 시도해주세요.');
-    let items=JSON.parse(match[0]);
+    const raw=data.content.map(b=>b.text||'').join('').trim();
+
+    /* JSON 배열 파싱 — 여러 패턴 시도 */
+    let items=[];
+    try{
+      /* 마크다운 코드블록 제거 후 파싱 */
+      const cleaned=raw.replace(/```json|```/g,'').trim();
+      const arrMatch=cleaned.match(/\[[\s\S]*\]/);
+      if(arrMatch) items=JSON.parse(arrMatch[0]);
+      else items=JSON.parse(cleaned);
+    }catch(parseErr){
+      throw new Error(`항목 인식 실패. AI 응답: ${raw.slice(0,100)}`);
+    }
+
+    if(!items||items.length===0){
+      throw new Error('견적서에서 항목을 찾을 수 없어요. PDF/이미지를 확인해주세요.');
+    }
 
     stopProgress();
-
-    /* 분석 파라미터 저장 */
     window._ocrParams={area,unit,region,roomCount,bathCount,py,m2,isImg};
-    /* OCR 편집 화면 표시 */
     showOcrEdit(items);
 
   }catch(err){
@@ -1799,19 +1844,59 @@ async function doAnalyzeFromOcr(){
 
   const btn=document.getElementById('ocrConfirmBtn');
   if(btn){btn.disabled=true;}
-  showPage('pageResult');
-  setStep(2);startProgress(false);
 
-  const lines=items.map(it=>`[${it.category||'기타'}] ${it.name}: ${it.amount||0}만원`).join('\n');
-  const userContent=`면적: ${Math.round(p.m2||0)}㎡(${Math.round(p.py||0)}평) / 지역: ${p.region||''} / 방: ${p.roomCount||3}개 / 화장실: ${p.bathCount||1}개\n총액: ${items.reduce((s,i)=>s+(i.amount||0),0)}만원\n\n--- 견적 항목 (공종 분류 확정) ---\n${lines}`;
+  /* editedCats 초기화 */
+  editedCats={};
+  lastResult=null;
+  allItems=[];
+
+  /* OCR 편집 페이지에서 바로 로딩 표시 */
+  const editContent=document.getElementById('ocrEditContent');
+  const finalCard=document.getElementById('progressCardFinal');
+  const finalSteps=document.getElementById('progressStepsFinal');
+  if(editContent) editContent.style.display='none';
+  if(finalCard && finalSteps){
+    finalSteps.innerHTML=PROG_FINAL.map((s,i)=>
+      `<div class="prog-item"><div class="prog-dot" id="pf${i}"></div><span class="prog-label" id="pfl${i}">${s}</span></div>`
+    ).join('');
+    finalCard.classList.add('show');
+    document.getElementById('pf0').className='prog-dot active';
+    document.getElementById('pfl0').className='prog-label active';
+    let cur=0;
+    const ft=setInterval(()=>{
+      if(cur<PROG_FINAL.length-1){
+        document.getElementById('pf'+cur).className='prog-dot done';
+        document.getElementById('pfl'+cur).className='prog-label done';
+        cur++;
+        document.getElementById('pf'+cur).className='prog-dot active';
+        document.getElementById('pfl'+cur).className='prog-label active';
+      }
+    },1000);
+    window._finalProgTimer=ft;
+  }
+
+  const lines=items.map((it,i)=>`${i+1}. [${it.category||'기타'}] ${it.name}: ${it.amount||0}만원`).join('\n');
+  const total=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  const userContent=`면적: ${Math.round(p.m2||0)}㎡(${Math.round(p.py||0)}평) / 지역: ${p.region||''} / 방: ${p.roomCount||3}개 / 화장실: ${p.bathCount||1}개
+총액: ${total}만원
+
+[CRITICAL] 아래 항목을 번호 순서 그대로 유지하세요. 절대 순서를 바꾸거나 항목을 합치거나 추가하지 마세요.
+각 항목의 category는 대괄호 안에 명시된 값을 그대로 사용하세요.
+--- 견적 항목 (순서 변경 금지) ---
+${lines}`;
 
   try{
     const result=await callAPI(userContent,p.region,p.py,p.m2,p.roomCount,p.bathCount);
-    stopProgress();render(result);setStep(3);
+    clearInterval(window._finalProgTimer);
+    if(finalCard) finalCard.classList.remove('show');
+    showPage('pageResult');
+    render(result);setStep(3);
   }catch(err){
-    stopProgress();
-    showError('분석 오류: '+err.message);
+    clearInterval(window._finalProgTimer);
+    if(finalCard) finalCard.classList.remove('show');
+    if(editContent) editContent.style.display='block';
     if(btn){btn.disabled=false;}
+    alert('분석 오류: '+err.message);
   }
 }
 
@@ -2098,19 +2183,32 @@ const TOSS_CLIENT_KEY='test_ck_OyL0qZ4G1VO0lBb11NMroWb2MQYg';
 async function startPayment(){
   if(!lastResult){alert('분석 결과가 없습니다.');return;}
   if(typeof TossPayments==='undefined'){alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');return;}
+  /* editedCats가 있으면 카테고리 총액 기반으로 비율 재산정 */
   if(Object.keys(editedCats).length>0){
-    const updated={...lastResult};
-    updated.items=(updated.items||[]).map(item=>{
+    const updated={...lastResult,items:[...(lastResult.items||[])]};
+    /* 카테고리별 현재 합계 */
+    const catSums={};
+    updated.items.forEach(item=>{
       const cat=item.category||'기타';
-      if(editedCats[cat]!==undefined){
-        const ratio=editedCats[cat]/(lastResult.items.filter(i=>(i.category||'기타')===cat).reduce((a,i)=>a+i.amount,0)||1);
+      catSums[cat]=(catSums[cat]||0)+item.amount;
+    });
+    updated.items=updated.items.map(item=>{
+      const cat=item.category||'기타';
+      const editedTotal=editedCats[cat];
+      const originalTotal=catSums[cat]||0;
+      /* 수정된 카테고리이고 원본 합계가 0이 아닐 때만 비율 적용 */
+      if(editedTotal!==undefined && originalTotal>0){
+        const ratio=editedTotal/originalTotal;
         return {...item,amount:Math.round(item.amount*ratio)};
       }
       return item;
     });
-    updated.totalAmount=Object.values(editedCats).reduce((a,b)=>a+b,0);
+    updated.totalAmount=updated.items.reduce((s,i)=>s+(i.amount||0),0);
     sessionStorage.setItem('analysisResult',JSON.stringify(updated));
     lastResult=updated;allItems=updated.items||[];
+  } else {
+    /* editedCats 없으면 그대로 저장 */
+    sessionStorage.setItem('analysisResult',JSON.stringify(lastResult));
   }
   const orderId='EST-'+Date.now();
   const baseUrl=window.location.href.split('?')[0];
