@@ -129,7 +129,7 @@ function fmt(n){
   if(!n||isNaN(n)) return '—';
   if(n>=100000000) return (n/100000000).toFixed(1)+'억원';
   if(n>=10000) return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
-  return n.toLocaleString('ko-KR')+'원';
+  return n.toLocaleString('ko-KR')+'만원';
 }
 
 function getShareId(){
