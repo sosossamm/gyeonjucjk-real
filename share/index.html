@@ -1,255 +1,138 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>친구의 견적 분석 결과 — 견적분석</title>
-<meta property="og:title" content="친구가 견적 분석 결과를 공유했어요">
-<meta property="og:description" content="내 인테리어 견적도 적정한지 확인해보세요.">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;}
-body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
+export const config = { api: { bodyParser: true } };
 
-.topbar{background:#0F0E0C;height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:12px;position:sticky;top:0;z-index:100;}
-.logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;}
-.logo span{color:#A0BFF8;}
-.sp{flex:1;}
-.top-btn{background:#1F4FD8;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;}
-
-.wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
-
-/* 블러 래퍼 */
-.blur-wrap{position:relative;}
-.blur-inner{transition:filter .3s;}
-.blur-wrap.locked .blur-inner{filter:blur(7px);pointer-events:none;user-select:none;}
-
-/* 팝업 오버레이 */
-.popup-overlay{
-  display:none;
-  position:absolute;inset:0;
-  background:rgba(248,246,242,0.82);
-  z-index:10;
-  align-items:center;justify-content:center;
-  padding:20px;
-  border-radius:14px;
-}
-.blur-wrap.locked .popup-overlay{display:flex;}
-.popup-card{
-  background:#fff;border:1px solid #E8E5E0;border-radius:16px;
-  padding:28px 22px;text-align:center;width:100%;max-width:320px;
-}
-.popup-icon{width:48px;height:48px;border-radius:50%;background:#F8F6F2;border:1px solid #E8E5E0;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
-.popup-title{font-size:16px;font-weight:800;color:#0F0E0C;letter-spacing:-.3px;margin-bottom:8px;line-height:1.4;}
-.popup-sub{font-size:12px;color:#8A8780;line-height:1.7;margin-bottom:18px;}
-.btn-popup-main{display:block;width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;margin-bottom:8px;}
-.btn-popup-main:hover{opacity:.85;}
-.btn-popup-sub{font-size:12px;color:#B8B5B0;background:none;border:none;cursor:pointer;font-family:inherit;}
-.btn-popup-sub:hover{color:#8A8780;}
-
-/* 결과 카드 */
-.verdict-card{border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:12px;}
-.verdict-card.exp{background:#FCEAEA;border:1px solid #F0B0B0;}
-.verdict-card.fair{background:#FBF5E0;border:1px solid #E8D080;}
-.verdict-card.cheap{background:#EBF7F0;border:1px solid #B0DEC4;}
-.v-icon{font-size:24px;flex-shrink:0;}
-.v-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px;}
-.verdict-card.exp .v-label{color:#9A1F1F;}
-.verdict-card.fair .v-label{color:#7A6010;}
-.verdict-card.cheap .v-label{color:#1A6B3E;}
-.v-title{font-size:15px;font-weight:800;color:#0F0E0C;letter-spacing:-.3px;}
-.v-sub{font-size:11px;color:#4A4743;margin-top:3px;}
-.v-total{margin-left:auto;text-align:right;flex-shrink:0;}
-.v-total-l{font-size:9px;color:#8A8780;margin-bottom:2px;}
-.v-total-n{font-size:19px;font-weight:800;color:#0F0E0C;letter-spacing:-.5px;}
-
-.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-.stat-c{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 14px;}
-.stat-l{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#B8B5B0;margin-bottom:5px;}
-.stat-n{font-size:22px;font-weight:800;letter-spacing:-.5px;color:#0F0E0C;}
-.stat-n.exp{color:#9A1F1F;}
-.stat-n.cheap{color:#1A6B3E;}
-
-.item-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
-.item-card{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
-.i-name{font-size:13px;font-weight:700;color:#0F0E0C;}
-.i-cat{font-size:10px;color:#8A8780;margin-top:2px;}
-.i-right{display:flex;align-items:center;gap:8px;}
-.i-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;}
-.i-pill.exp{background:#FCEAEA;color:#9A1F1F;}
-.i-pill.fair{background:#FBF5E0;color:#7A6010;}
-.i-pill.cheap{background:#EBF7F0;color:#1A6B3E;}
-.i-amt{font-size:13px;font-weight:800;color:#0F0E0C;}
-.more-card{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 16px;text-align:center;font-size:12px;color:#B8B5B0;font-weight:600;}
-
-/* 로그인 후 배너 */
-.unlocked-banner{background:#EBF7F0;border:1px solid #4CAF82;border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;font-size:13px;font-weight:700;color:#1A6B3E;}
-
-/* 내 견적 CTA */
-.cta-section{background:#0F0E0C;border-radius:16px;padding:2rem;text-align:center;margin-top:1.5rem;}
-.cta-badge{display:inline-block;background:#1F4FD8;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px;letter-spacing:.3px;}
-.cta-title{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:6px;line-height:1.3;}
-.cta-sub{font-size:12px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:18px;}
-.cta-btn{display:inline-block;background:#fff;color:#0F0E0C;border:none;border-radius:8px;padding:12px 28px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;}
-.cta-btn:hover{opacity:.9;}
-
-/* 로딩/에러 */
-.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;color:#8A8780;text-align:center;}
-.state-icon{font-size:36px;}
-.state-text{font-size:15px;font-weight:700;color:#0F0E0C;}
-.state-sub{font-size:13px;color:#8A8780;}
-</style>
-</head>
-<body>
-
-<header class="topbar">
-  <span class="logo">견적<span>분석</span></span>
-  <div class="sp"></div>
-  <a href="/" class="top-btn">내 견적 분석하기</a>
-</header>
-
-<div class="wrap" id="mainWrap">
-  <div class="state-box">
-    <div class="state-icon">⏳</div>
-    <div class="state-text">불러오는 중...</div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const clsMap  = {비쌈:'exp', 적정:'fair', 저렴:'cheap'};
-const iconMap  = {비쌈:'🔴', 적정:'🟡', 저렴:'💚'};
-const labelMap = {비쌈:'전체 종합: 비쌈', 적정:'전체 종합: 적정', 저렴:'전체 종합: 저렴'};
-const titleMap = {비쌈:'시중 평균보다 비싼 견적이에요', 적정:'시중 평균 수준의 견적이에요', 저렴:'시중 평균보다 저렴한 견적이에요'};
-
-function fmt(n){
-  if(!n||isNaN(n)) return '—';
-  if(n>=100000000) return (n/100000000).toFixed(1)+'억원';
-  if(n>=10000) return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
-  return n.toLocaleString('ko-KR')+'원';
+function genId(len = 8) {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  let id = '';
+  for (let i = 0; i < len; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
 }
 
-function getShareId(){
-  const pathMatch = location.pathname.match(/\/share\/([a-z0-9]+)/i);
-  return pathMatch ? pathMatch[1] : new URLSearchParams(location.search).get('id');
+async function getSupabase() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return null;
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 }
 
-function buildResultHTML(d){
-  const c = clsMap[d.overallVerdict] || 'fair';
-  const items = d.previewItems || [];
-  const extraCount = Math.max(0, (d.itemCount||0) - items.length);
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  return `
-    <div class="verdict-card ${c}">
-      <div class="v-icon">${iconMap[d.overallVerdict]||'🟡'}</div>
-      <div>
-        <div class="v-label">${labelMap[d.overallVerdict]||''}</div>
-        <div class="v-title">${titleMap[d.overallVerdict]||''}</div>
-        ${d.overallComment ? `<div class="v-sub">${d.overallComment}</div>` : ''}
-      </div>
-      <div class="v-total">
-        <div class="v-total-l">총 견적금액</div>
-        <div class="v-total-n">${fmt(d.totalAmount)}</div>
-      </div>
-    </div>
+  const supabase = await getSupabase();
+  if (!supabase) return res.status(500).json({ error: 'DB 연결 실패' });
 
-    <div class="stat-row">
-      <div class="stat-c"><div class="stat-l">전체 항목</div><div class="stat-n">${d.itemCount||0}개</div></div>
-      <div class="stat-c"><div class="stat-l">🔴 비쌈</div><div class="stat-n exp">${d.expCount||0}개</div></div>
-      <div class="stat-c"><div class="stat-l">💚 저렴</div><div class="stat-n cheap">${d.cheapCount||0}개</div></div>
-    </div>
+  /* ── POST: 공유 링크 생성 ── */
+  if (req.method === 'POST') {
+    try {
+      const { analysisResult, logId } = req.body || {};
+      const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+      const baseUrl = req.headers.origin || 'https://gyeonjucjk-real.vercel.app';
+      const shareId = genId(8);
 
-    <div class="item-list">
-      ${items.map(item => {
-        const ic = clsMap[item.verdict]||'fair';
-        return `<div class="item-card">
-          <div>
-            <div class="i-name">${item.name||''}</div>
-            <div class="i-cat">${item.category||''}</div>
-          </div>
-          <div class="i-right">
-            <span class="i-pill ${ic}">${item.verdict||''}</span>
-            <span class="i-amt">${fmt(item.amount)}</span>
-          </div>
-        </div>`;
-      }).join('')}
-      ${extraCount > 0 ? `<div class="more-card">+ ${extraCount}개 항목 더 있음</div>` : ''}
-    </div>`;
-}
+      let targetLogId = null;
 
-async function loadShare(){
-  const shareId = getShareId();
-  if(!shareId){ showError('잘못된 링크예요', '올바른 공유 링크인지 확인해주세요.'); return; }
+      if (logId) {
+        /* 마이페이지에서 기존 log_id로 공유 */
+        targetLogId = logId;
+      } else if (analysisResult) {
+        /* 결과 화면에서 analysisResult 직접 전달 */
+        const { data: log, error: logErr } = await supabase
+          .from('estimate_logs')
+          .insert({
+            file_type: 'share',
+            region: analysisResult.region || null,
+            area_py: null,
+            total_amount: analysisResult.totalAmount || null,
+            user_ip: ip,
+            analysis_result: analysisResult,
+            created_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+        if (logErr) throw logErr;
+        targetLogId = log.id;
+      } else {
+        return res.status(400).json({ error: '분석 결과 없음' });
+      }
 
-  try{
-    const [{ data: { session } }, shareResp] = await Promise.all([
-      _supabase.auth.getSession(),
-      fetch(`/api/share?id=${shareId}`)
-    ]);
+      /* share_links 레코드 삽입 */
+      /* 공유자 ID 추출 */
+      const sharerId = req.headers.authorization
+        ? await (async () => {
+            try {
+              const tok = req.headers.authorization.replace('Bearer ', '');
+              const { data: { user } } = await supabase.auth.getUser(tok);
+              return user?.id || null;
+            } catch(e) { return null; }
+          })()
+        : null;
 
-    const json = await shareResp.json();
-    if(!shareResp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
+      const { error: shareErr } = await supabase
+        .from('share_links')
+        .insert({ id: shareId, log_id: targetLogId, sharer_id: sharerId });
+      if (shareErr) throw shareErr;
 
-    const d = json.data;
-    const isLoggedIn = !!session;
-    const loginUrl  = `/?from=share&shareId=${shareId}&action=login`;
-    const signupUrl = `/?from=share&shareId=${shareId}&action=signup`;
-    const resultHTML = buildResultHTML(d);
+      return res.status(200).json({ shareId, url: `${baseUrl}/share/${shareId}` });
 
-    if(isLoggedIn){
-      /* ── 로그인 상태: 전체 공개 ── */
-      document.getElementById('mainWrap').innerHTML = `
-        <div class="unlocked-banner">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#1A6B3E" stroke-width="1.5" stroke-linecap="round"><path d="M12.5 4.5l-7 7L2 8"/></svg>
-          친구의 상세 견적 결과를 확인할 수 있어요
-        </div>
-        ${resultHTML}
-        <div class="cta-section">
-          <div class="cta-badge">무료 판별</div>
-          <div class="cta-title">내가 받은 견적도<br>적정한지 알고 싶다면?</div>
-          <div class="cta-sub">PDF·이미지 업로드만 하면<br>30초 안에 항목별 저렴·적정·비쌈 판별</div>
-          <a href="/" class="cta-btn">내 견적 무료로 판별하기</a>
-        </div>`;
-    } else {
-      /* ── 비로그인: 전체 블러 + 팝업 ── */
-      document.getElementById('mainWrap').innerHTML = `
-        <div class="blur-wrap locked">
-          <div class="blur-inner">${resultHTML}</div>
-          <div class="popup-overlay">
-            <div class="popup-card">
-              <div class="popup-icon">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#0F0E0C" stroke-width="1.6" stroke-linecap="round">
-                  <rect x="3" y="10" width="16" height="11" rx="2.5"/>
-                  <path d="M7 10V7a4 4 0 018 0v3"/>
-                </svg>
-              </div>
-              <div class="popup-title">친구의 상세 견적은<br>로그인 후 확인할 수 있어요</div>
-              <div class="popup-sub">내가 받은 견적도 적정한지<br>함께 판별해드릴게요.</div>
-              <a href="${loginUrl}" class="btn-popup-main">로그인하고 확인하기</a>
-              <a href="${signupUrl}" style="display:block;font-size:12px;color:#8A8780;text-decoration:none;margin-top:4px;">아직 계정이 없으신가요? <span style="color:#1F4FD8;font-weight:700;">회원가입</span></a>
-            </div>
-          </div>
-        </div>`;
+    } catch (err) {
+      console.error('share create error:', err);
+      return res.status(500).json({ error: err.message });
     }
-  } catch(err){
-    showError('결과를 불러올 수 없어요', err.message);
   }
-}
 
-function showError(title, sub){
-  document.getElementById('mainWrap').innerHTML = `
-    <div class="state-box">
-      <div class="state-icon">😕</div>
-      <div class="state-text">${title}</div>
-      <div class="state-sub">${sub||''}</div>
-      <a href="/" style="margin-top:16px;color:#1F4FD8;font-weight:700;font-size:14px;">홈으로 돌아가기</a>
-    </div>`;
-}
+  /* ── GET: 공유 링크 조회 ── */
+  if (req.method === 'GET') {
+    try {
+      const shareId = req.query.id;
+      if (!shareId) return res.status(400).json({ error: 'id 필요' });
 
-loadShare();
-</script>
-</body>
-</html>
+      const { data: link, error: linkErr } = await supabase
+        .from('share_links')
+        .select('id, log_id, view_count, created_at, sharer_id')
+        .eq('id', shareId)
+        .single();
+
+      if (linkErr || !link) return res.status(404).json({ error: '링크를 찾을 수 없어요' });
+
+      /* 조회수 업데이트 */
+      supabase.from('share_links')
+        .update({ view_count: (link.view_count || 0) + 1 })
+        .eq('id', shareId)
+        .then(() => {});
+
+      const { data: log, error: logErr } = await supabase
+        .from('estimate_logs')
+        .select('analysis_result, total_amount, region, created_at')
+        .eq('id', link.log_id)
+        .single();
+
+      if (logErr || !log) return res.status(404).json({ error: '분석 결과를 찾을 수 없어요' });
+
+      const result = log.analysis_result || {};
+      const safeResult = {
+        totalAmount:    result.totalAmount || log.total_amount,
+        overallVerdict: result.overallVerdict,
+        overallComment: result.overallComment,
+        itemCount:      (result.items || []).length,
+        expCount:       (result.items || []).filter(i => i.verdict === '비쌈').length,
+        cheapCount:     (result.items || []).filter(i => i.verdict === '저렴').length,
+        region:         log.region,
+        createdAt:      log.created_at,
+        viewCount:      (link.view_count || 0) + 1,
+        sharerId:       link.sharer_id || null,
+        previewItems:   (result.items || []).slice(0, 2).map(i => ({
+          name: i.name, category: i.category, verdict: i.verdict, amount: i.amount,
+        })),
+      };
+
+      return res.status(200).json({ success: true, data: safeResult, shareId });
+
+    } catch (err) {
+      console.error('share get error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
+}
