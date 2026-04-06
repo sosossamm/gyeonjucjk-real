@@ -5,241 +5,215 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>견적 분석 결과 공유 — 견적분석</title>
 <meta property="og:title" content="내 인테리어 견적, 적정한 걸까요?">
-<meta property="og:description" content="3,000건+ 실거래 데이터 기반 견적 분석 결과를 확인하세요.">
+<meta property="og:description" content="공유된 견적 분석 결과를 확인하세요.">
 <meta property="og:site_name" content="견적분석">
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --ink:#0F0E0C;--ink2:#2A2825;--ink3:#4A4743;--muted:#8A8780;
-  --hint:#B8B5B0;--rule:#E8E5E0;--paper:#F8F6F2;--surface:#FFFFFF;
-  --cheap:#1A6B3E;--cheap-bg:#EBF7F0;--cheap-mid:#4CAF82;
-  --fair:#7A6010;--fair-bg:#FBF5E0;--fair-mid:#D4A820;
-  --exp:#9A1F1F;--exp-bg:#FCEAEA;--exp-mid:#E04040;
-  --accent:#1F4FD8;--radius:14px;--radius-sm:8px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Pretendard',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;}
-
-.top-bar{background:var(--ink);color:#fff;display:flex;align-items:center;padding:0 1.5rem;height:56px;gap:12px;position:sticky;top:0;z-index:100;}
-.logo-word{font-size:15px;font-weight:800;letter-spacing:-0.5px;color:#fff;}
-.logo-word span{color:#A0BFF8;}
-.bar-sep{flex:1;}
-.bar-cta{background:#1F4FD8;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;}
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;}
+body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
+.topbar{background:#0F0E0C;height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:12px;position:sticky;top:0;z-index:100;}
+.logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.logo span{color:#A0BFF8;}
+.sp{flex:1;}
+.top-btn{background:#1F4FD8;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;}
 .wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
 
-/* 공유 배너 */
-.share-banner{background:var(--ink2);color:#fff;border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;}
-.share-banner-icon{width:44px;height:44px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.share-banner-text .t1{font-size:15px;font-weight:800;margin-bottom:3px;}
-.share-banner-text .t2{font-size:12px;color:rgba(255,255,255,0.55);}
-.view-count{margin-left:auto;text-align:right;flex-shrink:0;}
-.view-count .n{font-size:22px;font-weight:800;}
-.view-count .l{font-size:11px;color:rgba(255,255,255,0.5);}
+/* 블러 섹션 */
+.blur-section{position:relative;border-radius:14px;overflow:hidden;}
+.blur-content{filter:blur(6px);pointer-events:none;user-select:none;}
+.blur-overlay{position:absolute;inset:0;background:rgba(248,246,242,0.75);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:#fff;border:1px solid #E8E5E0;border-radius:14px;padding:28px 22px;text-align:center;width:100%;max-width:300px;}
+.lock-icon{width:46px;height:46px;border-radius:50%;background:#F8F6F2;border:1px solid #E8E5E0;display:flex;align-items:center;justify-content:center;margin:0 auto 13px;}
+.login-title{font-size:16px;font-weight:800;color:#0F0E0C;letter-spacing:-.3px;margin-bottom:6px;}
+.login-sub{font-size:12px;color:#8A8780;line-height:1.65;margin-bottom:16px;}
+.btn-login-main{display:block;width:100%;padding:12px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;text-decoration:none;}
+.btn-login-main:hover{opacity:.85;}
+.btn-signup-sub{display:block;width:100%;padding:11px;background:#F8F6F2;color:#0F0E0C;border:1.5px solid #E8E5E0;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;}
+.btn-signup-sub:hover{background:#EDEAE5;}
 
-/* 종합 판정 */
-.verdict-banner{border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;}
-.verdict-banner.cheap{background:var(--cheap-bg);border:1px solid #B0DEC4;}
-.verdict-banner.fair{background:var(--fair-bg);border:1px solid #E8D080;}
-.verdict-banner.exp{background:var(--exp-bg);border:1px solid #F0B0B0;}
-.verdict-icon{font-size:28px;flex-shrink:0;}
-.verdict-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
-.verdict-banner.cheap .verdict-label{color:var(--cheap);}
-.verdict-banner.fair .verdict-label{color:var(--fair);}
-.verdict-banner.exp .verdict-label{color:var(--exp);}
-.verdict-title{font-size:17px;font-weight:800;letter-spacing:-0.5px;margin-bottom:2px;}
-.verdict-sub{font-size:13px;color:var(--ink3);}
-.verdict-total{margin-left:auto;text-align:right;flex-shrink:0;}
-.verdict-total .tl{font-size:11px;color:var(--muted);margin-bottom:2px;}
-.verdict-total .ta{font-size:21px;font-weight:800;letter-spacing:-1px;}
+/* 결과 카드들 */
+.verdict-card{border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.verdict-card.fair{background:#FBF5E0;border:1px solid #E8D080;}
+.verdict-card.exp{background:#FCEAEA;border:1px solid #F0B0B0;}
+.verdict-card.cheap{background:#EBF7F0;border:1px solid #B0DEC4;}
+.v-icon{font-size:22px;flex-shrink:0;}
+.v-info .vl{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px;}
+.verdict-card.fair .v-info .vl{color:#7A6010;}
+.verdict-card.exp .v-info .vl{color:#9A1F1F;}
+.verdict-card.cheap .v-info .vl{color:#1A6B3E;}
+.v-info .vt{font-size:14px;font-weight:800;color:#0F0E0C;letter-spacing:-.3px;}
+.v-info .vs{font-size:11px;color:#4A4743;margin-top:2px;}
+.v-total{margin-left:auto;text-align:right;flex-shrink:0;}
+.v-total .tl{font-size:9px;color:#8A8780;margin-bottom:2px;}
+.v-total .ta{font-size:18px;font-weight:800;color:#0F0E0C;letter-spacing:-.5px;}
 
-/* 통계 */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
-.stat-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:0.9rem 1.1rem;}
-.stat-label{font-size:11px;color:var(--hint);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px;}
-.stat-val{font-size:22px;font-weight:800;letter-spacing:-1px;}
-.stat-val.neutral{color:var(--ink);}
-.stat-val.exp{color:var(--exp);}
-.stat-val.cheap{color:var(--cheap);}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.stat-c{background:#fff;border:1px solid #E8E5E0;border-radius:8px;padding:10px 12px;}
+.stat-l{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#B8B5B0;margin-bottom:4px;}
+.stat-n{font-size:20px;font-weight:800;letter-spacing:-.5px;color:#0F0E0C;}
+.stat-n.exp{color:#9A1F1F;}
+.stat-n.cheap{color:#1A6B3E;}
 
-/* 미리보기 (블러) */
-.preview-section{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;position:relative;}
-.preview-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--rule);font-size:14px;font-weight:800;}
-.preview-items{padding:1rem 1.5rem;filter:blur(5px);pointer-events:none;user-select:none;}
-.preview-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--rule);}
-.preview-item:last-child{border-bottom:none;}
-.pi-name{font-size:14px;font-weight:700;}
-.pi-cat{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--paper);color:var(--muted);margin-left:5px;}
-.pi-amount{font-size:15px;font-weight:800;}
-.pi-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;}
-.pi-pill.exp{background:var(--exp-bg);color:var(--exp);}
-.pi-pill.fair{background:var(--fair-bg);color:var(--fair);}
-.pi-pill.cheap{background:var(--cheap-bg);color:var(--cheap);}
+.item-card{background:#fff;border:1px solid #E8E5E0;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.item-card:last-child{margin-bottom:0;}
+.i-left .i-name{font-size:12px;font-weight:700;color:#0F0E0C;}
+.i-left .i-cat{font-size:10px;color:#8A8780;margin-top:2px;}
+.i-right{display:flex;align-items:center;gap:8px;}
+.i-pill{font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;}
+.i-pill.exp{background:#FCEAEA;color:#9A1F1F;}
+.i-pill.fair{background:#FBF5E0;color:#7A6010;}
+.i-pill.cheap{background:#EBF7F0;color:#1A6B3E;}
+.i-amt{font-size:13px;font-weight:800;color:#0F0E0C;}
 
-/* 잠금 오버레이 */
-.lock-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(248,246,242,0.7);backdrop-filter:blur(1px);padding:20px;}
-.lock-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px 20px;text-align:center;width:100%;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
-.lock-icon{font-size:28px;margin-bottom:10px;}
-.lock-title{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-spacing:-0.3px;}
-.lock-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
-.btn-signup{display:block;width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;margin-bottom:8px;}
-.btn-signup:hover{opacity:0.85;}
-.reward-badge{background:var(--cheap-bg);color:var(--cheap);border:1px solid var(--cheap-mid);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;font-weight:700;line-height:1.5;}
+/* 로그인 후 배너 */
+.unlocked-banner{background:#EBF7F0;border:1px solid #4CAF82;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:1rem;font-size:12px;font-weight:700;color:#1A6B3E;}
 
-/* 내 견적 분석 CTA */
-.cta-card{background:var(--ink);color:#fff;border-radius:var(--radius);padding:1.5rem;text-align:center;}
-.cta-title{font-size:18px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;}
-.cta-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:16px;line-height:1.6;}
-.btn-cta{display:inline-block;background:#1F4FD8;color:#fff;padding:12px 28px;border-radius:var(--radius-sm);font-size:14px;font-weight:800;text-decoration:none;cursor:pointer;border:none;font-family:inherit;}
-.btn-cta:hover{opacity:0.9;}
-
-.info-row{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:10px;justify-content:center;}
-.info-sep{opacity:0.4;}
+/* CTA */
+.cta-card{background:#0F0E0C;border-radius:14px;padding:1.5rem;text-align:center;margin-top:1.25rem;}
+.cta-t{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.3px;}
+.cta-s{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:14px;line-height:1.6;}
+.cta-btn{background:#1F4FD8;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;}
 
 /* 로딩/에러 */
-.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;color:var(--muted);}
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;color:#8A8780;}
 .state-icon{font-size:36px;}
-.state-text{font-size:15px;font-weight:600;color:var(--ink);}
+.state-text{font-size:15px;font-weight:700;color:#0F0E0C;}
 .state-sub{font-size:13px;}
 </style>
 </head>
 <body>
 
-<header class="top-bar">
-  <span class="logo-word">견적<span>분석</span></span>
-  <div class="bar-sep"></div>
-  <a href="/" class="bar-cta">내 견적 분석하기</a>
+<header class="topbar">
+  <span class="logo">견적<span>분석</span></span>
+  <div class="sp"></div>
+  <a href="/" class="top-btn">내 견적 분석하기</a>
 </header>
 
 <div class="wrap" id="mainWrap">
-  <!-- 로딩 상태 -->
-  <div class="state-box" id="stateLoading">
+  <div class="state-box">
     <div class="state-icon">⏳</div>
-    <div class="state-text">분석 결과 불러오는 중...</div>
+    <div class="state-text">불러오는 중...</div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
-const iconMap = {비쌈:'🔴',적정:'🟡',저렴:'💚'};
-const labelMap = {비쌈:'비싼 견적',적정:'적정한 견적',저렴:'저렴한 견적'};
-const titleMap = {비쌈:'시중 평균보다 비싼 견적이에요',적정:'시중 평균 수준의 견적이에요',저렴:'시중 평균보다 저렴한 견적이에요'};
+const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const clsMap = {비쌈:'exp', 적정:'fair', 저렴:'cheap'};
+const iconMap = {비쌈:'🔴', 적정:'🟡', 저렴:'💚'};
+const labelMap = {비쌈:'전체 종합: 비쌈', 적정:'전체 종합: 적정', 저렴:'전체 종합: 저렴'};
+const titleMap = {비쌈:'시중 평균보다 비싼 견적이에요', 적정:'시중 평균 수준의 견적이에요', 저렴:'시중 평균보다 저렴한 견적이에요'};
 
 function fmt(n){
-  if(!n||isNaN(n))return'—';
-  if(n>=100000000)return(n/100000000).toFixed(1)+'억원';
-  if(n>=10000)return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
+  if(!n||isNaN(n)) return '—';
+  if(n>=100000000) return (n/100000000).toFixed(1)+'억원';
+  if(n>=10000) return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
   return n.toLocaleString('ko-KR')+'원';
 }
 
-async function loadShare(){
-  /* URL에서 shareId 추출 — /share/abc123 또는 ?id=abc123 */
+function getShareId(){
   const pathMatch = location.pathname.match(/\/share\/([a-z0-9]+)/i);
-  const shareId = pathMatch ? pathMatch[1] : new URLSearchParams(location.search).get('id');
-
-  if(!shareId){
-    showError('잘못된 링크예요','올바른 공유 링크인지 확인해주세요.');
-    return;
-  }
-
-  try{
-    const resp = await fetch(`/api/share?id=${shareId}`);
-    const json = await resp.json();
-    if(!resp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
-    renderShare(json.data, shareId);
-  }catch(err){
-    showError('결과를 불러올 수 없어요', err.message);
-  }
+  return pathMatch ? pathMatch[1] : new URLSearchParams(location.search).get('id');
 }
 
-function renderShare(d, shareId){
-  /* 로그인/가입 버튼에 shareId 붙이기 */
-  const loginUrl = `/?from=share&shareId=${shareId}&action=login`;
-  const signupUrl = `/?from=share&shareId=${shareId}&action=signup`;
-  setTimeout(() => {
-    const btnSignup = document.getElementById('btnSignup');
-    const btnLogin = document.getElementById('btnLogin');
-    if(btnSignup) btnSignup.href = signupUrl;
-    if(btnLogin) btnLogin.href = loginUrl;
-  }, 100);
+/* 결과 HTML 생성 */
+function buildResultHTML(d){
   const c = clsMap[d.overallVerdict] || 'fair';
-  const shareUrl = location.origin + '/share/' + shareId;
-  const fairCount = d.itemCount - d.expCount - d.cheapCount;
+  const items = d.previewItems || [];
+  const fairCount = (d.itemCount||0) - (d.expCount||0) - (d.cheapCount||0);
 
-  document.getElementById('mainWrap').innerHTML = `
-    <div class="share-banner">
-      <div class="share-banner-icon">🔗</div>
-      <div class="share-banner-text">
-        <div class="t1">공유된 견적 분석 결과</div>
-        <div class="t2">${d.region || ''} · ${d.createdAt ? new Date(d.createdAt).toLocaleDateString('ko-KR') : ''}</div>
+  return `
+    <div class="verdict-card ${c}">
+      <div class="v-icon">${iconMap[d.overallVerdict]||'🟡'}</div>
+      <div class="v-info">
+        <div class="vl">${labelMap[d.overallVerdict]||''}</div>
+        <div class="vt">${titleMap[d.overallVerdict]||''}</div>
+        ${d.overallComment?`<div class="vs">${d.overallComment}</div>`:''}
       </div>
-      <div class="view-count">
-        <div class="n">${d.viewCount || 1}</div>
-        <div class="l">조회</div>
-      </div>
-    </div>
-
-    <div class="verdict-banner ${c}">
-      <div class="verdict-icon">${iconMap[d.overallVerdict] || '🟡'}</div>
-      <div>
-        <div class="verdict-label">${labelMap[d.overallVerdict] || '적정한 견적'}</div>
-        <div class="verdict-title">${titleMap[d.overallVerdict] || ''}</div>
-        <div class="verdict-sub">${d.overallComment || ''}</div>
-      </div>
-      <div class="verdict-total">
+      <div class="v-total">
         <div class="tl">총 견적금액</div>
         <div class="ta">${fmt(d.totalAmount)}</div>
       </div>
     </div>
-
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">전체 항목</div><div class="stat-val neutral">${d.itemCount || 0}개</div></div>
-      <div class="stat-card"><div class="stat-label">🔴 비쌈</div><div class="stat-val exp">${d.expCount || 0}개</div></div>
-      <div class="stat-card"><div class="stat-label">💚 저렴</div><div class="stat-val cheap">${d.cheapCount || 0}개</div></div>
+    <div class="stat-row">
+      <div class="stat-c"><div class="stat-l">전체 항목</div><div class="stat-n">${d.itemCount||0}개</div></div>
+      <div class="stat-c"><div class="stat-l">🔴 비쌈</div><div class="stat-n exp">${d.expCount||0}개</div></div>
+      <div class="stat-c"><div class="stat-l">💚 저렴</div><div class="stat-n cheap">${d.cheapCount||0}개</div></div>
     </div>
-
-    <div class="preview-section">
-      <div class="preview-header">항목별 상세 분석 (${d.itemCount || 0}개)</div>
-      <div class="preview-items">
-        ${(d.previewItems || []).map(item => {
-          const ic = clsMap[item.verdict] || 'fair';
-          return `<div class="preview-item">
-            <div><span class="pi-name">${item.name}</span><span class="pi-cat">${item.category || ''}</span></div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="pi-amount">${fmt(item.amount)}</span>
-              <span class="pi-pill ${ic}">${item.verdict}</span>
-            </div>
-          </div>`;
-        }).join('')}
-        <div class="preview-item"><div><span class="pi-name">●●● 외 ${Math.max(0,(d.itemCount||0)-2)}개 항목</span></div><div><span class="pi-amount">●●●</span></div></div>
-      </div>
-      <div class="lock-overlay">
-        <div class="lock-card">
-          <div class="lock-icon">🔒</div>
-          <div class="lock-title">상세 분석은 회원만 볼 수 있어요</div>
-          <div class="lock-sub">항목별 시중가 비교, 비쌈/적정/저렴 판정,<br>전문가 절약 팁을 모두 확인하려면<br>회원가입이 필요해요.</div>
-          <div class="reward-badge" style="margin-bottom:14px;">
-            🎁 회원가입 시 무료 분석 1회 크레딧 제공
-          </div>
-          <a href="/" class="btn-signup" id="btnSignup">무료로 시작하기</a>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px;">이미 회원이신가요? <a href="/" id="btnLogin" style="color:var(--accent);">로그인</a></div>
+    ${items.map(item=>{
+      const ic = clsMap[item.verdict]||'fair';
+      return `<div class="item-card">
+        <div class="i-left">
+          <div class="i-name">${item.name||''}</div>
+          <div class="i-cat">${item.category||''}</div>
         </div>
-      </div>
-    </div>
+        <div class="i-right">
+          <span class="i-pill ${ic}">${item.verdict||''}</span>
+          <span class="i-amt">${fmt(item.amount)}</span>
+        </div>
+      </div>`;
+    }).join('')}
+    ${(d.itemCount||0) > items.length ? `
+      <div class="item-card" style="justify-content:center;">
+        <div style="font-size:11px;color:#B8B5B0;font-weight:600;">+ ${(d.itemCount||0) - items.length}개 항목 더 있음</div>
+      </div>` : ''}`;
+}
 
-    <div class="cta-card">
-      <div class="cta-title">내 견적서도 분석해볼까요?</div>
-      <div class="cta-sub">PDF·이미지 업로드만 하면 30초 안에<br>항목별 적정가 판별이 가능해요.</div>
-      <a href="/" class="btn-cta">무료로 분석 시작하기</a>
-      <div class="info-row">
-        <span>3,000건+ 실거래 데이터</span>
-        <span class="info-sep">·</span>
-        <span>지역별 단가 비교</span>
-        <span class="info-sep">·</span>
-        <span>전문가 협상 팁 제공</span>
-      </div>
-    </div>
-  `;
+async function loadShare(){
+  const shareId = getShareId();
+  if(!shareId){ showError('잘못된 링크예요', '올바른 공유 링크인지 확인해주세요.'); return; }
+
+  try{
+    /* 현재 로그인 상태 확인 */
+    const { data: { session } } = await _supabase.auth.getSession();
+    const isLoggedIn = !!session;
+
+    /* 공유 데이터 로드 */
+    const resp = await fetch(`/api/share?id=${shareId}`);
+    const json = await resp.json();
+    if(!resp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
+
+    const d = json.data;
+    const resultHTML = buildResultHTML(d);
+    const loginUrl = `/?from=share&shareId=${shareId}&action=login`;
+    const signupUrl = `/?from=share&shareId=${shareId}&action=signup`;
+
+    if(isLoggedIn){
+      /* 로그인 상태 — 바로 결과 표시 */
+      document.getElementById('mainWrap').innerHTML = `
+        <div class="unlocked-banner">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#1A6B3E" stroke-width="1.5" stroke-linecap="round"><path d="M12.5 4.5l-7 7L2 8"/></svg>
+          공유된 견적 분석 결과를 확인할 수 있어요
+        </div>
+        ${resultHTML}
+        <div class="cta-card">
+          <div class="cta-t">내 견적서도 분석해볼까요?</div>
+          <div class="cta-s">PDF·이미지 업로드만 하면<br>30초 안에 항목별 적정가 판별</div>
+          <a href="/" class="cta-btn">무료로 분석 시작하기</a>
+        </div>`;
+    } else {
+      /* 비로그인 — 블러 + 로그인 유도 */
+      document.getElementById('mainWrap').innerHTML = `
+        <div class="blur-section">
+          <div class="blur-content">${resultHTML}</div>
+          <div class="blur-overlay">
+            <div class="login-card">
+              <div class="lock-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#0F0E0C" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="9" width="14" height="10" rx="2"/><path d="M6 9V6a4 4 0 018 0v3"/></svg>
+              </div>
+              <div class="login-title">로그인하고 견적 내용 확인하기</div>
+              <div class="login-sub">공유된 견적 분석 결과를<br>로그인 후 무료로 확인할 수 있어요.</div>
+              <a href="${loginUrl}" class="btn-login-main">로그인하기</a>
+              <a href="${signupUrl}" class="btn-signup-sub">회원가입하기</a>
+            </div>
+          </div>
+        </div>`;
+    }
+  }catch(err){
+    showError('결과를 불러올 수 없어요', err.message);
+  }
 }
 
 function showError(title, sub){
@@ -247,8 +221,8 @@ function showError(title, sub){
     <div class="state-box">
       <div class="state-icon">😕</div>
       <div class="state-text">${title}</div>
-      <div class="state-sub">${sub || ''}</div>
-      <a href="/" style="margin-top:16px;color:var(--accent);font-weight:700;font-size:14px;">홈으로 돌아가기</a>
+      <div class="state-sub">${sub||''}</div>
+      <a href="/" style="margin-top:16px;color:#1F4FD8;font-weight:700;font-size:14px;">홈으로 돌아가기</a>
     </div>`;
 }
 
