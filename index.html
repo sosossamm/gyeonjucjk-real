@@ -370,7 +370,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .profit-input:focus{border-color:var(--accent);}
 .profit-unit{font-size:13px;font-weight:700;color:var(--muted);}
 
-/* ── OCR 편집 ── */
+/* ── 크레딧 수량 선택 ── */
+.credit-qty-btn{position:relative;padding:10px 8px;background:var(--paper);border:1.5px solid var(--rule);border-radius:8px;font-family:inherit;cursor:pointer;text-align:center;transition:all .15s;}
+.credit-qty-btn:hover{border-color:var(--ink3);}
+.credit-qty-btn.active{border-color:#1F4FD8;background:#EEF3FE;}
+.cq-n{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:2px;}
+.credit-qty-btn.active .cq-n{color:#1F4FD8;}
+.cq-p{font-size:11px;color:var(--muted);font-weight:600;}
+.cq-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#1F4FD8;color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;}
 .ocr-row{display:grid;grid-template-columns:1fr 150px 120px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--rule);transition:background .1s;}
 .ocr-row:last-child{border-bottom:none;}
 .ocr-row:hover{background:var(--paper);}
@@ -913,6 +920,47 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div id="mpEmail" style="font-size:12px;color:var(--muted);"></div>
     </div>
     <button onclick="doLogout()" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0;">로그아웃</button>
+  </div>
+
+  <!-- 크레딧 -->
+  <div class="card" id="mpCreditCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div class="card-title" style="margin-bottom:0;">크레딧</div>
+      <button onclick="openCreditHistory()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;">사용 내역</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:var(--ink);border-radius:10px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px;font-weight:600;">보유 크레딧</div>
+        <div style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;" id="mpCreditBalance">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;">1크레딧 = 상세분석 1회</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);">공유 보상으로도 적립 가능</div>
+      </div>
+    </div>
+    <div id="creditChargeSection">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;" id="creditQtyBtns">
+        <button onclick="selectCreditQty(1,this)" class="credit-qty-btn active">
+          <div class="cq-n">1개</div><div class="cq-p">₩10,000</div>
+        </button>
+        <button onclick="selectCreditQty(3,this)" class="credit-qty-btn">
+          <div class="cq-n">3개</div><div class="cq-p">₩30,000</div>
+        </button>
+        <button onclick="selectCreditQty(5,this)" class="credit-qty-btn">
+          <div class="cq-n">5개</div><div class="cq-p">₩50,000</div>
+          <div class="cq-badge">인기</div>
+        </button>
+      </div>
+      <button onclick="startCreditCharge()" id="btnCreditCharge"
+        style="width:100%;padding:12px;background:#1F4FD8;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M7.5 2v11M2 7.5h11"/></svg>
+        <span id="chargeButtonText">1크레딧 충전하기 (₩10,000)</span>
+      </button>
+    </div>
+    <!-- 크레딧 내역 -->
+    <div id="creditHistoryWrap" style="display:none;margin-top:12px;border-top:1px solid var(--rule);padding-top:12px;">
+      <div id="creditHistoryList"></div>
+    </div>
   </div>
 
   <!-- 통계 -->
@@ -2339,6 +2387,7 @@ window.addEventListener('load', async () => {
   await loadUserCredits();
   await checkSocialLoginReturn();
   await checkPaymentReturn();
+  await checkCreditChargeReturn();
   await checkShareReturn();
 });
 
@@ -2467,6 +2516,135 @@ function shareTwitter(){
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 
+/* ── 마이페이지 크레딧 ── */
+async function loadMyPageCredits(){
+  const el = document.getElementById('mpCreditBalance');
+  if(!el) return;
+  try{
+    const resp = await fetch('/api/credits?action=balance', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    userCredits = data.credits || 0;
+    el.textContent = userCredits + ' 크레딧';
+    updatePayButton();
+  }catch(e){ el.textContent = '—'; }
+}
+
+async function openCreditHistory(){
+  const wrap = document.getElementById('creditHistoryWrap');
+  const list = document.getElementById('creditHistoryList');
+  if(!wrap || !list) return;
+
+  if(wrap.style.display !== 'none'){
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  list.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:12px;">불러오는 중...</div>';
+
+  try{
+    const resp = await fetch('/api/credits?action=history', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    const logs = data.logs || [];
+    if(logs.length === 0){
+      list.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:12px;">사용 내역이 없어요</div>';
+      return;
+    }
+    const typeLabel = { charge:'충전', use:'사용', reward:'보상' };
+    const typeColor = { charge:'var(--cheap)', use:'var(--exp)', reward:'#1F4FD8' };
+    list.innerHTML = logs.map(log => {
+      const dt = new Date(log.created_at);
+      const date = `${dt.getMonth()+1}.${dt.getDate()}`;
+      const sign = log.amount > 0 ? '+' : '';
+      const label = typeLabel[log.type] || log.type;
+      const color = typeColor[log.type] || 'var(--ink)';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--rule);">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--ink);">${log.description||label}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${date} · ${label}</div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:${color};">${sign}${log.amount}크레딧</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--exp);font-size:12px;">불러오기 실패</div>';
+  }
+}
+
+let selectedCreditQty = 1;
+
+function selectCreditQty(qty, btn){
+  selectedCreditQty = qty;
+  document.querySelectorAll('.credit-qty-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const price = (qty * 10000).toLocaleString('ko-KR');
+  const chargeBtn = document.getElementById('chargeButtonText');
+  if(chargeBtn) chargeBtn.textContent = `${qty}크레딧 충전하기 (₩${price})`;
+}
+
+async function startCreditCharge(){
+  if(!currentUser){ openAuthModal('login'); return; }
+  if(typeof TossPayments==='undefined'){ alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
+
+  const qty = selectedCreditQty || 1;
+  const totalAmount = qty * 10000;
+
+  const btn = document.getElementById('btnCreditCharge');
+  if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
+
+  sessionStorage.setItem('chargeQty', qty);
+
+  const orderId = 'CRD-' + Date.now();
+  const baseUrl = window.location.href.split('?')[0];
+  try{
+    const tp = TossPayments(TOSS_CLIENT_KEY);
+    const payment = tp.payment({ customerKey: currentUser.id });
+    await payment.requestPayment({
+      method: 'CARD',
+      amount: { currency: 'KRW', value: totalAmount },
+      orderId,
+      orderName: `견적분석 크레딧 ${qty}개`,
+      successUrl: baseUrl + '?chargeOrderId=' + orderId + '&chargeQty=' + qty,
+      failUrl: baseUrl + '?chargeFail=1',
+    });
+  }catch(err){
+    if(err.code !== 'USER_CANCEL') alert('결제 오류: ' + err.message);
+    if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+  }
+}
+
+async function checkCreditChargeReturn(){
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('chargeOrderId');
+  const qty = parseInt(params.get('chargeQty')) || 1;
+  if(!orderId) return;
+
+  window.history.replaceState({}, '', window.location.pathname);
+
+  try{
+    const resp = await fetch('/api/credits?action=reward', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ amount: qty, type: 'charge', description: `크레딧 ${qty}개 충전 (₩${(qty*10000).toLocaleString('ko-KR')})` })
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error);
+    userCredits = data.credits;
+    updatePayButton();
+    goMypage();
+    setTimeout(()=>{
+      const el = document.getElementById('mpCreditBalance');
+      if(el) el.textContent = userCredits + ' 크레딧';
+    }, 500);
+    alert(`✓ ${qty}크레딧 충전 완료! 현재 ${userCredits}크레딧 보유 중이에요.`);
+  }catch(err){
+    alert('충전 처리 오류: ' + err.message);
+  }
+}
+
 /* ── 마이페이지 ── */
 async function goMypage() {
   if (!currentUser) { openAuthModal('login'); return; }
@@ -2487,6 +2665,9 @@ async function loadMypage() {
   if (av) av.textContent = initial;
   if (nm) nm.textContent = name;
   if (em) em.textContent = currentUser.email || '';
+
+  /* 크레딧 잔여량 */
+  await loadMyPageCredits();
 
   /* 기록 불러오기 */
   try {
