@@ -1903,13 +1903,15 @@ async function doAnalyzeFromOcr(){
     window._finalProgTimer=ft;
   }
 
-  const lines=items.map((it,i)=>`${i+1}. [${it.category||'기타'}] ${it.name}: ${it.amount||0}만원`).join('\n');
+  /* 만원 단위 → 원 단위 변환해서 AI에 전달 */
+  const lines=items.map((it,i)=>`${i+1}. [${it.category||'기타'}] ${it.name}: ${Math.round((it.amount||0)*10000)}원`).join('\n');
   const total=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
   const userContent=`면적: ${Math.round(p.m2||0)}㎡(${Math.round(p.py||0)}평) / 지역: ${p.region||''} / 방: ${p.roomCount||3}개 / 화장실: ${p.bathCount||1}개
-총액: ${total}만원
+총액: ${Math.round(total*10000)}원
 
 [CRITICAL] 아래 항목을 번호 순서 그대로 유지하세요. 절대 순서를 바꾸거나 항목을 합치거나 추가하지 마세요.
 각 항목의 category는 대괄호 안에 명시된 값을 그대로 사용하세요.
+amount는 반드시 원(₩) 단위 숫자로 반환하세요 (예: 600만원 → 6000000).
 --- 견적 항목 (순서 변경 금지) ---
 ${lines}`;
 
