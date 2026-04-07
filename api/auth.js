@@ -2,116 +2,123 @@ export const config = { api: { bodyParser: true } };
 
 async function getSupabase() {
   const { createClient } = await import('@supabase/supabase-js');
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
-  );
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+}
+
+function hashEmail(email) {
+  /* 간단한 해시 — crypto 없이 순수 JS */
+  let hash = 0;
+  const str = email.toLowerCase().trim();
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'h' + Math.abs(hash).toString(36);
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { action } = req.query;
+  const { action, email, password } = req.body || {};
 
   try {
     const supabase = await getSupabase();
 
-    /* ── 이메일 회원가입 ── */
+    /* ── 회원가입 ── */
     if (action === 'signup') {
-      const { email, password, name } = req.body;
       if (!email || !password) return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
-      const { data, error } = await supabase.auth.admin.createUser({
-        email, password,
-        email_confirm: true,
-        user_metadata: { name: name || '' }
-      });
+      const emailHash = hashEmail(email);
+
+      /* 탈퇴 이력 확인 */
+      const { data: deleted } = await supabase
+        .from('users')
+        .select('deleted_at, email_hash')
+        .eq('email_hash', emailHash)
+        .not('deleted_at', 'is', null)
+        .maybeSingle();
+
+      if (deleted?.deleted_at) {
+        const deletedAt = new Date(deleted.deleted_at);
+        const canRejoinAt = new Date(deletedAt.getTime() + 90 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        if (now < canRejoinAt) {
+          const daysLeft = Math.ceil((canRejoinAt - now) / (1000 * 60 * 60 * 24));
+          return res.status(400).json({
+            error: `탈퇴 후 90일이 지나야 재가입할 수 있어요. ${daysLeft}일 후에 가입 가능해요.`
+          });
+        }
+      }
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) return res.status(400).json({ error: error.message });
 
-      /* users 테이블에 프로필 저장 */
-      await supabase.from('users').upsert({
-        id: data.user.id,
-        email: data.user.email,
-        name: name || '',
-        created_at: new Date().toISOString()
-      });
+      /* users 테이블에 레코드 생성 */
+      if (data.user) {
+        await supabase.from('users').upsert({
+          id: data.user.id,
+          email: data.user.email,
+          email_hash: emailHash,
+          credits: 0,
+          created_at: new Date().toISOString()
+        });
+      }
 
-      /* 세션 생성 */
-      const { data: session, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) return res.status(400).json({ error: signInError.message });
-
-      return res.status(200).json({
-        success: true,
-        user: { id: data.user.id, email: data.user.email, name },
-        access_token: session.session.access_token,
-        refresh_token: session.session.refresh_token
-      });
+      return res.status(200).json({ user: data.user, session: data.session });
     }
 
-    /* ── 이메일 로그인 ── */
+    /* ── 로그인 ── */
     if (action === 'login') {
-      const { email, password } = req.body;
       if (!email || !password) return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return res.status(400).json({ error: '이메일 또는 비밀번호가 틀렸어요' });
+      if (error) return res.status(400).json({ error: '이메일 또는 비밀번호가 올바르지 않아요' });
 
       return res.status(200).json({
-        success: true,
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.user_metadata?.name || ''
-        },
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
+        user: data.user,
+        access_token: data.session?.access_token,
+        session: data.session
       });
     }
 
-    /* ── 소셜 로그인 URL 생성 (Google/Kakao) ── */
-    if (action === 'oauth') {
-      const { provider, redirect_to } = req.body;
-      if (!['google', 'kakao'].includes(provider)) {
-        return res.status(400).json({ error: '지원하지 않는 로그인 방식이에요' });
-      }
-
-      /* Supabase 클라이언트 SDK용 — 프론트에서 직접 처리 */
-      return res.status(200).json({
-        success: true,
-        provider,
-        redirect_to: redirect_to || process.env.SITE_URL || 'https://gyeonjucjk-real.vercel.app'
-      });
-    }
-
-    /* ── 토큰으로 유저 정보 확인 ── */
-    if (action === 'me') {
+    /* ── 회원탈퇴 ── */
+    if (action === 'withdraw') {
       const token = req.headers.authorization?.replace('Bearer ', '');
       if (!token) return res.status(401).json({ error: '로그인이 필요해요' });
 
-      const { data, error } = await supabase.auth.getUser(token);
-      if (error || !data.user) return res.status(401).json({ error: '세션이 만료됐어요' });
+      const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+      if (authErr || !user) return res.status(401).json({ error: '세션이 만료됐어요' });
 
-      return res.status(200).json({
-        success: true,
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.user_metadata?.name || ''
-        }
-      });
-    }
+      const emailHash = hashEmail(user.email);
 
-    /* ── 로그아웃 ── */
-    if (action === 'logout') {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      if (token) await supabase.auth.admin.signOut(token);
+      /* users 테이블에 탈퇴 처리 (소프트 삭제) */
+      const { error: updateErr } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          email: user.email,
+          email_hash: emailHash,
+          deleted_at: new Date().toISOString(),
+          credits: 0
+        });
+
+      if (updateErr) console.error('users 탈퇴 처리 오류:', updateErr.message);
+
+      /* auth.users에서 실제 삭제 — service_role로만 가능 */
+      const { error: deleteErr } = await supabase.auth.admin.deleteUser(user.id);
+      if (deleteErr) {
+        console.error('auth 삭제 오류:', deleteErr.message);
+        return res.status(500).json({ error: '탈퇴 처리 중 오류가 발생했어요' });
+      }
+
       return res.status(200).json({ success: true });
     }
 
-    return res.status(400).json({ error: '알 수 없는 요청이에요' });
+    return res.status(400).json({ error: '알 수 없는 요청' });
 
   } catch (err) {
     console.error('auth error:', err);
