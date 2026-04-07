@@ -1173,16 +1173,18 @@ async function doEmailAuth() {
     loadUserCredits();
 
     /* 로그인 후 pending 액션 실행 */
-    if (authPendingAction === 'analyze') {
+    if (authPendingAction && authPendingAction.startsWith('share:')) {
+      authPendingAction = null;
+      await processShareReward();
+    } else if (authPendingAction === 'analyze') {
       authPendingAction = null;
       doAnalyze();
     } else if (authPendingAction === 'analyzeManual') {
       authPendingAction = null;
       doManualAnalyze();
-    } else if (authPendingAction && authPendingAction.startsWith('share:')) {
-      const shareId = authPendingAction.replace('share:', '');
-      authPendingAction = null;
-      loadSharedResult(shareId);
+    } else {
+      /* 공유 링크 경유 가입인 경우 처리 */
+      await processShareReward();
     }
 
   } catch(err) {
@@ -1223,13 +1225,13 @@ async function checkSocialLoginReturn() {
         || session.user.email?.split('@')[0] || '회원'
     };
     saveAuth(user, session.access_token);
-    if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
-    else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
-    else if (authPendingAction && authPendingAction.startsWith('share:')) {
-      const shareId = authPendingAction.replace('share:', '');
+    loadUserCredits();
+    if (authPendingAction && authPendingAction.startsWith('share:')) {
       authPendingAction = null;
-      loadSharedResult(shareId);
-    }
+      await processShareReward();
+    } else if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
+    else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
+    else { await processShareReward(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
 }
 /* ── 분석 버튼 게이트: 비로그인 시 모달 표시 ── */
@@ -2402,12 +2404,29 @@ async function checkShareReturn(){
   if(from !== 'share' || !shareId) return;
   window.history.replaceState({}, '', window.location.pathname);
 
+  /* shareId와 action을 sessionStorage에 저장 — 로그인 완료 후 처리하기 위해 */
+  sessionStorage.setItem('pendingShareId', shareId);
+  sessionStorage.setItem('pendingShareAction', action || 'login');
+
   if(!currentUser){
     openAuthModal(action === 'signup' ? 'signup' : 'login', 'share:' + shareId);
     return;
   }
 
-  /* 공유자에게 크레딧 보상 (신규 가입인 경우에만) */
+  /* 이미 로그인 상태면 바로 처리 */
+  await processShareReward();
+  await loadSharedResult(shareId);
+}
+
+async function processShareReward(){
+  const shareId = sessionStorage.getItem('pendingShareId');
+  const action = sessionStorage.getItem('pendingShareAction');
+  if(!shareId || !currentUser) return;
+
+  sessionStorage.removeItem('pendingShareId');
+  sessionStorage.removeItem('pendingShareAction');
+
+  /* 신규 가입인 경우에만 공유자에게 크레딧 보상 */
   if(action === 'signup'){
     try{
       const shareResp = await fetch(`/api/share?id=${shareId}`);
@@ -2415,17 +2434,18 @@ async function checkShareReturn(){
       const sharerId = shareJson.data?.sharerId;
 
       if(sharerId && sharerId !== currentUser.id){
-        /* 공유자 크레딧 +1 지급 */
         await fetch('/api/credits?action=rewardSharer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sharerId, shareId, description: '공유 링크 신규 가입 보상' })
         });
       }
+      /* 공유 결과 표시 */
+      await loadSharedResult(shareId);
     }catch(e){ console.error('보상 처리 실패:', e); }
+  } else {
+    await loadSharedResult(shareId);
   }
-
-  await loadSharedResult(shareId);
 }
 
 async function loadSharedResult(shareId){
