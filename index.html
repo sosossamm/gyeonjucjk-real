@@ -936,7 +936,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </div>
       <div style="text-align:right;">
         <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;">1크레딧 = 상세분석 1회</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);">공유 보상으로도 적립 가능</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);">친구가 공유 링크로 가입하면 자동 적립!</div>
       </div>
     </div>
     <div id="creditChargeSection">
@@ -1195,14 +1195,16 @@ async function doEmailAuth() {
 }
 
 function doSocialAuth(provider) {
-  /* 모바일 팝업 차단 방지 — async/await 없이 즉시 리다이렉트 */
   document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=true; b.style.opacity='0.6'; });
-
-  const redirectTo = encodeURIComponent(window.location.origin + '/?socialLogin=1');
   const supabaseUrl = 'https://vzztfgqubrguwujlsadh.supabase.co';
-
-  /* Supabase OAuth URL 직접 생성 */
-  window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
+  /* pendingShareId가 있으면 redirectTo에 포함해서 소셜 로그인 후에도 복원 가능 */
+  const pendingShareId = sessionStorage.getItem('pendingShareId');
+  const pendingShareAction = sessionStorage.getItem('pendingShareAction');
+  let returnUrl = window.location.origin + '/?socialLogin=1';
+  if(pendingShareId){
+    returnUrl += `&shareId=${pendingShareId}&shareAction=${pendingShareAction||'login'}`;
+  }
+  window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(returnUrl)}`;
 }
 
 async function doLogout() {
@@ -1213,6 +1215,13 @@ async function doLogout() {
 async function checkSocialLoginReturn() {
   const params = new URLSearchParams(window.location.search);
   if (!params.get('socialLogin')) return;
+  /* URL에서 shareId 복원 (소셜 로그인 경유) */
+  const shareIdFromUrl = params.get('shareId');
+  const shareActionFromUrl = params.get('shareAction');
+  if(shareIdFromUrl){
+    sessionStorage.setItem('pendingShareId', shareIdFromUrl);
+    sessionStorage.setItem('pendingShareAction', shareActionFromUrl || 'login');
+  }
   window.history.replaceState({}, '', window.location.pathname);
   try {
     const { data: { session } } = await window._supabase.auth.getSession();
@@ -1226,10 +1235,7 @@ async function checkSocialLoginReturn() {
     };
     saveAuth(user, session.access_token);
     loadUserCredits();
-    if (authPendingAction && authPendingAction.startsWith('share:')) {
-      authPendingAction = null;
-      await processShareReward();
-    } else if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
+    if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
     else { await processShareReward(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
@@ -2420,32 +2426,27 @@ async function checkShareReturn(){
 
 async function processShareReward(){
   const shareId = sessionStorage.getItem('pendingShareId');
-  const action = sessionStorage.getItem('pendingShareAction');
   if(!shareId || !currentUser) return;
 
   sessionStorage.removeItem('pendingShareId');
   sessionStorage.removeItem('pendingShareAction');
 
-  /* 신규 가입인 경우에만 공유자에게 크레딧 보상 */
-  if(action === 'signup'){
-    try{
-      const shareResp = await fetch(`/api/share?id=${shareId}`);
-      const shareJson = await shareResp.json();
-      const sharerId = shareJson.data?.sharerId;
+  /* 로그인/가입 모두 보상 시도 — credits.js에서 중복 방지 처리 */
+  try{
+    const shareResp = await fetch(`/api/share?id=${shareId}`);
+    const shareJson = await shareResp.json();
+    const sharerId = shareJson.data?.sharerId;
 
-      if(sharerId && sharerId !== currentUser.id){
-        await fetch('/api/credits?action=rewardSharer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sharerId, shareId, description: '공유 링크 신규 가입 보상' })
-        });
-      }
-      /* 공유 결과 표시 */
-      await loadSharedResult(shareId);
-    }catch(e){ console.error('보상 처리 실패:', e); }
-  } else {
-    await loadSharedResult(shareId);
-  }
+    if(sharerId && sharerId !== currentUser.id){
+      await fetch('/api/credits?action=rewardSharer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sharerId, shareId, description: '공유 링크 신규 가입 보상' })
+      });
+    }
+  }catch(e){ console.error('보상 처리 실패:', e); }
+
+  await loadSharedResult(shareId);
 }
 
 async function loadSharedResult(shareId){
@@ -2454,13 +2455,12 @@ async function loadSharedResult(shareId){
     const json = await resp.json();
     if(!resp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
 
-    /* 공유 결과를 lastResult 형태로 변환해서 렌더링 */
     const d = json.data;
     const fakeResult = {
       totalAmount: d.totalAmount,
       overallVerdict: d.overallVerdict,
       overallComment: d.overallComment,
-      items: d.previewItems || [],
+      items: d.allItems || d.previewItems || [],  /* 전체 항목 사용 */
     };
     render(fakeResult);
     showPage('pageResult');
@@ -2473,7 +2473,7 @@ async function loadSharedResult(shareId){
       eb.style.background='#EBF7F0';
       eb.style.borderColor='#4CAF82';
       eb.style.color='#1A6B3E';
-      eb.textContent='✓ 공유된 견적 분석 결과예요. 상세 분석을 보려면 결제가 필요해요.';
+      eb.textContent='✓ 친구의 공유된 견적 분석 결과예요.';
     }
   }catch(err){
     console.error('공유 결과 로드 실패:', err);
