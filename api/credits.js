@@ -22,140 +22,88 @@ export default async function handler(req, res) {
 
   try {
     const supabase = await getSupabase();
-    const user = await getUser(supabase, token);
-    if (!user) return res.status(401).json({ error: '로그인이 필요해요' });
 
-    /* ── 잔액 조회 ── */
-    if (action === 'balance') {
-      const { data, error } = await supabase
-        .from('users')
-        .select('credits')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        /* users 레코드 없으면 생성 */
-        await supabase.from('users').upsert({
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || '',
-          credits: 0,
-          created_at: new Date().toISOString()
-        });
-        return res.status(200).json({ credits: 0 });
-      }
-      return res.status(200).json({ credits: data?.credits || 0 });
-    }
-
-    /* ── 크레딧 사용 ── */
-    if (action === 'use' && req.method === 'POST') {
-      const { description = '상세 분석 열람' } = req.body || {};
-
-      /* 현재 잔액 확인 */
-      const { data: userData } = await supabase
-        .from('users').select('credits').eq('id', user.id).single();
-
-      const currentCredits = userData?.credits || 0;
-      if (currentCredits < 1) {
-        return res.status(400).json({ error: '크레딧이 부족해요' });
-      }
-
-      /* 차감 */
-      const { data: updated, error: updateErr } = await supabase
-        .from('users')
-        .update({ credits: currentCredits - 1 })
-        .eq('id', user.id)
-        .select('credits')
-        .single();
-
-      if (updateErr) throw updateErr;
-
-      /* 사용 내역 기록 */
-      await supabase.from('credit_logs').insert({
-        user_id: user.id,
-        amount: -1,
-        type: 'use',
-        description,
-        created_at: new Date().toISOString()
-      });
-
-      return res.status(200).json({ success: true, credits: updated.credits });
-    }
-
-    /* ── 크레딧 지급 (보상/충전) ── */
-    if (action === 'reward' && req.method === 'POST') {
-      const { amount = 1, type = 'reward', description = '공유 보상' } = req.body || {};
-
-      const { data: userData } = await supabase
-        .from('users').select('credits').eq('id', user.id).single();
-
-      const currentCredits = userData?.credits || 0;
-
-      const { data: updated, error: updateErr } = await supabase
-        .from('users')
-        .update({ credits: currentCredits + amount })
-        .eq('id', user.id)
-        .select('credits')
-        .single();
-
-      if (updateErr) throw updateErr;
-
-      await supabase.from('credit_logs').insert({
-        user_id: user.id,
-        amount: amount,
-        type,
-        description,
-        created_at: new Date().toISOString()
-      });
-
-      return res.status(200).json({ success: true, credits: updated.credits });
-    }
-
-    /* ── 공유자 크레딧 보상 (서버사이드 — 다른 유저에게 지급) ── */
+    /* rewardSharer: 인증 불필요 - 서비스 키로 직접 처리 */
     if (action === 'rewardSharer' && req.method === 'POST') {
       const { sharerId, shareId, description = '공유 보상' } = req.body || {};
       if (!sharerId) return res.status(400).json({ error: 'sharerId 필요' });
 
-      /* 중복 보상 방지 — 같은 shareId로 이미 보상했는지 확인 */
+      /* 중복 방지 */
       const { data: existing } = await supabase
-        .from('credit_logs')
-        .select('id')
-        .eq('user_id', sharerId)
-        .eq('type', 'reward')
-        .eq('description', `share:${shareId}`)
-        .single();
+        .from('credit_logs').select('id')
+        .eq('user_id', sharerId).eq('type', 'reward').eq('description', `share:${shareId}`)
+        .maybeSingle();
 
       if (existing) return res.status(200).json({ success: true, message: '이미 지급됨' });
 
-      /* 공유자 크레딧 +1 */
       const { data: sharerData } = await supabase
-        .from('users').select('credits').eq('id', sharerId).single();
-      const sharerCredits = sharerData?.credits || 0;
+        .from('users').select('credits').eq('id', sharerId).maybeSingle();
 
-      await supabase.from('users')
-        .update({ credits: sharerCredits + 1 })
-        .eq('id', sharerId);
+      if (!sharerData) {
+        await supabase.from('users').insert({ id: sharerId, credits: 1, created_at: new Date().toISOString() });
+      } else {
+        await supabase.from('users').update({ credits: (sharerData.credits || 0) + 1 }).eq('id', sharerId);
+      }
 
       await supabase.from('credit_logs').insert({
-        user_id: sharerId,
-        amount: 1,
-        type: 'reward',
-        description: `share:${shareId}`,
-        created_at: new Date().toISOString()
+        user_id: sharerId, amount: 1, type: 'reward',
+        description: `share:${shareId}`, created_at: new Date().toISOString()
       });
 
+      console.log('크레딧 보상 지급:', sharerId, shareId);
       return res.status(200).json({ success: true });
     }
 
-    /* ── 크레딧 내역 조회 ── */
-    if (action === 'history') {
-      const { data, error } = await supabase
-        .from('credit_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
+    const user = await getUser(supabase, token);
+    if (!user) return res.status(401).json({ error: '로그인이 필요해요' });
 
+    /* 잔액 조회 */
+    if (action === 'balance') {
+      const { data } = await supabase.from('users').select('credits').eq('id', user.id).maybeSingle();
+      if (!data) {
+        await supabase.from('users').upsert({
+          id: user.id, email: user.email,
+          name: user.user_metadata?.name || '',
+          credits: 0, created_at: new Date().toISOString()
+        });
+        return res.status(200).json({ credits: 0 });
+      }
+      return res.status(200).json({ credits: data.credits || 0 });
+    }
+
+    /* 크레딧 사용 */
+    if (action === 'use' && req.method === 'POST') {
+      const { description = '상세 분석 열람' } = req.body || {};
+      const { data: userData } = await supabase.from('users').select('credits').eq('id', user.id).maybeSingle();
+      const currentCredits = userData?.credits || 0;
+      if (currentCredits < 1) return res.status(400).json({ error: '크레딧이 부족해요' });
+      const { data: updated, error: updateErr } = await supabase
+        .from('users').update({ credits: currentCredits - 1 }).eq('id', user.id).select('credits').single();
+      if (updateErr) throw updateErr;
+      await supabase.from('credit_logs').insert({
+        user_id: user.id, amount: -1, type: 'use', description, created_at: new Date().toISOString()
+      });
+      return res.status(200).json({ success: true, credits: updated.credits });
+    }
+
+    /* 크레딧 지급 (충전) */
+    if (action === 'reward' && req.method === 'POST') {
+      const { amount = 1, type = 'reward', description = '공유 보상' } = req.body || {};
+      const { data: userData } = await supabase.from('users').select('credits').eq('id', user.id).maybeSingle();
+      const currentCredits = userData?.credits || 0;
+      const { data: updated, error: updateErr } = await supabase
+        .from('users').update({ credits: currentCredits + amount }).eq('id', user.id).select('credits').single();
+      if (updateErr) throw updateErr;
+      await supabase.from('credit_logs').insert({
+        user_id: user.id, amount, type, description, created_at: new Date().toISOString()
+      });
+      return res.status(200).json({ success: true, credits: updated.credits });
+    }
+
+    /* 내역 조회 */
+    if (action === 'history') {
+      const { data, error } = await supabase.from('credit_logs').select('*')
+        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
       if (error) throw error;
       return res.status(200).json({ logs: data || [] });
     }
