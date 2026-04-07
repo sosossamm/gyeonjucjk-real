@@ -923,6 +923,34 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <button onclick="doLogout()" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0;">로그아웃</button>
   </div>
 
+  <!-- 회원탈퇴 -->
+  <div id="withdrawSection" style="display:none;margin-top:-8px;margin-bottom:8px;">
+    <div style="background:#FCEAEA;border:1px solid #F0B0B0;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:13px;font-weight:700;color:#791F1F;margin-bottom:6px;">정말 탈퇴하시겠어요?</div>
+      <div style="font-size:11px;color:#9A1F1F;line-height:1.7;margin-bottom:12px;">
+        • 모든 분석 기록과 크레딧이 삭제돼요<br>
+        • 탈퇴 후 <strong>90일간 재가입이 제한</strong>돼요<br>
+        • 이 작업은 되돌릴 수 없어요
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('withdrawSection').style.display='none'"
+          style="flex:1;padding:9px;background:#fff;color:#4A4743;border:1px solid #E8E5E0;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">
+          취소
+        </button>
+        <button onclick="doWithdraw()"
+          style="flex:1;padding:9px;background:#9A1F1F;color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">
+          탈퇴하기
+        </button>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:right;margin-top:-4px;margin-bottom:4px;">
+    <button onclick="document.getElementById('withdrawSection').style.display=document.getElementById('withdrawSection').style.display==='none'?'block':'none'"
+      style="font-size:11px;color:var(--hint);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;">
+      회원탈퇴
+    </button>
+  </div>
+
   <!-- 크레딧 -->
   <div class="card" id="mpCreditCard">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
@@ -1210,6 +1238,32 @@ function doSocialAuth(provider) {
 async function doLogout() {
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
+}
+
+async function doWithdraw() {
+  if(!currentUser || !authToken){ alert('로그인이 필요해요'); return; }
+
+  const btn = document.querySelector('#withdrawSection button:last-child');
+  if(btn){ btn.disabled=true; btn.textContent='처리 중...'; }
+
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ action: 'withdraw' })
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || '탈퇴 처리 실패');
+
+    /* 로컬 세션 정리 */
+    try { await window._supabase.auth.signOut(); } catch(e) {}
+    clearAuth();
+    showPage('pageInput');
+    alert('탈퇴가 완료됐어요. 이용해주셔서 감사합니다.\n90일 후 재가입이 가능해요.');
+  }catch(err){
+    alert('탈퇴 오류: ' + err.message);
+    if(btn){ btn.disabled=false; btn.textContent='탈퇴하기'; }
+  }
 }
 
 async function checkSocialLoginReturn() {
