@@ -70,9 +70,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 /* ── mode toggle ── */
 .mode-toggle{display:flex;gap:8px;margin-bottom:1.25rem;}
-.mode-btn{flex:1;padding:0.85rem 1rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);transition:all 0.15s;text-align:center;}
+.mode-btn{flex:1;padding:0.85rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);transition:all 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mode-btn.active{border-color:var(--ink);background:var(--ink);color:#fff;}
-.mode-btn span{display:block;font-size:11px;font-weight:400;margin-top:3px;opacity:0.7;}
+.mode-btn span{display:block;font-size:10px;font-weight:400;margin-top:3px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── upload zone ── */
 .upload-zone{border:2px dashed var(--rule);border-radius:var(--radius-sm);padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--paper);position:relative;}
@@ -92,10 +92,11 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .img-preview{max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--rule);display:block;object-fit:contain;margin-top:0.85rem;}
 
 /* ── form ── */
-.form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;}
+.form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 .form-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:5px;}
-.form-field input,.form-field select{width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
+.form-field input,.form-field select{width:100%;padding:0.6rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
 .form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff;}
+@media(max-width:480px){.form-grid{grid-template-columns:repeat(2,1fr);}.form-grid .form-field:last-child{grid-column:1/-1;}}
 
 /* ── analyze btn ── */
 .btn-analyze{width:100%;padding:1rem 2rem;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:15px;font-weight:800;letter-spacing:-0.3px;cursor:pointer;transition:opacity 0.2s,transform 0.1s;margin-top:1.25rem;display:flex;align-items:center;justify-content:center;gap:10px;}
@@ -511,7 +512,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
   <span class="logo-word">견적<span>분석</span></span>
   <div class="bar-sep"></div>
-  <span class="bar-tag">인테리어 견적 데이터 분석기</span>
+  <span class="bar-tag">견적 데이터 분석기</span>
   <div class="bar-user" id="headerUserArea">
     <button class="bar-login-btn" onclick="openAuthModal('login')">로그인</button>
   </div>
@@ -540,10 +541,10 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
   <div class="mode-toggle">
     <button class="mode-btn active" id="modePDF" onclick="switchMode('pdf')">
-      📄 견적서 파일 업로드<span>PDF · JPG · PNG 파일로 분석</span>
+      📄 파일 업로드<span>PDF · JPG · PNG 분석</span>
     </button>
     <button class="mode-btn" id="modeManual" onclick="switchMode('manual')">
-      ✏️ 직접 입력하기<span>공정별 금액을 직접 입력해서 분석</span>
+      ✏️ 직접 입력하기<span>공정별 금액 직접 입력</span>
     </button>
   </div>
 
