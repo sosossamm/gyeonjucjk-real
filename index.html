@@ -1049,6 +1049,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </div>
       <input class="auth-input" type="email" id="authEmail" placeholder="이메일">
       <input class="auth-input" type="password" id="authPassword" placeholder="비밀번호 (6자 이상)">
+      <div id="authPasswordConfirmWrap" style="display:none;">
+        <input class="auth-input" type="password" id="authPasswordConfirm" placeholder="비밀번호 확인">
+      </div>
       <div class="auth-error" id="authError"></div>
       <button class="btn-auth" id="btnAuthSubmit" onclick="doEmailAuth()">로그인</button>
     </div>
@@ -1157,6 +1160,8 @@ function switchAuthTab(tab, btn) {
   }
   const isSignup = tab === 'signup';
   document.getElementById('nameFieldWrap').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('authPasswordConfirmWrap').style.display = isSignup ? 'block' : 'none';
+  if (!isSignup) document.getElementById('authPasswordConfirm').value = '';
   document.getElementById('btnAuthSubmit').textContent = isSignup ? '회원가입' : '로그인';
   document.getElementById('authSwitchText').innerHTML = isSignup
     ? '이미 계정이 있으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'login\',null)">로그인</span>'
@@ -1175,9 +1180,17 @@ async function doEmailAuth() {
   const password = document.getElementById('authPassword').value;
   const name = document.getElementById('authName').value.trim();
   const btn = document.getElementById('btnAuthSubmit');
+  const isSignup = currentAuthTab === 'signup';
 
   if (!email || !password) return showAuthError('이메일과 비밀번호를 입력해주세요');
   if (password.length < 6) return showAuthError('비밀번호는 6자 이상이어야 해요');
+
+  /* 회원가입 시 비밀번호 확인 */
+  if (isSignup) {
+    const passwordConfirm = document.getElementById('authPasswordConfirm').value;
+    if (!passwordConfirm) return showAuthError('비밀번호를 한 번 더 입력해주세요');
+    if (password !== passwordConfirm) return showAuthError('비밀번호가 일치하지 않아요');
+  }
 
   btn.disabled = true;
   btn.textContent = '처리 중...';
