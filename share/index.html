@@ -94,7 +94,7 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
 <body>
 
 <header class="topbar">
-  <span class="logo">견적<span>분석</span></span>
+  <a href="/" style="text-decoration:none;"><span class="logo">견적<span>분석</span></span></a>
   <div class="sp"></div>
   <a href="/" class="top-btn">내 견적 분석하기</a>
 </header>
@@ -288,7 +288,14 @@ async function submitAuth(){
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || '오류가 발생했어요');
 
-    /* 로그인 성공 */
+    /* Supabase 클라이언트에 세션 직접 세팅 */
+    if(data.session){
+      await _supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+      });
+    }
+
     closeAuthSheet();
     await rewardAndShow();
   }catch(err){
@@ -307,19 +314,25 @@ function doSocialInShare(provider){
 async function rewardAndShow(){
   /* 세션 확인 */
   const { data: { session } } = await _supabase.auth.getSession();
-  if(!session) return;
+  if(!session){ console.warn('rewardAndShow: 세션 없음'); await loadShare(); return; }
 
   /* 공유자 크레딧 보상 시도 */
   try{
     const shareResp = await fetch(`/api/share?id=${currentShareId}`);
     const shareJson = await shareResp.json();
     const sharerId = shareJson.data?.sharerId;
+    console.log('보상 시도 - sharerId:', sharerId, 'userId:', session.user.id);
+
     if(sharerId && sharerId !== session.user.id){
-      await fetch('/api/credits?action=rewardSharer', {
+      const rewardResp = await fetch('/api/credits?action=rewardSharer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
       });
+      const rewardData = await rewardResp.json();
+      console.log('보상 결과:', rewardData);
+    } else {
+      console.log('보상 스킵 - sharerId 없거나 본인 링크');
     }
   }catch(e){ console.error('보상 처리 실패:', e); }
 
