@@ -9,42 +9,26 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;}
 body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
-
 .topbar{background:#0F0E0C;height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:12px;position:sticky;top:0;z-index:100;}
 .logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;}
 .logo span{color:#A0BFF8;}
 .sp{flex:1;}
 .top-btn{background:#1F4FD8;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;}
-
 .wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
 
-/* 블러 래퍼 */
+/* 블러 */
 .blur-wrap{position:relative;}
 .blur-inner{transition:filter .3s;}
 .blur-wrap.locked .blur-inner{filter:blur(7px);pointer-events:none;user-select:none;}
-
-/* 팝업 오버레이 */
-.popup-overlay{
-  display:none;
-  position:absolute;inset:0;
-  background:rgba(248,246,242,0.82);
-  z-index:10;
-  align-items:center;justify-content:center;
-  padding:20px;
-  border-radius:14px;
-}
+.popup-overlay{display:none;position:absolute;inset:0;background:rgba(248,246,242,0.82);z-index:10;align-items:center;justify-content:center;padding:20px;border-radius:14px;}
 .blur-wrap.locked .popup-overlay{display:flex;}
-.popup-card{
-  background:#fff;border:1px solid #E8E5E0;border-radius:16px;
-  padding:28px 22px;text-align:center;width:100%;max-width:320px;
-}
+.popup-card{background:#fff;border:1px solid #E8E5E0;border-radius:16px;padding:28px 22px;text-align:center;width:100%;max-width:320px;}
 .popup-icon{width:48px;height:48px;border-radius:50%;background:#F8F6F2;border:1px solid #E8E5E0;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
 .popup-title{font-size:16px;font-weight:800;color:#0F0E0C;letter-spacing:-.3px;margin-bottom:8px;line-height:1.4;}
 .popup-sub{font-size:12px;color:#8A8780;line-height:1.7;margin-bottom:18px;}
 .btn-popup-main{display:block;width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;margin-bottom:8px;}
 .btn-popup-main:hover{opacity:.85;}
-.btn-popup-sub{font-size:12px;color:#B8B5B0;background:none;border:none;cursor:pointer;font-family:inherit;}
-.btn-popup-sub:hover{color:#8A8780;}
+.btn-popup-sub{display:block;font-size:12px;color:#8A8780;text-decoration:none;margin-top:4px;}
 
 /* 결과 카드 */
 .verdict-card{border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:12px;}
@@ -61,14 +45,11 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
 .v-total{margin-left:auto;text-align:right;flex-shrink:0;}
 .v-total-l{font-size:9px;color:#8A8780;margin-bottom:2px;}
 .v-total-n{font-size:19px;font-weight:800;color:#0F0E0C;letter-spacing:-.5px;}
-
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
 .stat-c{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 14px;}
 .stat-l{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#B8B5B0;margin-bottom:5px;}
 .stat-n{font-size:22px;font-weight:800;letter-spacing:-.5px;color:#0F0E0C;}
-.stat-n.exp{color:#9A1F1F;}.stat-n.fair{color:#7A6010;}
-.stat-n.cheap{color:#1A6B3E;}
-
+.stat-n.exp{color:#9A1F1F;}.stat-n.fair{color:#7A6010;}.stat-n.cheap{color:#1A6B3E;}
 .item-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
 .item-card{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
 .i-name{font-size:13px;font-weight:700;color:#0F0E0C;}
@@ -79,23 +60,35 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
 .i-pill.fair{background:#FBF5E0;color:#7A6010;}
 .i-pill.cheap{background:#EBF7F0;color:#1A6B3E;}
 .i-amt{font-size:13px;font-weight:800;color:#0F0E0C;}
-.more-card{background:#fff;border:1px solid #E8E5E0;border-radius:10px;padding:12px 16px;text-align:center;font-size:12px;color:#B8B5B0;font-weight:600;}
-
-/* 로그인 후 배너 */
 .unlocked-banner{background:#EBF7F0;border:1px solid #4CAF82;border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;font-size:13px;font-weight:700;color:#1A6B3E;}
-
-/* 내 견적 CTA */
 .cta-section{background:#0F0E0C;border-radius:14px;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:1.25rem;}
 .cta-title{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1.4;margin-bottom:3px;}
 .cta-sub{font-size:11px;color:rgba(255,255,255,.45);line-height:1.5;}
 .cta-btn{background:#fff;color:#0F0E0C;border:none;border-radius:8px;padding:10px 18px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
-.cta-btn:hover{opacity:.9;}
-
-/* 로딩/에러 */
 .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;color:#8A8780;text-align:center;}
 .state-icon{font-size:36px;}
 .state-text{font-size:15px;font-weight:700;color:#0F0E0C;}
-.state-sub{font-size:13px;color:#8A8780;}
+.state-sub{font-size:13px;}
+
+/* 인라인 로그인 모달 */
+.auth-modal-wrap{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center;}
+.auth-modal-wrap.show{display:flex;}
+.auth-sheet{background:#fff;border-radius:20px 20px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:480px;}
+.auth-handle{width:36px;height:4px;background:#E8E5E0;border-radius:2px;margin:0 auto 1.5rem;}
+.auth-title{font-size:18px;font-weight:800;color:#0F0E0C;text-align:center;margin-bottom:6px;letter-spacing:-.5px;}
+.auth-sub{font-size:13px;color:#8A8780;text-align:center;margin-bottom:1.5rem;}
+.auth-input{width:100%;padding:12px 14px;border:1.5px solid #E8E5E0;border-radius:8px;font-family:inherit;font-size:14px;color:#0F0E0C;background:#F8F6F2;outline:none;margin-bottom:10px;}
+.auth-input:focus{border-color:#1F4FD8;background:#fff;}
+.btn-auth-submit{width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;}
+.btn-auth-submit:hover{opacity:.85;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#B8B5B0;font-size:12px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#E8E5E0;}
+.btn-social{width:100%;padding:12px;border:1.5px solid #E8E5E0;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#fff;color:#0F0E0C;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-social:hover{background:#F8F6F2;}
+.auth-switch{text-align:center;font-size:12px;color:#8A8780;margin-top:12px;}
+.auth-switch span{color:#1F4FD8;font-weight:700;cursor:pointer;}
+.auth-error{background:#FCEAEA;color:#791F1F;border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:10px;display:none;}
+.auth-close-btn{position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;font-size:20px;cursor:pointer;color:#8A8780;}
 </style>
 </head>
 <body>
@@ -113,6 +106,37 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
   </div>
 </div>
 
+<!-- 인라인 로그인/가입 모달 -->
+<div class="auth-modal-wrap" id="authModalWrap" onclick="handleModalBg(event)">
+  <div class="auth-sheet" style="position:relative;">
+    <button class="auth-close-btn" onclick="closeAuthSheet()">×</button>
+    <div class="auth-handle"></div>
+    <div class="auth-title" id="authSheetTitle">로그인하고 확인하기</div>
+    <div class="auth-sub" id="authSheetSub">친구의 상세 견적을 무료로 확인하세요</div>
+    <div class="auth-error" id="authSheetError"></div>
+
+    <div id="authSheetEmailForm">
+      <input class="auth-input" type="email" id="authSheetEmail" placeholder="이메일" autocomplete="email">
+      <input class="auth-input" type="password" id="authSheetPw" placeholder="비밀번호" autocomplete="current-password">
+      <button class="btn-auth-submit" id="authSheetSubmit" onclick="submitAuth()">로그인</button>
+    </div>
+
+    <div class="auth-divider">또는</div>
+    <button class="btn-social" onclick="doSocialInShare('google')">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+      Google로 계속하기
+    </button>
+    <button class="btn-social" onclick="doSocialInShare('kakao')" style="background:#FEE500;border-color:#FEE500;color:#3C1E1E;">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 0C4.03 0 0 3.134 0 7c0 2.493 1.647 4.678 4.125 5.938L3.1 17.1a.375.375 0 00.571.4l5.27-3.498C9.294 14.003 9.645 14 10 14c4.97 0 9-3.134 9-7S13.97 0 9 0z" fill="#3C1E1E"/></svg>
+      카카오로 계속하기
+    </button>
+
+    <div class="auth-switch" id="authSwitchText">
+      계정이 없으신가요? <span onclick="toggleAuthMode()">회원가입</span>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
@@ -123,6 +147,9 @@ const clsMap  = {비쌈:'exp', 적정:'fair', 저렴:'cheap'};
 const iconMap  = {비쌈:'🔴', 적정:'🟡', 저렴:'💚'};
 const labelMap = {비쌈:'전체 종합: 비쌈', 적정:'전체 종합: 적정', 저렴:'전체 종합: 저렴'};
 const titleMap = {비쌈:'시중 평균보다 비싼 견적이에요', 적정:'시중 평균 수준의 견적이에요', 저렴:'시중 평균보다 저렴한 견적이에요'};
+
+let currentShareId = null;
+let authMode = 'login'; /* login | signup */
 
 function fmt(n){
   if(!n||isNaN(n)) return '—';
@@ -139,8 +166,6 @@ function getShareId(){
 function buildResultHTML(d){
   const c = clsMap[d.overallVerdict] || 'fair';
   const items = d.allItems || d.previewItems || [];
-  const extraCount = 0;
-
   return `
     <div class="verdict-card ${c}">
       <div class="v-icon">${iconMap[d.overallVerdict]||'🟡'}</div>
@@ -154,87 +179,183 @@ function buildResultHTML(d){
         <div class="v-total-n">${fmt(d.totalAmount)}</div>
       </div>
     </div>
-
     <div class="stat-row">
       <div class="stat-c"><div class="stat-l">🔴 비쌈</div><div class="stat-n exp">${d.expCount||0}개</div></div>
       <div class="stat-c"><div class="stat-l">🟡 적정</div><div class="stat-n fair">${d.fairCount||0}개</div></div>
       <div class="stat-c"><div class="stat-l">💚 저렴</div><div class="stat-n cheap">${d.cheapCount||0}개</div></div>
     </div>
-
     <div class="item-list">
       ${items.map(item => {
         const ic = clsMap[item.verdict]||'fair';
         return `<div class="item-card">
-          <div>
-            <div class="i-name">${item.name||''}</div>
-            <div class="i-cat">${item.category||''}</div>
-          </div>
+          <div><div class="i-name">${item.name||''}</div><div class="i-cat">${item.category||''}</div></div>
           <div class="i-right">
             <span class="i-pill ${ic}">${item.verdict||''}</span>
             <span class="i-amt">${fmt(item.amount)}</span>
           </div>
         </div>`;
       }).join('')}
-
     </div>`;
+}
+
+function showBlurred(d, shareId){
+  const resultHTML = buildResultHTML(d);
+  document.getElementById('mainWrap').innerHTML = `
+    <div class="blur-wrap locked">
+      <div class="blur-inner">${resultHTML}</div>
+      <div class="popup-overlay">
+        <div class="popup-card">
+          <div class="popup-icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#0F0E0C" stroke-width="1.6" stroke-linecap="round">
+              <rect x="3" y="10" width="16" height="11" rx="2.5"/>
+              <path d="M7 10V7a4 4 0 018 0v3"/>
+            </svg>
+          </div>
+          <div class="popup-title">친구의 상세 견적은<br>로그인 후 확인할 수 있어요</div>
+          <div class="popup-sub">내가 받은 견적도 적정한지<br>함께 판별해드릴게요.</div>
+          <button class="btn-popup-main" onclick="openAuthSheet('login')">로그인하고 확인하기</button>
+          <a class="btn-popup-sub" onclick="openAuthSheet('signup')" style="cursor:pointer;">
+            아직 계정이 없으신가요? <span style="color:#1F4FD8;font-weight:700;">회원가입</span>
+          </a>
+        </div>
+      </div>
+    </div>`;
+}
+
+function showUnlocked(d){
+  const resultHTML = buildResultHTML(d);
+  document.getElementById('mainWrap').innerHTML = `
+    <div class="unlocked-banner">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#1A6B3E" stroke-width="1.5" stroke-linecap="round"><path d="M12.5 4.5l-7 7L2 8"/></svg>
+      친구의 상세 견적 결과를 확인할 수 있어요
+    </div>
+    ${resultHTML}
+    <div class="cta-section">
+      <div>
+        <div class="cta-title">내가 받은 견적도 적정한지 알고 싶다면?</div>
+        <div class="cta-sub">PDF·이미지 업로드만 하면 30초 안에 판별</div>
+      </div>
+      <a href="/?newAnalysis=1" class="cta-btn">내 견적 판별하기</a>
+    </div>`;
+}
+
+/* ── 로그인 모달 ── */
+function openAuthSheet(mode){
+  authMode = mode || 'login';
+  const isLogin = authMode === 'login';
+  document.getElementById('authSheetTitle').textContent = isLogin ? '로그인하고 확인하기' : '회원가입하고 확인하기';
+  document.getElementById('authSheetSub').textContent = '친구의 상세 견적을 무료로 확인하세요';
+  document.getElementById('authSheetSubmit').textContent = isLogin ? '로그인' : '회원가입';
+  document.getElementById('authSwitchText').innerHTML = isLogin
+    ? '계정이 없으신가요? <span onclick="toggleAuthMode()">회원가입</span>'
+    : '이미 계정이 있으신가요? <span onclick="toggleAuthMode()">로그인</span>';
+  document.getElementById('authSheetError').style.display = 'none';
+  document.getElementById('authModalWrap').classList.add('show');
+}
+
+function closeAuthSheet(){
+  document.getElementById('authModalWrap').classList.remove('show');
+}
+
+function handleModalBg(e){
+  if(e.target === document.getElementById('authModalWrap')) closeAuthSheet();
+}
+
+function toggleAuthMode(){
+  openAuthSheet(authMode === 'login' ? 'signup' : 'login');
+}
+
+function showAuthErr(msg){
+  const el = document.getElementById('authSheetError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function submitAuth(){
+  const email = document.getElementById('authSheetEmail').value.trim();
+  const pw = document.getElementById('authSheetPw').value;
+  const btn = document.getElementById('authSheetSubmit');
+  if(!email || !pw){ showAuthErr('이메일과 비밀번호를 입력해주세요'); return; }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? '로그인 중...' : '가입 중...';
+
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: authMode, email, password: pw })
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || '오류가 발생했어요');
+
+    /* 로그인 성공 */
+    closeAuthSheet();
+    await rewardAndShow();
+  }catch(err){
+    showAuthErr(err.message);
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? '로그인' : '회원가입';
+  }
+}
+
+function doSocialInShare(provider){
+  /* 소셜 로그인 후 share 페이지로 돌아오도록 redirectTo 설정 */
+  const redirectTo = encodeURIComponent(window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'socialReturn=1');
+  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
+}
+
+async function rewardAndShow(){
+  /* 세션 확인 */
+  const { data: { session } } = await _supabase.auth.getSession();
+  if(!session) return;
+
+  /* 공유자 크레딧 보상 시도 */
+  try{
+    const shareResp = await fetch(`/api/share?id=${currentShareId}`);
+    const shareJson = await shareResp.json();
+    const sharerId = shareJson.data?.sharerId;
+    if(sharerId && sharerId !== session.user.id){
+      await fetch('/api/credits?action=rewardSharer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
+      });
+    }
+  }catch(e){ console.error('보상 처리 실패:', e); }
+
+  /* 결과 다시 로드해서 잠금 해제 */
+  await loadShare();
 }
 
 async function loadShare(){
   const shareId = getShareId();
   if(!shareId){ showError('잘못된 링크예요', '올바른 공유 링크인지 확인해주세요.'); return; }
+  currentShareId = shareId;
 
   try{
     const [{ data: { session } }, shareResp] = await Promise.all([
       _supabase.auth.getSession(),
       fetch(`/api/share?id=${shareId}`)
     ]);
-
     const json = await shareResp.json();
     if(!shareResp.ok || !json.success) throw new Error(json.error || '결과를 불러올 수 없어요');
 
     const d = json.data;
-    const isLoggedIn = !!session;
-    const loginUrl  = `/?from=share&shareId=${shareId}&action=login`;
-    const signupUrl = `/?from=share&shareId=${shareId}&action=signup`;
-    const resultHTML = buildResultHTML(d);
 
-    if(isLoggedIn){
-      /* ── 로그인 상태: 전체 공개 ── */
-      document.getElementById('mainWrap').innerHTML = `
-        <div class="unlocked-banner">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#1A6B3E" stroke-width="1.5" stroke-linecap="round"><path d="M12.5 4.5l-7 7L2 8"/></svg>
-          친구의 상세 견적 결과를 확인할 수 있어요
-        </div>
-        ${resultHTML}
-        <div class="cta-section">
-          <div>
-            <div class="cta-title">내가 받은 견적도 적정한지 알고 싶다면?</div>
-            <div class="cta-sub">PDF·이미지 업로드만 하면 30초 안에 판별</div>
-          </div>
-          <a href="/" class="cta-btn">내 견적 판별하기</a>
-        </div>`;
-    } else {
-      /* ── 비로그인: 전체 블러 + 팝업 ── */
-      document.getElementById('mainWrap').innerHTML = `
-        <div class="blur-wrap locked">
-          <div class="blur-inner">${resultHTML}</div>
-          <div class="popup-overlay">
-            <div class="popup-card">
-              <div class="popup-icon">
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#0F0E0C" stroke-width="1.6" stroke-linecap="round">
-                  <rect x="3" y="10" width="16" height="11" rx="2.5"/>
-                  <path d="M7 10V7a4 4 0 018 0v3"/>
-                </svg>
-              </div>
-              <div class="popup-title">친구의 상세 견적은<br>로그인 후 확인할 수 있어요</div>
-              <div class="popup-sub">내가 받은 견적도 적정한지<br>함께 판별해드릴게요.</div>
-              <a href="${loginUrl}" class="btn-popup-main">로그인하고 확인하기</a>
-              <a href="${signupUrl}" style="display:block;font-size:12px;color:#8A8780;text-decoration:none;margin-top:4px;">아직 계정이 없으신가요? <span style="color:#1F4FD8;font-weight:700;">회원가입</span></a>
-            </div>
-          </div>
-        </div>`;
+    /* 소셜 로그인 복귀 처리 */
+    const params = new URLSearchParams(location.search);
+    if(params.get('socialReturn') && session){
+      window.history.replaceState({}, '', location.pathname);
+      await rewardAndShow();
+      return;
     }
-  } catch(err){
+
+    if(session){
+      showUnlocked(d);
+    } else {
+      showBlurred(d, shareId);
+    }
+  }catch(err){
     showError('결과를 불러올 수 없어요', err.message);
   }
 }
