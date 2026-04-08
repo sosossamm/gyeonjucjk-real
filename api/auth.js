@@ -18,8 +18,8 @@ function hashEmail(email) {
 /* ── Brevo 이메일 발송 ── */
 async function sendVerificationEmail(email, verificationUrl) {
   const brevoApiKey = process.env.BREVO_API_KEY;
-  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@gyeonjucjk.com';
-  const fromName = process.env.BREVO_FROM_NAME || '견적분석';
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'sosamca1@gmail.com';
+  const fromName = '견적분석';
 
   if (!brevoApiKey) {
     console.warn('⚠️ BREVO_API_KEY not set, skipping email');
