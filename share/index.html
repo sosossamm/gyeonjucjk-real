@@ -286,18 +286,40 @@ async function submitAuth(){
       body: JSON.stringify({ action: authMode, email, password: pw })
     });
     const data = await resp.json();
-    if(!resp.ok) throw new Error(data.error || '오류가 발생했어요');
+    if(!resp.ok || !data.success) throw new Error(data.error || '오류가 발생했어요');
 
-    /* Supabase 클라이언트에 세션 직접 세팅 */
-    if(data.session){
-      await _supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      });
+    /* 회원가입 — 이메일 인증 대기 */
+    if(authMode === 'signup'){
+      document.getElementById('authSheetTitle').textContent = '이메일을 확인해주세요';
+      document.getElementById('authSheetSub').textContent = `${email} 로 인증 메일을 보냈어요.\n메일의 링크를 클릭하면 가입이 완료돼요.`;
+      document.getElementById('authSheetSub').style.whiteSpace = 'pre-line';
+      document.getElementById('authSheetEmailForm').style.display = 'none';
+      document.querySelector('.auth-divider').style.display = 'none';
+      document.querySelectorAll('.btn-social').forEach(b => b.style.display = 'none');
+      document.getElementById('authSwitchText').style.display = 'none';
+      const okBtn = document.createElement('button');
+      okBtn.className = 'btn-auth-submit';
+      okBtn.style.marginTop = '1rem';
+      okBtn.textContent = '확인';
+      okBtn.onclick = closeAuthSheet;
+      document.getElementById('authSheetSub').after(okBtn);
+      return;
     }
 
+    /* 로그인 — 토큰을 직접 사용해서 보상 처리 */
+    const accessToken = data.session?.access_token || data.access_token;
+    if(!accessToken) throw new Error('로그인 토큰이 없어요');
+
+    /* Supabase 세션 세팅 */
+    await _supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: data.session?.refresh_token || ''
+    });
+
     closeAuthSheet();
-    await rewardAndShow();
+    /* 토큰 직접 전달해서 보상 처리 */
+    await rewardAndShow(accessToken, data.user?.id);
+
   }catch(err){
     showAuthErr(err.message);
     btn.disabled = false;
@@ -311,19 +333,23 @@ function doSocialInShare(provider){
   window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
 }
 
-async function rewardAndShow(){
-  /* 세션 확인 */
-  const { data: { session } } = await _supabase.auth.getSession();
-  if(!session){ console.warn('rewardAndShow: 세션 없음'); await loadShare(); return; }
+async function rewardAndShow(directToken, directUserId){
+  /* 토큰 확보 — 직접 전달받거나 세션에서 가져오기 */
+  let userId = directUserId;
+  if(!userId){
+    const { data: { session } } = await _supabase.auth.getSession();
+    if(!session){ console.warn('rewardAndShow: 세션 없음'); await loadShare(); return; }
+    userId = session.user.id;
+  }
 
   /* 공유자 크레딧 보상 시도 */
   try{
     const shareResp = await fetch(`/api/share?id=${currentShareId}`);
     const shareJson = await shareResp.json();
     const sharerId = shareJson.data?.sharerId;
-    console.log('보상 시도 - sharerId:', sharerId, 'userId:', session.user.id);
+    console.log('보상 시도 - sharerId:', sharerId, 'userId:', userId);
 
-    if(sharerId && sharerId !== session.user.id){
+    if(sharerId && sharerId !== userId){
       const rewardResp = await fetch('/api/credits?action=rewardSharer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
