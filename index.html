@@ -493,7 +493,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <div id="pageInput" class="page active">
 
 <header class="top-bar">
-  <div class="logo-mark">
+  <div class="logo-mark" onclick="goHome()" style="cursor:pointer;">
     <svg viewBox="0 0 34 34" fill="none">
       <rect width="34" height="34" rx="8" fill="#0F0E0C"/>
       <rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/>
@@ -510,7 +510,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <line x1="22" y1="23.5" x2="22" y2="26.5" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
   </div>
-  <span class="logo-word">견적<span>분석</span></span>
+  <span class="logo-word" onclick="goHome()" style="cursor:pointer;">견적<span>분석</span></span>
   <div class="bar-sep"></div>
   <span class="bar-tag">견적 데이터 분석기</span>
   <div class="bar-user" id="headerUserArea">
@@ -2770,6 +2770,12 @@ async function shareHistory(logId) {
     alert('링크 생성 실패: ' + err.message);
     btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = '1';
   }
+}
+
+function goHome(){
+  doReset();
+  showPage('pageInput');
+  setStep(1);
 }
 
 /* ── 리셋 ── */
