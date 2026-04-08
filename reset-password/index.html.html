@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비밀번호 재설정 — 견적분석</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;}
+body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:#0F0E0C;height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:12px;}
+.logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;text-decoration:none;}
+.logo span{color:#A0BFF8;}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.card{background:#fff;border:1px solid #E8E5E0;border-radius:16px;padding:2rem;width:100%;max-width:400px;text-align:center;}
+.icon{font-size:40px;margin-bottom:16px;}
+.title{font-size:20px;font-weight:800;color:#0F0E0C;letter-spacing:-.5px;margin-bottom:8px;}
+.sub{font-size:13px;color:#8A8780;line-height:1.6;margin-bottom:24px;}
+.input{width:100%;padding:12px 14px;border:1.5px solid #E8E5E0;border-radius:8px;font-family:inherit;font-size:14px;color:#0F0E0C;background:#F8F6F2;outline:none;margin-bottom:10px;display:block;}
+.input:focus{border-color:#1F4FD8;background:#fff;}
+.btn{width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px;}
+.btn:hover{opacity:.85;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.error{background:#FCEAEA;color:#791F1F;border-radius:7px;padding:9px 12px;font-size:12px;margin-bottom:12px;display:none;text-align:left;}
+.success-wrap{display:none;}
+.home-btn{display:inline-block;margin-top:16px;padding:11px 28px;background:#1F4FD8;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="logo">견적<span>분석</span></a>
+</header>
+
+<div class="wrap">
+  <div class="card">
+
+    <!-- 로딩 상태 -->
+    <div id="loadingState">
+      <div class="icon">⏳</div>
+      <div class="title">확인 중...</div>
+    </div>
+
+    <!-- 새 비밀번호 입력 폼 -->
+    <div id="formState" style="display:none;">
+      <div class="icon">🔒</div>
+      <div class="title">새 비밀번호 설정</div>
+      <div class="sub">새로 사용할 비밀번호를 입력해주세요</div>
+      <div class="error" id="pwError"></div>
+      <input class="input" type="password" id="pw1" placeholder="새 비밀번호 (6자 이상)">
+      <input class="input" type="password" id="pw2" placeholder="새 비밀번호 확인">
+      <button class="btn" id="submitBtn" onclick="doReset()">비밀번호 변경</button>
+    </div>
+
+    <!-- 완료 상태 -->
+    <div id="successState" class="success-wrap">
+      <div class="icon">✅</div>
+      <div class="title">비밀번호 변경 완료</div>
+      <div class="sub">새 비밀번호로 로그인해주세요</div>
+      <a href="/" class="home-btn">로그인하러 가기</a>
+    </div>
+
+    <!-- 오류 상태 -->
+    <div id="errorState" style="display:none;">
+      <div class="icon">😕</div>
+      <div class="title">링크가 만료됐어요</div>
+      <div class="sub">비밀번호 재설정 링크가 만료됐거나<br>이미 사용된 링크예요.<br>다시 요청해주세요.</div>
+      <a href="/" class="home-btn">홈으로 돌아가기</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function show(id) {
+  ['loadingState','formState','successState','errorState'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+
+async function init() {
+  /* hash에서 토큰 추출 (#access_token=...&type=recovery) */
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#', ''));
+  const type = params.get('type');
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token') || '';
+
+  /* URL 정리 */
+  window.history.replaceState({}, '', window.location.pathname);
+
+  if(type !== 'recovery' || !accessToken){
+    show('errorState');
+    return;
+  }
+
+  /* 세션 세팅 */
+  try{
+    const { error } = await _supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+    if(error) throw error;
+    show('formState');
+    document.getElementById('pw1').focus();
+  }catch(e){
+    console.error(e);
+    show('errorState');
+  }
+}
+
+async function doReset() {
+  const pw1 = document.getElementById('pw1').value;
+  const pw2 = document.getElementById('pw2').value;
+  const errEl = document.getElementById('pwError');
+  const btn = document.getElementById('submitBtn');
+
+  errEl.style.display = 'none';
+
+  if(!pw1){ errEl.textContent = '새 비밀번호를 입력해주세요'; errEl.style.display = 'block'; return; }
+  if(pw1.length < 6){ errEl.textContent = '비밀번호는 6자 이상이어야 해요'; errEl.style.display = 'block'; return; }
+  if(pw1 !== pw2){ errEl.textContent = '비밀번호가 일치하지 않아요'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '변경 중...';
+
+  try{
+    const { error } = await _supabase.auth.updateUser({ password: pw1 });
+    if(error) throw error;
+    /* 로그아웃 처리 — 새 비밀번호로 다시 로그인하도록 */
+    await _supabase.auth.signOut();
+    show('successState');
+  }catch(err){
+    errEl.textContent = err.message || '변경 실패. 다시 시도해주세요';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '비밀번호 변경';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
