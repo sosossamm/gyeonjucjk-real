@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/share/:id", "destination": "/share/index.html" },
+    { "source": "/reset-password", "destination": "/reset-password/index.html" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
