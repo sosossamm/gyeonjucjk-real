@@ -1074,7 +1074,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 /* ══ AUTH 상태 ══ */
 let currentUser = null;
 let authToken = null;
-let authPendingAction = null; // 로그인 후 실행할 액션
+let authPendingAction = null;
+let _authSheetOriginalHTML = '';
 
 function saveAuth(user, token) {
   currentUser = user;
@@ -1144,6 +1145,12 @@ function openAuthModal(tab = 'login', pendingAction = null) {
 
 function closeAuthModal() {
   document.getElementById('authOverlay').classList.remove('show');
+  /* 인증 안내 화면으로 교체됐을 수 있으므로 원본 복원 */
+  const sheet = document.querySelector('.auth-sheet');
+  if(sheet && !sheet.querySelector('#btnAuthSubmit')){
+    sheet.innerHTML = _authSheetOriginalHTML;
+    switchAuthTab('login', null);
+  }
 }
 
 function handleOverlayClick(e) {
@@ -1213,18 +1220,20 @@ async function doEmailAuth() {
 
     /* 회원가입 — 이메일 인증 대기 */
     if (action === 'signup') {
-      /* 인증 대기 안내 화면 */
-      document.getElementById('authIcon').textContent = '📧';
-      document.getElementById('authTitle').textContent = '이메일을 확인해주세요';
-      document.getElementById('authSub').textContent = `${email} 로 인증 메일을 보냈어요.\n메일의 링크를 클릭하면 가입이 완료돼요.`;
-      document.getElementById('authSub').style.whiteSpace = 'pre-line';
-      /* 폼 숨기고 닫기 버튼만 */
-      const formArea = document.querySelector('.auth-form-area');
-      if(formArea) formArea.style.display = 'none';
-      const closeArea = document.createElement('div');
-      closeArea.style.cssText = 'text-align:center;margin-top:1rem;';
-      closeArea.innerHTML = `<button onclick="closeAuthModal()" style="width:100%;padding:12px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">확인</button>`;
-      document.querySelector('.auth-sheet').appendChild(closeArea);
+      /* 모달 전체 내용을 인증 대기 화면으로 교체 */
+      const sheet = document.querySelector('.auth-sheet');
+      sheet.innerHTML = `
+        <div style="text-align:center;padding:1rem 0 0.5rem;">
+          <div style="font-size:40px;margin-bottom:16px;">📧</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.5px;margin-bottom:10px;">이메일을 확인해주세요</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+            <strong style="color:var(--ink);">${email}</strong> 로<br>
+            인증 메일을 보냈어요.<br>
+            메일의 링크를 클릭하면 가입이 완료돼요.
+          </div>
+          <button onclick="closeAuthModal()" style="width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;">확인</button>
+          <div style="margin-top:12px;font-size:12px;color:var(--hint);">메일이 안 보이면 스팸함을 확인해주세요</div>
+        </div>`;
       return;
     }
 
@@ -2460,6 +2469,9 @@ async function checkPaymentReturn(){
   }
 }
 window.addEventListener('load', async () => {
+  /* auth 모달 원본 HTML 저장 */
+  _authSheetOriginalHTML = document.querySelector('.auth-sheet')?.innerHTML || '';
+
   /* newAnalysis=1 이면 공유 처리 없이 깨끗한 메인 화면 */
   const _urlParams = new URLSearchParams(window.location.search);
   if(_urlParams.get('newAnalysis')){
