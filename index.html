@@ -1198,6 +1198,24 @@ async function doEmailAuth() {
       return;
     }
 
+    /* 회원가입 — 이메일 인증 대기 */
+    if (action === 'signup') {
+      /* 인증 대기 안내 화면 */
+      document.getElementById('authIcon').textContent = '📧';
+      document.getElementById('authTitle').textContent = '이메일을 확인해주세요';
+      document.getElementById('authSub').textContent = `${email} 로 인증 메일을 보냈어요.\n메일의 링크를 클릭하면 가입이 완료돼요.`;
+      document.getElementById('authSub').style.whiteSpace = 'pre-line';
+      /* 폼 숨기고 닫기 버튼만 */
+      const formArea = document.querySelector('.auth-form-area');
+      if(formArea) formArea.style.display = 'none';
+      const closeArea = document.createElement('div');
+      closeArea.style.cssText = 'text-align:center;margin-top:1rem;';
+      closeArea.innerHTML = `<button onclick="closeAuthModal()" style="width:100%;padding:12px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">확인</button>`;
+      document.querySelector('.auth-sheet').appendChild(closeArea);
+      return;
+    }
+
+    /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
     closeAuthModal();
     loadUserCredits();
