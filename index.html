@@ -1060,8 +1060,8 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <button class="auth-close" onclick="closeAuthModal()">×</button>
     <div class="auth-handle"></div>
     <div class="auth-icon" id="authIcon">🔐</div>
-    <div class="auth-title" id="authTitle">분석 결과 확인하기</div>
-    <div class="auth-sub" id="authSub">로그인하고 견적 분석 결과를 확인하세요</div>
+    <div class="auth-title" id="authTitle" style="font-size:20px;">로그인하고 견적 분석 결과를 확인하세요</div>
+    <div class="auth-sub" id="authSub" style="display:none;"></div>
 
     <div class="auth-tabs" id="authTabs">
       <button class="auth-tab active" onclick="switchAuthTab('login',this)">로그인</button>
@@ -1211,8 +1211,25 @@ function closeAuthModal() {
 }
 
 function handleOverlayClick(e) {
-  if (e.target === document.getElementById('authOverlay')) closeAuthModal();
+  /* overlay 배경을 클릭했을 때만 닫기 (드래그 무시) */
+  if (e.target === document.getElementById('authOverlay') && e.button === 0 && !e.dragged) {
+    closeAuthModal();
+  }
 }
+
+/* ── 드래그 감지 ── */
+let dragStartX = 0;
+let dragStartY = 0;
+document.addEventListener('mousedown', (e) => {
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+});
+document.addEventListener('mouseup', (e) => {
+  const dragDistance = Math.sqrt(Math.pow(e.clientX - dragStartX, 2) + Math.pow(e.clientY - dragStartY, 2));
+  if (dragDistance > 10) {
+    e.dragged = true; /* 10px 이상 움직임 = 드래그 */
+  }
+}, true);
 
 /* ── 이메일 인증 팝업 제어 ── */
 function openEmailVerifyPopup(email) {
