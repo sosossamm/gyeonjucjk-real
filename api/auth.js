@@ -59,12 +59,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { action: bodyAction, email, password } = req.body || {};
+  const { action: bodyAction, email, password, newPassword } = req.body || {};
   const action = req.query.action || bodyAction;
 
   try {
     const supabase = await getSupabase();
 
+    /* ── 회원가입 ── */
     if (action === 'signup') {
       if (!email || !password) return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
@@ -100,6 +101,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: data.user, session: data.session || null, needsVerification: true });
     }
 
+    /* ── 로그인 ── */
     if (action === 'login') {
       if (!email || !password) return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
@@ -121,6 +123,46 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: data.user, access_token: data.session?.access_token, session: data.session });
     }
 
+    /* ── 비밀번호 재설정 요청 ── */
+    if (action === 'resetPassword') {
+      if (!email) return res.status(400).json({ error: '이메일을 입력해주세요' });
+
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`
+        });
+
+        if (error) {
+          console.error('비밀번호 재설정 오류:', error.message);
+          return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
+        }
+
+        return res.status(200).json({ success: true, message: '비밀번호 재설정 링크를 이메일로 보냈습니다.' });
+      } catch (err) {
+        console.error('비밀번호 재설정 오류:', err.message);
+        return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
+      }
+    }
+
+    /* ── 비밀번호 업데이트 ── */
+    if (action === 'updatePassword') {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+
+      if (!token) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: '새 비밀번호는 6자 이상이어야 해요' });
+
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword }, { authorization: `Bearer ${token}` });
+
+        if (error) return res.status(400).json({ error: error.message });
+
+        return res.status(200).json({ success: true, message: '비밀번호가 변경되었습니다.' });
+      } catch (err) {
+        return res.status(500).json({ error: err.message });
+      }
+    }
+
+    /* ── 회원탈퇴 ── */
     if (action === 'withdraw') {
       const token = req.headers.authorization?.replace('Bearer ', '');
       if (!token) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -145,48 +187,6 @@ export default async function handler(req, res) {
     }
 
     return res.status(400).json({ error: '알 수 없는 요청' });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-}
-
-/* ── 비밀번호 재설정 요청 ── */
-if (action === 'resetPassword') {
-  if (!email) return res.status(400).json({ error: '이메일을 입력해주세요' });
-
-  try {
-    /* Supabase에서 비밀번호 재설정 메일 발송 */
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`
-    });
-
-    if (error) {
-      console.error('비밀번호 재설정 오류:', error.message);
-      /* 사용자 보안 위해 성공 메시지 반환 */
-      return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
-    }
-
-    return res.status(200).json({ success: true, message: '비밀번호 재설정 링크를 이메일로 보냈습니다.' });
-  } catch (err) {
-    console.error('비밀번호 재설정 오류:', err.message);
-    return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
-  }
-}
-
-/* ── 비밀번호 업데이트 ── */
-if (action === 'updatePassword') {
-  const { newPassword } = req.body || {};
-  const token = req.headers.authorization?.replace('Bearer ', '');
-
-  if (!token) return res.status(401).json({ error: '로그인이 필요해요' });
-  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: '새 비밀번호는 6자 이상이어야 해요' });
-
-  try {
-    const { error } = await supabase.auth.updateUser({ password: newPassword }, { authorization: `Bearer ${token}` });
-
-    if (error) return res.status(400).json({ error: error.message });
-
-    return res.status(200).json({ success: true, message: '비밀번호가 변경되었습니다.' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
