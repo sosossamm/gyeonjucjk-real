@@ -149,3 +149,44 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+/* ── 비밀번호 재설정 요청 ── */
+if (action === 'resetPassword') {
+  if (!email) return res.status(400).json({ error: '이메일을 입력해주세요' });
+
+  try {
+    /* Supabase에서 비밀번호 재설정 메일 발송 */
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`
+    });
+
+    if (error) {
+      console.error('비밀번호 재설정 오류:', error.message);
+      /* 사용자 보안 위해 성공 메시지 반환 */
+      return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
+    }
+
+    return res.status(200).json({ success: true, message: '비밀번호 재설정 링크를 이메일로 보냈습니다.' });
+  } catch (err) {
+    console.error('비밀번호 재설정 오류:', err.message);
+    return res.status(200).json({ success: true, message: '이메일이 등록되어 있다면 재설정 링크를 보냈습니다.' });
+  }
+}
+
+/* ── 비밀번호 업데이트 ── */
+if (action === 'updatePassword') {
+  const { newPassword } = req.body || {};
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) return res.status(401).json({ error: '로그인이 필요해요' });
+  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: '새 비밀번호는 6자 이상이어야 해요' });
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword }, { authorization: `Bearer ${token}` });
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    return res.status(200).json({ success: true, message: '비밀번호가 변경되었습니다.' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
