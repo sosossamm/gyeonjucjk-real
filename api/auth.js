@@ -86,6 +86,23 @@ export default async function handler(req, res) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return res.status(400).json({ error: '이메일 또는 비밀번호가 올바르지 않아요' });
 
+      /* ⭐ 추가: users 테이블에서 사용자 존재 여부 확인 */
+      if (data.user) {
+        const { data: userRecord, error: dbError } = await supabase
+          .from('users')
+          .select('id, deleted_at')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        /* 사용자가 DB에 없거나 탈퇴한 상태 */
+        if (!userRecord || userRecord.deleted_at) {
+          return res.status(401).json({ 
+            error: '더 이상 사용할 수 없는 계정이에요. 새로 가입해주세요.',
+            needsNewSignup: true 
+          });
+        }
+      }
+
       return res.status(200).json({
         success: true,
         user: data.user,
