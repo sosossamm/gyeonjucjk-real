@@ -6,7 +6,6 @@ async function getSupabase() {
 }
 
 function hashEmail(email) {
-  /* 간단한 해시 — crypto 없이 순수 JS */
   let hash = 0;
   const str = email.toLowerCase().trim();
   for (let i = 0; i < str.length; i++) {
@@ -14,6 +13,96 @@ function hashEmail(email) {
     hash |= 0;
   }
   return 'h' + Math.abs(hash).toString(36);
+}
+
+/* ── Brevo 이메일 발송 ── */
+async function sendVerificationEmail(email, verificationUrl) {
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@gyeonjucjk.com';
+  const fromName = process.env.BREVO_FROM_NAME || '견적분석';
+
+  if (!brevoApiKey) {
+    console.warn('⚠️ BREVO_API_KEY not set, skipping email');
+    return true;
+  }
+
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'api-key': brevoApiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: fromName,
+          email: fromEmail
+        },
+        to: [
+          {
+            email: email,
+            name: email.split('@')[0]
+          }
+        ],
+        subject: '견적분석 이메일 인증',
+        htmlContent: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #0F0E0C; color: #fff; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+              <h1 style="margin: 0; font-size: 24px;">이메일 인증</h1>
+            </div>
+            
+            <div style="padding: 20px; background: #F8F6F2; border-radius: 8px; border: 1px solid #E8E5E0;">
+              <p style="margin: 0 0 20px; color: #0F0E0C; font-size: 16px;">
+                <strong>${email}</strong>님 안녕하세요!
+              </p>
+              
+              <p style="margin: 0 0 20px; color: #4A4743; line-height: 1.6;">
+                견적분석 가입을 완료하기 위해 아래 버튼을 클릭해주세요.
+              </p>
+              
+              <div style="margin: 30px 0; text-align: center;">
+                <a href="${verificationUrl}" style="display: inline-block; background: #1F4FD8; color: #fff; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px;">
+                  이메일 인증하기
+                </a>
+              </div>
+              
+              <p style="margin: 20px 0 0; color: #8A8780; font-size: 12px; line-height: 1.6;">
+                이 링크는 24시간 동안 유효합니다.<br>
+                위 버튼이 안 될 경우, 다음 링크를 복사해서 브라우저에 붙여넣으세요:<br>
+                <span style="word-break: break-all; color: #1F4FD8;">${verificationUrl}</span>
+              </p>
+              
+              <p style="margin: 20px 0 0; color: #8A8780; font-size: 12px;">
+                이 요청을 하지 않았다면 이 이메일을 무시해주세요.
+              </p>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; color: #B8B5B0; font-size: 12px;">
+              <p>© 2024 견적분석. All rights reserved.</p>
+            </div>
+          </div>
+        `,
+        replyTo: {
+          email: fromEmail,
+          name: fromName
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Brevo 오류:', errorData);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('✅ 인증 이메일 전송 성공:', email, result.messageId);
+    return true;
+  } catch (err) {
+    console.error('❌ Brevo 전송 오류:', err);
+    return false;
+  }
 }
 
 export default async function handler(req, res) {
@@ -67,15 +156,21 @@ export default async function handler(req, res) {
           credits: 0,
           created_at: new Date().toISOString()
         });
+
+        /* ⭐ Brevo로 인증 이메일 발송 */
+        const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/?verify=${data.user.id}&email=${encodeURIComponent(email)}`;
+        const emailSent = await sendVerificationEmail(email, verificationUrl);
+
+        if (!emailSent) {
+          console.warn('⚠️ 이메일 발송 실패, 하지만 회원가입 진행');
+        }
       }
 
-      /* 이메일 인증 필요 — session이 null이면 인증 대기 상태 */
-      const needsVerification = !data.session;
       return res.status(200).json({
         success: true,
         user: data.user,
         session: data.session || null,
-        needsVerification
+        needsVerification: true
       });
     }
 
@@ -86,19 +181,27 @@ export default async function handler(req, res) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return res.status(400).json({ error: '이메일 또는 비밀번호가 올바르지 않아요' });
 
-      /* ⭐ 추가: users 테이블에서 사용자 존재 여부 확인 */
+      /* 사용자 존재 여부 확인 */
       if (data.user) {
-        const { data: userRecord, error: dbError } = await supabase
+        const { data: userRecord } = await supabase
           .from('users')
-          .select('id, deleted_at')
+          .select('id, deleted_at, email_confirmed_at')
           .eq('id', data.user.id)
           .maybeSingle();
 
-        /* 사용자가 DB에 없거나 탈퇴한 상태 */
         if (!userRecord || userRecord.deleted_at) {
           return res.status(401).json({ 
             error: '더 이상 사용할 수 없는 계정이에요. 새로 가입해주세요.',
             needsNewSignup: true 
+          });
+        }
+
+        /* ⭐ 이메일 미인증 상태 확인 */
+        if (!userRecord.email_confirmed_at) {
+          return res.status(401).json({
+            error: '이메일 인증이 필요해요. 메일함을 확인해주세요.',
+            needsEmailVerification: true,
+            email: email
           });
         }
       }
@@ -121,7 +224,6 @@ export default async function handler(req, res) {
 
       const emailHash = hashEmail(user.email);
 
-      /* users 테이블에 탈퇴 처리 (소프트 삭제) */
       const { error: updateErr } = await supabase
         .from('users')
         .upsert({
@@ -134,7 +236,6 @@ export default async function handler(req, res) {
 
       if (updateErr) console.error('users 탈퇴 처리 오류:', updateErr.message);
 
-      /* auth.users에서 실제 삭제 — service_role로만 가능 */
       const { error: deleteErr } = await supabase.auth.admin.deleteUser(user.id);
       if (deleteErr) {
         console.error('auth 삭제 오류:', deleteErr.message);
