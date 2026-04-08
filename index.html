@@ -1097,11 +1097,13 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <button class="btn-auth" id="btnAuthSubmit" onclick="doEmailAuth()">로그인</button>
     </div>
 
-    <div style="text-align:center;font-size:12px;color:var(--muted);" id="authSwitchText">
-      계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab('signup',null)">회원가입</span>
-    </div>
+  <div style="text-align:center;font-size:12px;color:var(--muted);" id="authSwitchText">
+    계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab('signup',null)">회원가입</span>
+      </div>
+    <div style="text-align:center;font-size:11px;color:var(--hint);margin-top:8px;">
+    <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="showPasswordReset()">비밀번호 찾기</span>
   </div>
-</div>
+
 
 <!-- ══ 이메일 인증 팝업 ══ -->
 <div class="email-verify-overlay" id="emailVerifyOverlay">
