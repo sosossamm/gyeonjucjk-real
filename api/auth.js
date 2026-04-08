@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { action, email, password } = req.body || {};
+  const { action: bodyAction, email, password } = req.body || {};
+  const action = req.query.action || bodyAction;
 
   try {
     const supabase = await getSupabase();
@@ -68,7 +69,14 @@ export default async function handler(req, res) {
         });
       }
 
-      return res.status(200).json({ user: data.user, session: data.session });
+      /* 이메일 인증 필요 — session이 null이면 인증 대기 상태 */
+      const needsVerification = !data.session;
+      return res.status(200).json({
+        success: true,
+        user: data.user,
+        session: data.session || null,
+        needsVerification
+      });
     }
 
     /* ── 로그인 ── */
@@ -79,6 +87,7 @@ export default async function handler(req, res) {
       if (error) return res.status(400).json({ error: '이메일 또는 비밀번호가 올바르지 않아요' });
 
       return res.status(200).json({
+        success: true,
         user: data.user,
         access_token: data.session?.access_token,
         session: data.session
