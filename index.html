@@ -185,6 +185,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 /* stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:0.9rem 1.1rem;}
 .stat-label{font-size:11px;color:var(--hint);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px;}
 .stat-val{font-size:22px;font-weight:800;letter-spacing:-1px;}
@@ -997,6 +998,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <div class="stat-card"><div class="stat-label">총 분석</div><div class="stat-val neutral" id="mpTotal">—</div></div>
     <div class="stat-card"><div class="stat-label">🔴 비쌈 판정</div><div class="stat-val exp" id="mpExp">—</div></div>
     <div class="stat-card"><div class="stat-label">🔗 공유 링크</div><div class="stat-val neutral" id="mpShare">—</div></div>
+    <div class="stat-card"><div class="stat-label">👥 가입한 친구</div><div class="stat-val neutral" id="mpFriends">—</div></div>
   </div>
 
   <!-- 분석 기록 -->
@@ -2663,6 +2665,16 @@ async function loadMypage() {
     if (el('mpTotal')) el('mpTotal').textContent = (s.total || 0) + '건';
     if (el('mpExp'))   el('mpExp').textContent   = (s.exp_count || 0) + '건';
     if (el('mpShare')) el('mpShare').textContent = (s.share_count || 0) + '건';
+
+    /* 가입한 친구 수 — credit_logs에서 reward 타입 건수 */
+    try{
+      const cResp = await fetch('/api/credits?action=history', {
+        headers: { 'Authorization': 'Bearer ' + authToken }
+      });
+      const cData = await cResp.json();
+      const friendCount = (cData.logs || []).filter(l => l.type === 'reward').length;
+      if (el('mpFriends')) el('mpFriends').textContent = friendCount + '명';
+    }catch(e){ if(el('mpFriends')) el('mpFriends').textContent = '0명'; }
 
     /* 기록 목록 */
     const list = document.getElementById('mpHistoryList');
