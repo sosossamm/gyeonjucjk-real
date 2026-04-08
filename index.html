@@ -478,6 +478,47 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .btn-social-auth.kakao:hover{border-color:#D4BE00;}
 .auth-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:none;background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;}
 
+/* ── 이메일 인증 팝업 ── */
+.email-verify-overlay{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(15,14,12,0.7);
+  display:none;align-items:center;justify-content:center;
+}
+.email-verify-overlay.show{display:flex;}
+.email-verify-panel{
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:3rem 2rem;
+  max-width:450px;
+  width:90%;
+  text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,0.2);
+  animation:popIn .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn{
+  from{transform:scale(0.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+.email-verify-icon{font-size:64px;margin-bottom:1.5rem;}
+.email-verify-title{font-size:24px;font-weight:800;color:var(--ink);margin-bottom:0.75rem;letter-spacing:-0.5px;}
+.email-verify-desc{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:0.5rem;}
+.email-verify-email{font-size:14px;font-weight:700;color:var(--ink);margin:1.5rem 0;}
+.email-verify-hint{font-size:12px;color:var(--hint);margin-bottom:1.5rem;}
+.email-verify-btn{
+  width:100%;
+  padding:1rem 1.5rem;
+  background:var(--ink);
+  color:#fff;
+  border:none;
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  transition:opacity .2s;
+}
+.email-verify-btn:hover{opacity:.85;}
+
 /* 헤더 유저 영역 */
 .bar-user{display:flex;align-items:center;gap:8px;}
 .bar-user-name{font-size:12px;color:rgba(255,255,255,.7);font-weight:500;}
@@ -1062,6 +1103,22 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
 </div>
 
+<!-- ══ 이메일 인증 팝업 ══ -->
+<div class="email-verify-overlay" id="emailVerifyOverlay">
+  <div class="email-verify-panel">
+    <div class="email-verify-icon">📧</div>
+    <div class="email-verify-title">이메일을 확인해주세요</div>
+    <div class="email-verify-desc">
+      인증 메일을 보냈어요.<br>
+      메일의 링크를 클릭하면<br>
+      가입이 완료됩니다.
+    </div>
+    <div class="email-verify-email" id="emailVerifyAddress"></div>
+    <div class="email-verify-hint">메일이 안 보이면 스팸함을 확인해주세요</div>
+    <button class="email-verify-btn" onclick="closeEmailVerifyPopup()">확인</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1157,6 +1214,16 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('authOverlay')) closeAuthModal();
 }
 
+/* ── 이메일 인증 팝업 제어 ── */
+function openEmailVerifyPopup(email) {
+  document.getElementById('emailVerifyAddress').textContent = email;
+  document.getElementById('emailVerifyOverlay').classList.add('show');
+}
+
+function closeEmailVerifyPopup() {
+  document.getElementById('emailVerifyOverlay').classList.remove('show');
+}
+
 function switchAuthTab(tab, btn) {
   currentAuthTab = tab;
   document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
@@ -1220,25 +1287,26 @@ async function doEmailAuth() {
 
     /* 회원가입 — 이메일 인증 대기 */
     if (action === 'signup') {
-      /* 모달 전체 내용을 인증 대기 화면으로 교체 */
-      const sheet = document.querySelector('.auth-sheet');
-      sheet.innerHTML = `
-        <div style="text-align:center;padding:1rem 0 0.5rem;">
-          <div style="font-size:40px;margin-bottom:16px;">📧</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.5px;margin-bottom:10px;">이메일을 확인해주세요</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-            <strong style="color:var(--ink);">${email}</strong> 로<br>
-            인증 메일을 보냈어요.<br>
-            메일의 링크를 클릭하면 가입이 완료돼요.
-          </div>
-          <button onclick="closeAuthModal()" style="width:100%;padding:13px;background:#0F0E0C;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;">확인</button>
-          <div style="margin-top:12px;font-size:12px;color:var(--hint);">메일이 안 보이면 스팸함을 확인해주세요</div>
-        </div>`;
+      /* 모달 닫기 */
+      closeAuthModal();
+      /* 이메일 인증 팝업 표시 */
+      openEmailVerifyPopup(email);
       return;
     }
 
     /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
+    
+    /* 이메일 인증 여부 확인 (isEmailVerified 또는 email_confirmed_at 필드) */
+    const isEmailVerified = data.user?.isEmailVerified || data.user?.email_confirmed_at;
+    
+    if (!isEmailVerified) {
+      /* 이메일 미인증 상태 - 팝업 표시 */
+      closeAuthModal();
+      openEmailVerifyPopup(email);
+      return;
+    }
+    
     closeAuthModal();
     loadUserCredits();
 
