@@ -118,6 +118,9 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
     <div id="authSheetEmailForm">
       <input class="auth-input" type="email" id="authSheetEmail" placeholder="이메일" autocomplete="email">
       <input class="auth-input" type="password" id="authSheetPw" placeholder="비밀번호" autocomplete="current-password">
+      <div id="authSheetPwConfirmWrap" style="display:none;">
+        <input class="auth-input" type="password" id="authSheetPwConfirm" placeholder="비밀번호 확인">
+      </div>
       <button class="btn-auth-submit" id="authSheetSubmit" onclick="submitAuth()">로그인</button>
     </div>
 
@@ -246,6 +249,9 @@ function openAuthSheet(mode){
   document.getElementById('authSheetTitle').textContent = isLogin ? '로그인하고 확인하기' : '회원가입하고 확인하기';
   document.getElementById('authSheetSub').textContent = '친구의 상세 견적을 무료로 확인하세요';
   document.getElementById('authSheetSubmit').textContent = isLogin ? '로그인' : '회원가입';
+  document.getElementById('authSheetSubmit').style.display = 'block';
+  document.getElementById('authSheetPwConfirmWrap').style.display = isLogin ? 'none' : 'block';
+  if(isLogin) document.getElementById('authSheetPwConfirm').value = '';
   document.getElementById('authSwitchText').innerHTML = isLogin
     ? '계정이 없으신가요? <span onclick="toggleAuthMode()">회원가입</span>'
     : '이미 계정이 있으신가요? <span onclick="toggleAuthMode()">로그인</span>';
@@ -275,6 +281,14 @@ async function submitAuth(){
   const pw = document.getElementById('authSheetPw').value;
   const btn = document.getElementById('authSheetSubmit');
   if(!email || !pw){ showAuthErr('이메일과 비밀번호를 입력해주세요'); return; }
+
+  /* 회원가입 시 비밀번호 확인 */
+  if(authMode === 'signup'){
+    const pwConfirm = document.getElementById('authSheetPwConfirm').value;
+    if(!pwConfirm){ showAuthErr('비밀번호를 한 번 더 입력해주세요'); return; }
+    if(pw !== pwConfirm){ showAuthErr('비밀번호가 일치하지 않아요'); return; }
+    if(pw.length < 6){ showAuthErr('비밀번호는 6자 이상이어야 해요'); return; }
+  }
 
   btn.disabled = true;
   btn.textContent = authMode === 'login' ? '로그인 중...' : '가입 중...';
