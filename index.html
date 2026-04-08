@@ -2666,7 +2666,89 @@ window.addEventListener('load', async () => {
   await checkSocialLoginReturn();
   await checkPaymentReturn();
   await checkCreditChargeReturn();
+  await checkPasswordResetReturn(); /* 비밀번호 재설정 링크 복귀 처리 */
 });
+
+/* ── 비밀번호 재설정 링크 복귀 처리 ── */
+async function checkPasswordResetReturn(){
+  /* Supabase는 hash fragment로 토큰을 전달 (#access_token=...&type=recovery) */
+  const hash = window.location.hash;
+  const hashParams = new URLSearchParams(hash.replace('#', ''));
+  const type = hashParams.get('type');
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+
+  if(type !== 'recovery' || !accessToken) return;
+
+  /* URL 정리 */
+  window.history.replaceState({}, '', window.location.pathname);
+
+  /* 세션 세팅 */
+  try{
+    await window._supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken || ''
+    });
+  }catch(e){ console.error('세션 세팅 실패:', e); }
+
+  /* 새 비밀번호 입력 모달 표시 */
+  showNewPasswordForm(accessToken);
+}
+
+function showNewPasswordForm(accessToken){
+  openAuthModal('login');
+  const sheet = document.querySelector('.auth-sheet');
+  sheet.innerHTML = `
+    <button class="auth-close" onclick="closeAuthModal()">×</button>
+    <div class="auth-handle"></div>
+    <div class="auth-icon">🔒</div>
+    <div class="auth-title">새 비밀번호 설정</div>
+    <div class="auth-sub" style="margin-bottom:20px;">새로 사용할 비밀번호를 입력해주세요</div>
+    <div class="auth-form">
+      <input class="auth-input" type="password" id="newPw1" placeholder="새 비밀번호 (6자 이상)">
+      <input class="auth-input" type="password" id="newPw2" placeholder="새 비밀번호 확인" style="margin-top:8px;">
+      <div class="auth-error" id="newPwError"></div>
+      <button class="btn-auth" onclick="doNewPasswordSubmit()">비밀번호 변경</button>
+    </div>`;
+}
+
+async function doNewPasswordSubmit(){
+  const pw1 = document.getElementById('newPw1').value;
+  const pw2 = document.getElementById('newPw2').value;
+  const errEl = document.getElementById('newPwError');
+  const btn = event.currentTarget;
+
+  errEl.classList.remove('show');
+  if(!pw1 || !pw2){ errEl.textContent='비밀번호를 입력해주세요'; errEl.classList.add('show'); return; }
+  if(pw1.length < 6){ errEl.textContent='비밀번호는 6자 이상이어야 해요'; errEl.classList.add('show'); return; }
+  if(pw1 !== pw2){ errEl.textContent='비밀번호가 일치하지 않아요'; errEl.classList.add('show'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '변경 중...';
+
+  try{
+    const { error } = await window._supabase.auth.updateUser({ password: pw1 });
+    if(error) throw error;
+
+    /* 성공 화면 */
+    const sheet = document.querySelector('.auth-sheet');
+    sheet.innerHTML = `
+      <button class="auth-close" onclick="closeAuthModal()">×</button>
+      <div class="auth-handle"></div>
+      <div class="auth-icon">✅</div>
+      <div class="auth-title">비밀번호 변경 완료</div>
+      <div class="auth-sub" style="margin-bottom:20px;">새 비밀번호로 로그인해주세요</div>
+      <button onclick="closeAuthModal();switchAuthTab('login',null);openAuthModal('login');"
+        style="width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;">
+        로그인하기
+      </button>`;
+  }catch(err){
+    errEl.textContent = err.message || '변경 실패. 다시 시도해주세요';
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '비밀번호 변경';
+  }
+}
 
 /* ── 공유 링크 ── */
 let currentShareUrl = '';
