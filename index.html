@@ -1097,13 +1097,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <button class="btn-auth" id="btnAuthSubmit" onclick="doEmailAuth()">로그인</button>
     </div>
 
-  <div style="text-align:center;font-size:12px;color:var(--muted);" id="authSwitchText">
-    계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab('signup',null)">회원가입</span>
-      </div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);" id="authSwitchText">
+      계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab('signup',null)">회원가입</span>
+    </div>
     <div style="text-align:center;font-size:11px;color:var(--hint);margin-top:8px;">
-    <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="showPasswordReset()">비밀번호 찾기</span>
+      <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="showPasswordReset()">비밀번호 찾기</span>
+    </div>
   </div>
-
+</div>
 
 <!-- ══ 이메일 인증 팝업 ══ -->
 <div class="email-verify-overlay" id="emailVerifyOverlay">
@@ -1362,6 +1363,82 @@ async function doEmailAuth() {
     showAuthError('네트워크 오류가 발생했어요');
     btn.disabled = false;
     btn.textContent = currentAuthTab === 'signup' ? '회원가입' : '로그인';
+  }
+}
+
+/* ── 비밀번호 찾기 팝업 표시 ── */
+function showPasswordReset() {
+  const sheet = document.querySelector('.auth-sheet');
+  _authSheetOriginalHTML = sheet.innerHTML;
+  
+  sheet.innerHTML = `
+    <button class="auth-close" onclick="closeAuthModal()">×</button>
+    <div class="auth-handle"></div>
+    <div class="auth-icon">🔑</div>
+    <div class="auth-title" style="font-size:18px;">비밀번호 재설정</div>
+    <div class="auth-sub" style="margin-bottom:20px;">가입한 이메일을 입력하세요</div>
+    
+    <div class="auth-form">
+      <input class="auth-input" type="email" id="resetEmail" placeholder="이메일">
+      <div class="auth-error" id="resetError"></div>
+      <button class="btn-auth" onclick="doPasswordReset()">재설정 링크 보내기</button>
+    </div>
+    
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px;">
+      <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="switchAuthTab('login',null)">로그인으로 돌아가기</span>
+    </div>
+  `;
+}
+
+/* ── 비밀번호 재설정 요청 ── */
+async function doPasswordReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  const btn = event.currentTarget;
+  const resetError = document.getElementById('resetError');
+
+  if (!email) {
+    resetError.textContent = '이메일을 입력해주세요';
+    resetError.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '발송 중...';
+  resetError.classList.remove('show');
+
+  try {
+    const resp = await fetch('/api/auth?action=resetPassword', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      resetError.textContent = data.error || '오류가 발생했어요';
+      resetError.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = '재설정 링크 보내기';
+      return;
+    }
+
+    const sheet = document.querySelector('.auth-sheet');
+    sheet.innerHTML = `
+      <button class="auth-close" onclick="closeAuthModal()">×</button>
+      <div class="auth-handle"></div>
+      <div class="auth-icon">✅</div>
+      <div class="auth-title" style="font-size:18px;">이메일을 확인해주세요</div>
+      <div class="auth-sub" style="margin-bottom:20px;">
+        <strong style="color:var(--accent);">${email}</strong>로<br>
+        비밀번호 재설정 링크를 보냈습니다.
+      </div>
+      <button onclick="closeAuthModal()" style="width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;">확인</button>
+    `;
+  } catch (err) {
+    resetError.textContent = '네트워크 오류가 발생했어요';
+    resetError.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '재설정 링크 보내기';
   }
 }
 
