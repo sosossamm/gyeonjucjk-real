@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>견적분석 — 인테리어 견적 데이터 분석기</title>
+<title>견적메이트 | 실 견적데이터 기반 인테리어 견적서 상세 분석 서비스</title>
+<meta name="description" content="인테리어 견적서, 비싼 건지 궁금하셨죠? 5,000건 실 견적데이터 기반으로 내 견적서를 항목별 저렴/적정/비쌈 즉시 판별. 전문가 협상 팁까지 단돈 1만원.">
+<meta name="keywords" content="인테리어 견적, 견적서 분석, 견적서 비교, 인테리어 비용, 아파트 인테리어, 리모델링 견적, 견적 상세 분석, 견적메이트">
+<meta property="og:type" content="website">
+<meta property="og:title" content="견적메이트 | 실 견적데이터 기반 인테리어 견적서 상세 분석 서비스">
+<meta property="og:description" content="5,000건 실 견적데이터 기반, 내 견적서 항목별 저렴/적정/비쌈 즉시 판별. 전문가 협상 팁까지 1만원.">
+<meta property="og:url" content="https://quote-analysis.site">
+<meta property="og:site_name" content="견적메이트">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="견적메이트 | 인테리어 견적서 상세 분석 서비스">
+<meta name="twitter:description" content="5,000건 실 견적데이터 기반, 내 견적서 항목별 즉시 판별. 전문가 협상 팁까지 1만원.">
 
 <!-- Google tag (gtag.js) — Google Ads + GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18075373576"></script>
@@ -536,6 +546,91 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .bar-login-btn{font-size:12px;font-weight:700;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background .15s;}
 .bar-login-btn:hover{background:rgba(255,255,255,.18);}
 .bar-logout-btn{font-size:11px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;font-family:inherit;}
+
+/* ── 랜딩 섹션 ── */
+.landing-section{padding:0 1.5rem;}
+.landing-inner{max-width:820px;margin:0 auto;}
+.section-block{padding:3.5rem 0 3rem;border-top:1px solid var(--rule);}
+.section-block:first-child{border-top:none;}
+.section-eyebrow{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem;}
+.section-title{font-size:clamp(20px,3.2vw,28px);font-weight:800;letter-spacing:-1px;line-height:1.25;margin-bottom:0.6rem;color:var(--ink);}
+.section-title em{font-style:normal;color:var(--accent);}
+.section-desc{font-size:14px;color:var(--muted);line-height:1.7;max-width:540px;margin-bottom:2rem;}
+
+/* why cards */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:640px){.why-grid{grid-template-columns:1fr;}}
+.why-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:1.5rem 1.25rem;transition:box-shadow .2s;}
+.why-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06);}
+.why-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:0.85rem;font-size:18px;}
+.why-icon.red{background:var(--exp-bg);color:var(--exp);}
+.why-icon.blue{background:#EBF0FE;color:var(--accent);}
+.why-icon.green{background:var(--cheap-bg);color:var(--cheap);}
+.why-label{font-size:14px;font-weight:800;margin-bottom:5px;letter-spacing:-0.3px;}
+.why-text{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* how steps */
+.how-steps{display:flex;gap:0;position:relative;}
+@media(max-width:640px){.how-steps{flex-direction:column;}}
+.how-step{flex:1;position:relative;padding:1.5rem 1.25rem;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);text-align:center;}
+.how-step+.how-step{margin-left:-1px;}
+@media(max-width:640px){.how-step+.how-step{margin-left:0;margin-top:-1px;}}
+.how-num{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;margin:0 auto 0.85rem;}
+.how-step-title{font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-0.3px;}
+.how-step-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.how-arrow{position:absolute;right:-12px;top:50%;transform:translateY(-50%);z-index:2;width:22px;height:22px;border-radius:50%;background:var(--paper);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;}
+@media(max-width:640px){.how-arrow{right:50%;top:auto;bottom:-12px;transform:translateX(50%) rotate(90deg);}}
+
+/* preview mockup */
+.preview-frame{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;}
+.preview-bar{background:var(--ink);padding:8px 14px;display:flex;align-items:center;gap:8px;}
+.preview-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);}
+.preview-dot.r{background:#E04040;}
+.preview-dot.y{background:#D4A820;}
+.preview-dot.g{background:#4CAF82;}
+.preview-body{padding:1.25rem;}
+
+/* mock items */
+.mock-verdict{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:800;margin-bottom:1rem;}
+.mock-verdict.exp{background:var(--exp-bg);color:var(--exp);}
+.mock-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule);}
+.mock-item:last-child{border-bottom:none;}
+.mock-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mock-dot.cheap{background:var(--cheap);}
+.mock-dot.fair{background:var(--fair-mid);}
+.mock-dot.exp{background:var(--exp);}
+.mock-name{font-size:13px;font-weight:600;flex:1;letter-spacing:-0.2px;}
+.mock-amt{font-size:13px;font-weight:800;color:var(--ink);}
+.mock-pill{font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:0.3px;}
+.mock-pill.cheap{background:var(--cheap-bg);color:var(--cheap);}
+.mock-pill.fair{background:var(--fair-bg);color:var(--fair);}
+.mock-pill.exp{background:var(--exp-bg);color:var(--exp);}
+.mock-bar{height:4px;border-radius:2px;background:var(--rule);flex:1;max-width:80px;overflow:hidden;position:relative;}
+.mock-bar-fill{height:100%;border-radius:2px;}
+.mock-bar-fill.cheap{background:var(--cheap);width:35%;}
+.mock-bar-fill.fair{background:var(--fair-mid);width:55%;}
+.mock-bar-fill.exp{background:var(--exp);width:85%;}
+.mock-tip{margin-top:1rem;background:var(--paper);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--ink3);line-height:1.6;}
+.mock-tip strong{font-weight:800;color:var(--ink);}
+
+/* CTA */
+.cta-block{background:var(--ink);border-radius:var(--radius);padding:2.5rem 2rem;text-align:center;color:#fff;position:relative;overflow:hidden;}
+.cta-block::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px);}
+.cta-inner{position:relative;}
+.cta-price{font-size:clamp(22px,4vw,34px);font-weight:800;letter-spacing:-1.5px;margin-bottom:0.5rem;line-height:1.3;}
+.cta-price span{color:#A0BFF8;}
+.cta-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:1.5rem;line-height:1.6;}
+.cta-features{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:1.75rem;}
+.cta-feat{font-size:11px;font-weight:600;padding:4px 12px;border:1px solid rgba(255,255,255,.15);border-radius:20px;color:rgba(255,255,255,.6);}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:#fff;color:var(--ink);border:none;border-radius:8px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.3px;transition:transform .15s,box-shadow .15s;}
+.cta-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.2);}
+
+/* social proof */
+.proof-row{display:flex;justify-content:center;gap:2rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.1);}
+@media(max-width:480px){.proof-row{gap:1rem;}}
+.proof-item{text-align:center;}
+.proof-num{font-size:20px;font-weight:800;color:#A0BFF8;letter-spacing:-0.5px;}
+.proof-label{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;margin-top:2px;letter-spacing:0.3px;}
 </style>
 </head>
 <body>
@@ -563,7 +658,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <line x1="22" y1="23.5" x2="22" y2="26.5" stroke="#E04040" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
   </div>
-  <span class="logo-word" onclick="goHome()" style="cursor:pointer;">견적<span>분석</span></span>
+  <span class="logo-word" onclick="goHome()" style="cursor:pointer;">견적<span>메이트</span></span>
   <div class="bar-sep"></div>
   <span class="bar-tag">견적 데이터 분석기</span>
   <div class="bar-user" id="headerUserArea">
@@ -573,9 +668,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">3,000건+ 실거래 데이터 기반</div>
+    <div class="hero-eyebrow">5,000건+ 견적 데이터 기반</div>
     <h1>내 견적, <em>비싼 건지</em><br>알고 싶었잖아요</h1>
-    <p class="hero-desc">3,000여 건의 실제 인테리어 견적 데이터를 분석해 구축한 지역별 단가 기준으로,<br>내 견적서가 적정한지 항목별로 즉시 판별해드립니다.</p>
+    <p class="hero-desc">5,000여 건의 실제 인테리어 견적 데이터를 분석해 구축한 지역별 단가 기준으로,<br>내 견적서가 적정한지 항목별로 즉시 판별해드립니다.</p>
     <div class="hero-cats">
       <span class="hero-cat">철거/방수</span><span class="hero-cat">타일/바닥</span>
       <span class="hero-cat">도배/도장</span><span class="hero-cat">욕실/주방</span>
@@ -710,13 +805,193 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <div class="progress-card" id="progressCard"><div class="progress-steps" id="progressSteps"></div></div>
 </div><!-- /wrap -->
 
+<!-- ════════════════════════════════════════
+     랜딩 섹션: WHY · HOW · PREVIEW · CTA
+════════════════════════════════════════ -->
+<div class="landing-section">
+<div class="landing-inner">
+
+<!-- ── WHY: 왜 써야 하는가 ── -->
+<div class="section-block">
+  <div class="section-eyebrow">Why</div>
+  <div class="section-title">견적서, 받아만 보고<br><em>결정은 못 하고 계신가요?</em></div>
+  <div class="section-desc">같은 32평 아파트도 업체마다 1,000만~3,800만원 차이가 납니다. 어디가 비싼 건지, 어디를 깎아야 하는지 — 혼자 받은 5건의 견적으로는 비교할 수 없어요.</div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon red">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v8l5.5 3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <div class="why-label">평균 287만원 과다지출</div>
+      <div class="why-text">분석 데이터 기준, 견적서를 비교 없이 계약한 고객은 평균 287만원을 더 지불했습니다.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon blue">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="7" height="10" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="3" width="7" height="10" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M6 15v2M14 15v2M4 17h4M12 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="why-label">견적서 비교가 어려운 이유</div>
+      <div class="why-text">업체마다 항목명·단위·묶음 방식이 달라 소비자가 직접 비교하기 거의 불가능합니다.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 10l6 6L18 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="why-label">5,000건 견적 데이터 기준</div>
+      <div class="why-text">실제 시공 완료된 견적 데이터로 지역별·공종별 시세를 구축. 인터넷 후기가 아닌 팩트 기반.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW: 이용 방법 ── -->
+<div class="section-block">
+  <div class="section-eyebrow">How it works</div>
+  <div class="section-title">3단계, <em>1분이면 끝</em></div>
+  <div class="section-desc">견적서 사진 한 장이면 AI가 항목을 자동으로 인식하고, 시중 평균가와 즉시 비교합니다.</div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-step-title">견적서 업로드</div>
+      <div class="how-step-desc">PDF·사진 파일을 올리거나<br>금액을 직접 입력하세요</div>
+      <div class="how-arrow">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-step-title">AI 자동 분석</div>
+      <div class="how-step-desc">항목별 금액을 인식하고<br>5,000건 데이터와 비교</div>
+      <div class="how-arrow">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-step-title">판정 결과 확인</div>
+      <div class="how-step-desc">저렴/적정/비쌈 판정과<br>전문가 협상 팁 제공</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PREVIEW: 분석 결과 미리보기 ── -->
+<div class="section-block">
+  <div class="section-eyebrow">Preview</div>
+  <div class="section-title">이렇게 <em>한눈에</em> 보여드립니다</div>
+  <div class="section-desc">실제 분석 결과 화면 미리보기입니다. 항목별 저렴/적정/비쌈 판정, 시중가 대비 비교 바, 절약 가능 금액까지 모두 확인할 수 있습니다.</div>
+  <div class="preview-frame">
+    <div class="preview-bar">
+      <span class="preview-dot r"></span>
+      <span class="preview-dot y"></span>
+      <span class="preview-dot g"></span>
+    </div>
+    <div class="preview-body">
+      <div class="mock-verdict exp">🔴 전체 종합: 비쌈 — 시중 평균보다 비싼 견적입니다</div>
+
+      <div class="mock-item">
+        <span class="mock-dot exp"></span>
+        <span class="mock-name">철거/방수</span>
+        <span class="mock-amt">480만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill exp"></div></div>
+        <span class="mock-pill exp">비쌈</span>
+      </div>
+      <div class="mock-item">
+        <span class="mock-dot fair"></span>
+        <span class="mock-name">타일 시공</span>
+        <span class="mock-amt">320만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill fair"></div></div>
+        <span class="mock-pill fair">적정</span>
+      </div>
+      <div class="mock-item">
+        <span class="mock-dot cheap"></span>
+        <span class="mock-name">도배/도장</span>
+        <span class="mock-amt">150만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill cheap"></div></div>
+        <span class="mock-pill cheap">저렴</span>
+      </div>
+      <div class="mock-item">
+        <span class="mock-dot exp"></span>
+        <span class="mock-name">욕실 시공</span>
+        <span class="mock-amt">650만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill exp"></div></div>
+        <span class="mock-pill exp">비쌈</span>
+      </div>
+      <div class="mock-item">
+        <span class="mock-dot fair"></span>
+        <span class="mock-name">주방 시공</span>
+        <span class="mock-amt">380만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill fair"></div></div>
+        <span class="mock-pill fair">적정</span>
+      </div>
+      <div class="mock-item">
+        <span class="mock-dot cheap"></span>
+        <span class="mock-name">전기/조명</span>
+        <span class="mock-amt">120만원</span>
+        <div class="mock-bar"><div class="mock-bar-fill cheap"></div></div>
+        <span class="mock-pill cheap">저렴</span>
+      </div>
+
+      <div class="mock-tip">
+        <strong>💡 전문가 팁 — 철거/방수</strong><br>
+        철거 범위를 '전체 철거'에서 '부분 철거'로 변경하면 평균 80~120만원 절감 가능합니다. 방수는 욕실 외에 베란다까지 포함되어 있는지 확인하세요.
+      </div>
+      <div class="mock-tip">
+        <strong>💡 전문가 팁 — 욕실 시공</strong><br>
+        욕실 시공 650만원은 시중 평균(420~550만원) 대비 18~55% 높습니다. 세면대·양변기 브랜드를 국산 중급으로 변경하면 80~150만원 절감 가능합니다.
+      </div>
+      <div class="mock-tip">
+        <strong>💡 전문가 팁 — 타일 시공</strong><br>
+        타일 시공비에 '할증'이 포함되어 있는지 확인하세요. 대각선 시공, 헤링본 패턴은 일반 시공 대비 30~50% 할증이 붙습니다. 직사각 일자 시공으로 변경 시 절감 가능합니다.
+      </div>
+      <div class="mock-tip">
+        <strong>💡 전문가 팁 — 주방 시공</strong><br>
+        상부장·하부장 길이(mm)와 상판 소재를 확인하세요. 엔지니어드스톤 상판은 천연석 대비 40~60% 저렴하면서 내구성은 유사합니다. 씽크볼 교체만으로도 비용 절감이...
+      </div>
+    </div>
+    <!-- 블러 그라데이션 오버레이 + CTA -->
+    <div style="position:relative;margin-top:-180px;padding-top:80px;background:linear-gradient(to bottom,rgba(248,246,242,0),rgba(248,246,242,0.85) 30%,rgba(248,246,242,1) 55%);">
+      <div style="text-align:center;padding:0 1rem 2rem;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:0.5px;">이 외에도 8가지 전문가 팁 제공</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA: 가격 & 행동 유도 ── -->
+<div class="section-block" style="border-top:none;padding-top:0;">
+  <div class="cta-block">
+    <div class="cta-inner">
+      <div class="cta-price">모든 분석과 절약방법을<br><span>단돈 1만 원</span>에 해결하세요</div>
+      <div class="cta-sub">
+        인테리어 업체 한 곳 더 만나는 시간과 비용 대비,<br>
+        단돈 1만원으로 내 견적의 모든 항목을 낱낱이 점검하세요.
+      </div>
+      <div class="cta-features">
+        <span class="cta-feat">✓ 항목별 저렴/적정/비쌈 판정</span>
+        <span class="cta-feat">✓ 시중 평균가 대비 비교</span>
+        <span class="cta-feat">✓ 전문가 협상 팁 8종</span>
+        <span class="cta-feat">✓ 절약 가능 금액 산출</span>
+      </div>
+      <button class="cta-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M14 2H6a1.5 1.5 0 00-1.5 1.5v11A1.5 1.5 0 006 16h8a1.5 1.5 0 001.5-1.5v-11A1.5 1.5 0 0014 2z" stroke="currentColor" stroke-width="1.6"/><path d="M8 6h4M8 9h4M8 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        지금 견적서 분석하기
+      </button>
+      <div class="proof-row">
+        <div class="proof-item"><div class="proof-num">5,000+</div><div class="proof-label">분석 데이터</div></div>
+        <div class="proof-item"><div class="proof-num">287만원</div><div class="proof-label">평균 절약 가능</div></div>
+        <div class="proof-item"><div class="proof-num">1분</div><div class="proof-label">분석 소요 시간</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div><!-- /landing-section -->
+
 <!-- 입력 페이지 푸터 -->
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-top">
       <div>
-        <div class="footer-logo">견적분석</div>
-        <div class="footer-desc">3,000건+ 실거래 데이터 기반 인테리어 견적 분석 서비스</div>
+        <div class="footer-logo">견적메이트</div>
+        <div class="footer-desc">5,000건+ 견적 데이터 기반 인테리어 견적 분석 서비스</div>
       </div>
       <div class="footer-links">
         <button onclick="goLegal('terms')">이용약관</button>
@@ -735,7 +1010,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="footer-info-row">
         <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
         <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
-        <span>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bbd2d5ddd4fbd6dad2d5c8cbdad8ded2d5d895d8d4d6">[email&#160;protected]</a></span>
+        <span>이메일: quote-analysis@gmail.com</span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
@@ -890,7 +1165,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <div class="logo-mark">
     <svg viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="8" fill="#0F0E0C"/><rect x="5" y="6" width="11" height="14" rx="1.5" fill="white" opacity="0.9"/><line x1="7.5" y1="10" x2="13.5" y2="10" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/><line x1="7.5" y1="13" x2="13.5" y2="13" stroke="#0F0E0C" stroke-width="1.2" stroke-linecap="round"/><rect x="18" y="14" width="11" height="14" rx="1.5" fill="white" opacity="0.6"/></svg>
   </div>
-  <span class="logo-word">견적<span>분석</span></span>
+  <span class="logo-word">견적<span>메이트</span></span>
   <div class="bar-sep"></div>
   <span class="bar-tag">인식 결과 확인</span>
   <div class="bar-user" id="headerUserAreaOcr"></div>
@@ -1539,6 +1814,9 @@ function gateManualAnalyze() {
 let pdfText='', imageBase64='', imageMime='', allItems=[], lastResult=null, currentLogId=null, editedCats={};
 let prevPage='pageInput';
 
+/* ── 보안: XSS 이스케이프 유틸리티 ── */
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
 /* ── 페이지 전환 ── */
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1561,7 +1839,7 @@ const LEGAL_CONTENT={
     title:'이용약관',
     body:`
 <h3>제1조 (목적)</h3>
-<p>이 약관은 (주)마인스페이스(이하 "회사")가 운영하는 견적분석 서비스의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+<p>이 약관은 (주)마인스페이스(이하 "회사")가 운영하는 견적메이트 서비스의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
 <h3>제2조 (서비스 내용)</h3>
 <p>회사는 인테리어 견적서 분석 서비스를 제공합니다.</p>
 <ul>
@@ -1575,7 +1853,7 @@ const LEGAL_CONTENT={
 <h3>제5조 (준거법)</h3>
 <p>이 약관에 관한 분쟁은 대한민국 법률에 따르며, 관할 법원은 광주지방법원으로 합니다.</p>
 <h3>제6조 (문의)</h3>
-<p>서비스 이용 관련 문의: info@mainspaceinc.com / 평일 09:00 ~ 18:00</p>`
+<p>서비스 이용 관련 문의: quote-analysis@gmail.com / 평일 09:00 ~ 18:00</p>`
   },
   privacy:{
     title:'개인정보처리방침',
@@ -1601,9 +1879,9 @@ const LEGAL_CONTENT={
 <h3>4. 제3자 제공</h3>
 <p>원칙적으로 외부 제공 없음. 결제 처리를 위해 토스페이먼츠에 최소 정보 제공.</p>
 <h3>5. 개인정보 보호 책임자</h3>
-<p>성명: 엄정현 (대표이사)<br>이메일: info@mainspaceinc.com<br>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</p>
+<p>성명: 엄정현 (대표이사)<br>이메일: quote-analysis@gmail.com<br>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</p>
 <h3>6. 권리 행사</h3>
-<p>개인정보 열람·정정·삭제·처리 정지 요청: info@mainspaceinc.com</p>`
+<p>개인정보 열람·정정·삭제·처리 정지 요청: quote-analysis@gmail.com</p>`
   },
   refund:{
     title:'환불정책',
@@ -1624,7 +1902,7 @@ const LEGAL_CONTENT={
 </ul>
 <h3>환불 신청 방법</h3>
 <ul>
-  <li>이메일: info@mainspaceinc.com</li>
+  <li>이메일: quote-analysis@gmail.com</li>
   <li>영업시간: 평일 09:00 ~ 18:00</li>
   <li>결제일, 주문번호, 환불 사유를 함께 전달해 주세요.</li>
 </ul>
@@ -1699,7 +1977,7 @@ async function loadImage(file){
         uploadFileToServer(file,{region:document.getElementById('region')?.value||'unknown',areaPy:parseFloat(document.getElementById('areaNum')?.value)||0,totalAmount:null});
         const prev=document.getElementById('imgPreviewArea');
         const sizeInfo=img.width!==w?` (리사이즈: ${img.width}×${img.height} → ${w}×${h})`:'';
-        prev.innerHTML=`<img class="img-preview" src="${resizedDataUrl}"><div style="margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span class="file-type-badge img">IMAGE</span>${file.name}${sizeInfo}</div>`;
+        prev.innerHTML=`<img class="img-preview" src="${resizedDataUrl}"><div style="margin-top:6px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span class="file-type-badge img">IMAGE</span>${esc(file.name)}${sizeInfo}</div>`;
         setStep(2);document.getElementById('analyzeBtn').disabled=false;resolve();
       };
       img.src=dataUrl;
@@ -1709,7 +1987,7 @@ async function loadImage(file){
 }
 function showPill(name,type){
   const badge=type==='pdf'?'<span class="file-type-badge pdf">PDF</span>':'<span class="file-type-badge img">IMAGE</span>';
-  document.getElementById('imgPreviewArea').innerHTML=`<div class="file-pill"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="0.5" width="9" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>${name}${badge}<button onclick="clearFile()">×</button></div>`;
+  document.getElementById('imgPreviewArea').innerHTML=`<div class="file-pill"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="0.5" width="9" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>${esc(name)}${badge}<button onclick="clearFile()">×</button></div>`;
 }
 function clearFile(){pdfText='';imageBase64='';imageMime='';finput.value='';document.getElementById('imgPreviewArea').innerHTML='';document.getElementById('analyzeBtn').disabled=true;setStep(1);}
 
@@ -2844,7 +3122,7 @@ function shareTwitter(){
   if(!currentShareUrl) return;
   /* 📊 GA: 트위터 공유 */
   GAnalytics.share({ platform: 'twitter' });
-  const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적분석 서비스에서 확인했어요 👇`;
+  const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적메이트 서비스에서 확인했어요 👇`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 
@@ -2938,7 +3216,7 @@ async function startCreditCharge(){
       method: 'CARD',
       amount: { currency: 'KRW', value: totalAmount },
       orderId,
-      orderName: `견적분석 크레딧 ${qty}개`,
+      orderName: `견적메이트 크레딧 ${qty}개`,
       successUrl: baseUrl + '?chargeOrderId=' + orderId + '&chargeQty=' + qty,
       failUrl: baseUrl + '?chargeFail=1',
     });
@@ -3074,7 +3352,7 @@ async function loadMypage() {
             </button>
             <button class="mp-btn-share" onclick="shareHistory('${h.id}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
-              이 견적 공유하고 1회 무료 견적분석 받기
+              이 견적 공유하고 1회 무료 견적 분석 받기
             </button>
           </div>
         </div>`;
@@ -3189,7 +3467,7 @@ const GAnalytics = (() => {
     ADS_ID: 'AW-18075373576',
     ADS_LABELS: {
       // ⚠️ Google Ads에서 전환 액션 생성 후 각 라벨을 입력하세요:
-      analysis_complete: '',   // 견적분석 완료 전환 라벨
+      analysis_complete: '',   // 견적메이트 분석 완료 전환 라벨
       purchase: '',            // 크레딧 결제 전환 라벨
       sign_up: '',             // 회원가입 전환 라벨
       share: ''                // 공유 클릭 전환 라벨
@@ -3261,7 +3539,7 @@ const GAnalytics = (() => {
         transaction_id: 'TXN_' + Date.now(),
         value: data.amount || 10000,
         currency: 'KRW',
-        items: [{ item_id: 'credit', item_name: '견적분석 크레딧', quantity: data.credits || 1, price: data.amount || 10000 }]
+        items: [{ item_id: 'credit', item_name: '견적메이트 크레딧', quantity: data.credits || 1, price: data.amount || 10000 }]
       });
       sendConversion('purchase', data.amount || 10000);
     },
