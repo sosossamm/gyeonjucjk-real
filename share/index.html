@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>친구의 견적 분석 결과 — 견적분석</title>
-<meta property="og:title" content="친구가 견적 분석 결과를 공유했어요">
-<meta property="og:description" content="내 인테리어 견적도 적정한지 확인해보세요.">
+<title>친구의 견적 분석 결과 — 견적메이트</title>
+<meta property="og:title" content="친구가 견적 분석 결과를 공유했어요 — 견적메이트">
+<meta property="og:description" content="내 인테리어 견적도 적정한지 확인해보세요. 5,000건 데이터 기반 견적 분석.">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;}
 body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
@@ -71,9 +71,10 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
 .state-sub{font-size:13px;}
 
 /* 인라인 로그인 모달 */
-.auth-modal-wrap{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center;}
+.auth-modal-wrap{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);align-items:center;justify-content:center;}
 .auth-modal-wrap.show{display:flex;}
-.auth-sheet{background:#fff;border-radius:20px 20px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:480px;}
+.auth-sheet{background:#fff;border-radius:16px;padding:2rem 1.5rem 2.5rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative;}
+@media(max-width:480px){.auth-sheet{margin:0 16px;}}
 .auth-handle{width:36px;height:4px;background:#E8E5E0;border-radius:2px;margin:0 auto 1.5rem;}
 .auth-title{font-size:18px;font-weight:800;color:#0F0E0C;text-align:center;margin-bottom:6px;letter-spacing:-.5px;}
 .auth-sub{font-size:13px;color:#8A8780;text-align:center;margin-bottom:1.5rem;}
@@ -94,7 +95,7 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
 <body>
 
 <header class="topbar">
-  <a href="/" style="text-decoration:none;"><span class="logo">견적<span>분석</span></span></a>
+  <a href="/" style="text-decoration:none;"><span class="logo">견적<span>메이트</span></span></a>
   <div class="sp"></div>
   <a href="/" class="top-btn">내 견적 분석하기</a>
 </header>
@@ -116,6 +117,9 @@ body{background:#F8F6F2;color:#0F0E0C;min-height:100vh;}
     <div class="auth-error" id="authSheetError"></div>
 
     <div id="authSheetEmailForm">
+      <div id="authSheetNameWrap" style="display:none;">
+        <input class="auth-input" type="text" id="authSheetName" placeholder="이름 (선택)" autocomplete="name">
+      </div>
       <input class="auth-input" type="email" id="authSheetEmail" placeholder="이메일" autocomplete="email">
       <input class="auth-input" type="password" id="authSheetPw" placeholder="비밀번호" autocomplete="current-password">
       <div id="authSheetPwConfirmWrap" style="display:none;">
@@ -250,8 +254,12 @@ function openAuthSheet(mode){
   document.getElementById('authSheetSub').textContent = '친구의 상세 견적을 무료로 확인하세요';
   document.getElementById('authSheetSubmit').textContent = isLogin ? '로그인' : '회원가입';
   document.getElementById('authSheetSubmit').style.display = 'block';
+  document.getElementById('authSheetNameWrap').style.display = isLogin ? 'none' : 'block';
   document.getElementById('authSheetPwConfirmWrap').style.display = isLogin ? 'none' : 'block';
-  if(isLogin) document.getElementById('authSheetPwConfirm').value = '';
+  if(isLogin){
+    document.getElementById('authSheetPwConfirm').value = '';
+    document.getElementById('authSheetName').value = '';
+  }
   document.getElementById('authSwitchText').innerHTML = isLogin
     ? '계정이 없으신가요? <span onclick="toggleAuthMode()">회원가입</span>'
     : '이미 계정이 있으신가요? <span onclick="toggleAuthMode()">로그인</span>';
@@ -297,7 +305,7 @@ async function submitAuth(){
     const resp = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: authMode, email, password: pw })
+      body: JSON.stringify({ action: authMode, email, password: pw, name: document.getElementById('authSheetName')?.value?.trim() || '' })
     });
     const data = await resp.json();
     if(!resp.ok || !data.success) throw new Error(data.error || '오류가 발생했어요');
