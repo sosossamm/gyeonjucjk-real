@@ -1,0 +1,10 @@
+# 견적메이트 robots.txt
+# https://quote-analysis.site
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# 사이트맵 위치
+Sitemap: https://quote-analysis.site/sitemap.xml
