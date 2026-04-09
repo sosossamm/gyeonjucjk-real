@@ -460,18 +460,25 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .auth-overlay{
   position:fixed;inset:0;z-index:1000;
   background:rgba(15,14,12,0.55);
-  display:none;align-items:flex-end;justify-content:center;
+  display:none;align-items:center;justify-content:center;
 }
 .auth-overlay.show{display:flex;}
 @media(min-width:560px){
-  .auth-overlay{align-items:center;}
   .auth-sheet{border-radius:var(--radius)!important;max-width:400px;}
 }
 .auth-sheet{
-  background:var(--surface);width:100%;
-  border-radius:20px 20px 0 0;
+  background:var(--surface);width:100%;max-width:400px;
+  border-radius:var(--radius);
   padding:20px 20px 32px;
   animation:slideUp .25s ease;
+  max-height:90vh;
+  overflow-y:auto;
+}
+@media(max-width:559px){
+  .auth-sheet{
+    margin:0 16px;
+    border-radius:var(--radius);
+  }
 }
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .auth-handle{width:36px;height:4px;background:var(--rule);border-radius:2px;margin:0 auto 18px;}
@@ -1447,6 +1454,33 @@ function clearAuth() {
   updateHeaderUser();
 }
 
+/* ── 유입 경로 추적: Supabase에 저장 ── */
+async function saveUserAcquisition(userIdOrEmail, signupMethod) {
+  try {
+    const raw = localStorage.getItem('user_acquisition');
+    const acq = raw ? JSON.parse(raw) : {};
+    await fetch('/api/acquisition', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userIdOrEmail,
+        signup_method: signupMethod,
+        utm_source: acq.utm_source || 'direct',
+        utm_medium: acq.utm_medium || '',
+        utm_campaign: acq.utm_campaign || '',
+        utm_term: acq.utm_term || '',
+        utm_content: acq.utm_content || '',
+        gclid: acq.gclid || '',
+        fbclid: acq.fbclid || '',
+        referrer: acq.referrer || '',
+        landing_url: acq.landing_url || '/',
+        landed_at: acq.landed_at || new Date().toISOString()
+      })
+    });
+    localStorage.removeItem('user_acquisition');
+  } catch(e) { console.error('유입 추적 저장 실패:', e); }
+}
+
 function updateHeaderUser() {
   const area = document.getElementById('headerUserArea');
   if (!area) return;
@@ -1485,12 +1519,19 @@ let currentAuthTab = 'login';
 
 function openAuthModal(tab = 'login', pendingAction = null) {
   authPendingAction = pendingAction;
+  /* 원본 HTML 복원 (비밀번호 재설정 등으로 변경됐을 수 있음) */
+  const sheet = document.querySelector('.auth-sheet');
+  if (sheet && _authSheetOriginalHTML && !sheet.querySelector('#btnAuthSubmit')) {
+    sheet.innerHTML = _authSheetOriginalHTML;
+  }
   switchAuthTab(tab, null);
   document.getElementById('authOverlay').classList.add('show');
   document.getElementById('authError').classList.remove('show');
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
   document.getElementById('authName').value = '';
+  const confirmField = document.getElementById('authPasswordConfirm');
+  if (confirmField) confirmField.value = '';
 }
 
 function closeAuthModal() {
@@ -1619,6 +1660,8 @@ async function doEmailAuth() {
     if (action === 'signup') {
       /* 📊 GA: 이메일 회원가입 */
       GAnalytics.signUp({ method: 'email' });
+      /* 📊 Supabase: 유입 경로 저장 */
+      saveUserAcquisition(data.userId || email, 'email');
       /* 모달 닫기 */
       closeAuthModal();
       /* 이메일 인증 팝업 표시 */
@@ -1794,6 +1837,10 @@ async function checkSocialLoginReturn() {
     /* 📊 GA: 소셜 로그인 (provider: kakao 또는 google) */
     const provider = session.user.app_metadata?.provider || 'social';
     GAnalytics.login({ method: provider });
+    /* 📊 Supabase: 소셜 가입 시 유입 경로 저장 (최초 1회) */
+    const createdAt = new Date(session.user.created_at);
+    const isNewUser = (Date.now() - createdAt.getTime()) < 60000; /* 1분 이내면 신규 가입 */
+    if (isNewUser) saveUserAcquisition(session.user.id, provider);
     if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
@@ -3478,22 +3525,42 @@ const GAnalytics = (() => {
     }
   };
 
-  /* ── UTM 파라미터 자동 수집 ── */
+  /* ── UTM 파라미터 자동 수집 + Supabase 유입 추적 ── */
   const UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+  const TRACK_KEYS = [...UTM_KEYS, 'gclid', 'fbclid', 'ref'];
 
   function captureUTM() {
     const params = new URLSearchParams(window.location.search);
     const utm = {};
     let found = false;
-    UTM_KEYS.forEach(k => { const v = params.get(k); if (v) { utm[k] = v; found = true; } });
+    TRACK_KEYS.forEach(k => { const v = params.get(k); if (v) { utm[k] = v; found = true; } });
     if (found) {
-      try { sessionStorage.setItem('ga_utm', JSON.stringify(utm)); } catch(e) {}
-      // URL 정리 (UTM 제거) — 단, 결제 리턴 파라미터는 보존
+      try {
+        sessionStorage.setItem('ga_utm', JSON.stringify(utm));
+        /* 유입 추적용 — 회원가입 시까지 보존 (localStorage) */
+        const acq = {
+          ...utm,
+          landing_url: window.location.pathname,
+          landed_at: new Date().toISOString(),
+          referrer: document.referrer || ''
+        };
+        localStorage.setItem('user_acquisition', JSON.stringify(acq));
+      } catch(e) {}
       const keep = ['orderId','amount','payFail','chargeOrderId','chargeQty','chargeFail','socialLogin','ref'];
       const clean = new URLSearchParams();
       keep.forEach(k => { const v = params.get(k); if (v) clean.set(k, v); });
       const qs = clean.toString();
       window.history.replaceState({}, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+    } else if (!localStorage.getItem('user_acquisition')) {
+      /* UTM 없이 직접 유입 시에도 기록 */
+      try {
+        localStorage.setItem('user_acquisition', JSON.stringify({
+          utm_source: 'direct',
+          landing_url: window.location.pathname,
+          landed_at: new Date().toISOString(),
+          referrer: document.referrer || ''
+        }));
+      } catch(e) {}
     }
     return utm;
   }
