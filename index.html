@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>견적분석 — 인테리어 견적 데이터 분석기</title>
+
+<!-- Google tag (gtag.js) — Google Ads + GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18075373576"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18075373576');
+  gtag('config', 'G-B59B3G6BJC');
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1327,6 +1338,8 @@ async function doEmailAuth() {
 
     /* 회원가입 — 이메일 인증 대기 */
     if (action === 'signup') {
+      /* 📊 GA: 이메일 회원가입 */
+      GAnalytics.signUp({ method: 'email' });
       /* 모달 닫기 */
       closeAuthModal();
       /* 이메일 인증 팝업 표시 */
@@ -1336,6 +1349,8 @@ async function doEmailAuth() {
 
     /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
+    /* 📊 GA: 이메일 로그인 */
+    GAnalytics.login({ method: 'email' });
     
     /* 이메일 인증 여부 확인 (isEmailVerified 또는 email_confirmed_at 필드) */
     const isEmailVerified = data.user?.isEmailVerified || data.user?.email_confirmed_at;
@@ -1497,6 +1512,9 @@ async function checkSocialLoginReturn() {
     };
     saveAuth(user, session.access_token);
     loadUserCredits();
+    /* 📊 GA: 소셜 로그인 (provider: kakao 또는 google) */
+    const provider = session.user.app_metadata?.provider || 'social';
+    GAnalytics.login({ method: provider });
     if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
@@ -1636,6 +1654,8 @@ finput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.fi
 function isImage(f){return f.type.startsWith('image/');}
 function isPDF(f){return f.type==='application/pdf';}
 async function handleFile(file){
+  /* 📊 GA: 파일 업로드 */
+  GAnalytics.fileUpload({ fileType: file.type.split('/')[1] || 'unknown', fileSize: file.size });
   if(isPDF(file))await loadPDF(file);
   else if(isImage(file))await loadImage(file);
   else alert('PDF 또는 이미지 파일만 지원합니다.');
@@ -1704,6 +1724,8 @@ function setStep(n){
 /* ── mode switch ── */
 function switchMode(mode){
   const isPDF=mode==='pdf';
+  /* 📊 GA: 직접 입력 시작 */
+  if(!isPDF) GAnalytics.manualInputStart();
   document.getElementById('modePDF').className='mode-btn'+(isPDF?' active':'');
   document.getElementById('modeManual').className='mode-btn'+(!isPDF?' active':'');
   document.getElementById('uploadCard').style.display=isPDF?'':'none';
@@ -2398,6 +2420,15 @@ function render(r){
   document.getElementById('paidBadgeArea').innerHTML='';
 
   showPage('pageResult');
+
+  /* 📊 GA: 견적 분석 완료 */
+  GAnalytics.analysisComplete({
+    totalAmount: r.totalAmount || 0,
+    itemCount: (r.items || []).length,
+    region: window._ocrParams?.region || window._currentMeta?.region || '',
+    area: window._ocrParams?.py || window._currentMeta?.areaPy || 0,
+    inputMethod: window._currentMeta?.fileType || (window._ocrParams?.isImg ? 'image' : 'pdf')
+  });
 }
 
 function renderPaidDetail(){
@@ -2590,6 +2621,8 @@ async function startPayment(){
       userCredits = data.credits;
       updatePayButton();
       /* 크레딧 사용 성공 → 바로 열람 */
+      /* 📊 GA: 상세 분석 열람 (크레딧 차감) */
+      GAnalytics.detailUnlock({ creditsUsed: 1 });
       renderPaidDetail();
       return;
     }catch(err){
@@ -2642,6 +2675,8 @@ async function checkPaymentReturn(){
     let data={success:false};
     try{ data=await resp.json(); }catch(jsonErr){}
     if(data.success||resp.ok||!paymentKey){
+      /* 📊 GA: 상세분석 결제 완료 */
+      GAnalytics.purchase({ amount: parseInt(amount), credits: 1 });
       render(lastResult);
       setTimeout(()=>renderPaidDetail(),400);
     } else {
@@ -2790,6 +2825,8 @@ async function createShareLink(){
 }
 function copyShareLink(){
   if(!currentShareUrl) return;
+  /* 📊 GA: 링크 복사 공유 */
+  GAnalytics.share({ platform: 'link_copy' });
   navigator.clipboard.writeText(currentShareUrl).then(()=>{
     const btn = document.getElementById('btnCopy');
     btn.textContent='복사됨!'; btn.classList.add('copied');
@@ -2798,11 +2835,15 @@ function copyShareLink(){
 }
 function shareKakao(){
   if(!currentShareUrl) return;
+  /* 📊 GA: 카카오 공유 */
+  GAnalytics.share({ platform: 'kakao' });
   const text = `내 인테리어 견적 분석 결과를 공유해요!\n총 견적: ${document.getElementById('verdictTotal')?.textContent||''}\n판정: ${lastResult?.overallVerdict||''}\n${currentShareUrl}`;
   window.open(`https://accounts.kakao.com/login?continue=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 function shareTwitter(){
   if(!currentShareUrl) return;
+  /* 📊 GA: 트위터 공유 */
+  GAnalytics.share({ platform: 'twitter' });
   const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적분석 서비스에서 확인했어요 👇`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
@@ -2931,6 +2972,8 @@ async function checkCreditChargeReturn(){
       if(el) el.textContent = userCredits + ' 크레딧';
     }, 500);
     alert(`✓ ${qty}크레딧 충전 완료! 현재 ${userCredits}크레딧 보유 중이에요.`);
+    /* 📊 GA: 크레딧 충전 결제 완료 */
+    GAnalytics.purchase({ amount: qty * 10000, credits: qty });
   }catch(err){
     alert('충전 처리 오류: ' + err.message);
   }
@@ -3134,5 +3177,136 @@ function doReset(){
   showPage('pageInput');
 }
 </script>
+
+<!-- ═══════════════════════════════════════════════
+     GAnalytics — GA4 + Google Ads 이벤트 추적 모듈
+     ═══════════════════════════════════════════════ -->
+<script>
+const GAnalytics = (() => {
+  'use strict';
+
+  const CONFIG = {
+    ADS_ID: 'AW-18075373576',
+    ADS_LABELS: {
+      // ⚠️ Google Ads에서 전환 액션 생성 후 각 라벨을 입력하세요:
+      analysis_complete: '',   // 견적분석 완료 전환 라벨
+      purchase: '',            // 크레딧 결제 전환 라벨
+      sign_up: '',             // 회원가입 전환 라벨
+      share: ''                // 공유 클릭 전환 라벨
+    }
+  };
+
+  /* ── UTM 파라미터 자동 수집 ── */
+  const UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+
+  function captureUTM() {
+    const params = new URLSearchParams(window.location.search);
+    const utm = {};
+    let found = false;
+    UTM_KEYS.forEach(k => { const v = params.get(k); if (v) { utm[k] = v; found = true; } });
+    if (found) {
+      try { sessionStorage.setItem('ga_utm', JSON.stringify(utm)); } catch(e) {}
+      // URL 정리 (UTM 제거) — 단, 결제 리턴 파라미터는 보존
+      const keep = ['orderId','amount','payFail','chargeOrderId','chargeQty','chargeFail','socialLogin','ref'];
+      const clean = new URLSearchParams();
+      keep.forEach(k => { const v = params.get(k); if (v) clean.set(k, v); });
+      const qs = clean.toString();
+      window.history.replaceState({}, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+    }
+    return utm;
+  }
+
+  function getUTM() {
+    try { return JSON.parse(sessionStorage.getItem('ga_utm') || '{}'); } catch(e) { return {}; }
+  }
+
+  /* ── 안전한 gtag 래퍼 ── */
+  function send(eventName, params = {}) {
+    if (typeof gtag !== 'function') return;
+    gtag('event', eventName, { ...params, ...getUTM() });
+  }
+
+  function sendConversion(type, value = 0) {
+    if (typeof gtag !== 'function') return;
+    const label = CONFIG.ADS_LABELS[type];
+    if (!label) return;
+    gtag('event', 'conversion', {
+      send_to: `${CONFIG.ADS_ID}/${label}`,
+      value: value,
+      currency: 'KRW'
+    });
+  }
+
+  /* ── 공개 API ── */
+  return {
+    init() { captureUTM(); },
+
+    /** 견적 분석 완료 */
+    analysisComplete(data = {}) {
+      send('analysis_complete', {
+        event_category: 'conversion',
+        total_amount: data.totalAmount || 0,
+        item_count: data.itemCount || 0,
+        region: data.region || '',
+        area: data.area || 0,
+        input_method: data.inputMethod || 'unknown'
+      });
+      sendConversion('analysis_complete');
+    },
+
+    /** 크레딧 결제/충전 완료 */
+    purchase(data = {}) {
+      send('purchase', {
+        event_category: 'ecommerce',
+        transaction_id: 'TXN_' + Date.now(),
+        value: data.amount || 10000,
+        currency: 'KRW',
+        items: [{ item_id: 'credit', item_name: '견적분석 크레딧', quantity: data.credits || 1, price: data.amount || 10000 }]
+      });
+      sendConversion('purchase', data.amount || 10000);
+    },
+
+    /** 회원가입 완료 */
+    signUp(data = {}) {
+      send('sign_up', { event_category: 'engagement', method: data.method || 'email' });
+      sendConversion('sign_up');
+    },
+
+    /** 로그인 */
+    login(data = {}) {
+      send('login', { event_category: 'engagement', method: data.method || 'email' });
+    },
+
+    /** 공유 */
+    share(data = {}) {
+      send('share', { event_category: 'engagement', method: data.platform || 'link_copy', content_type: 'analysis_result' });
+      sendConversion('share');
+    },
+
+    /** 파일 업로드 */
+    fileUpload(data = {}) {
+      send('file_upload', { event_category: 'engagement', file_type: data.fileType || 'unknown', file_size: data.fileSize || 0 });
+    },
+
+    /** 직접 입력 시작 */
+    manualInputStart() {
+      send('manual_input_start', { event_category: 'engagement' });
+    },
+
+    /** 상세 분석 열람 (크레딧 사용) */
+    detailUnlock(data = {}) {
+      send('detail_unlock', { event_category: 'conversion', credits_used: data.creditsUsed || 1, value: 10000, currency: 'KRW' });
+    },
+
+    /** SPA 가상 페이지뷰 */
+    pageView(screen) {
+      send('page_view', { page_title: screen, page_path: '/' + screen });
+    }
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', () => { GAnalytics.init(); });
+</script>
+
 </body>
 </html>
