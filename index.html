@@ -16,74 +16,6 @@
 <meta name="twitter:title" content="견적메이트 | 인테리어 견적서 상세 분석 서비스">
 <meta name="twitter:description" content="5,000건 실 견적데이터 기반, 내 견적서 항목별 즉시 판별. 전문가 협상 팁까지 1만원.">
 
-<!-- Canonical URL -->
-<link rel="canonical" href="https://quote-analysis.site" />
-
-<!-- 구조화 데이터: WebSite (사이트 검색 기능) -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "견적메이트",
-  "url": "https://quote-analysis.site",
-  "description": "5,000건 실 견적데이터 기반 인테리어 견적서 항목별 분석 서비스",
-  "inLanguage": "ko"
-}
-</script>
-
-<!-- 구조화 데이터: SoftwareApplication (서비스 정보) -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "견적메이트",
-  "applicationCategory": "UtilitiesApplication",
-  "operatingSystem": "Web",
-  "url": "https://quote-analysis.site",
-  "description": "인테리어 견적서를 업로드하면 5,000건 실 견적데이터를 기반으로 항목별 저렴/적정/비쌈을 즉시 판별해주는 서비스",
-  "offers": {
-    "@type": "Offer",
-    "price": "10000",
-    "priceCurrency": "KRW",
-    "description": "견적서 상세 분석 1회"
-  }
-}
-</script>
-
-<!-- 구조화 데이터: FAQPage (검색 결과에 FAQ 리치 스니펫 노출) -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "인테리어 견적서 분석은 어떻게 하나요?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "견적서 사진이나 PDF를 업로드하면 AI가 항목별로 자동 분석합니다. 5,000건의 실 견적데이터를 기반으로 각 항목이 저렴한지, 적정한지, 비싼지 즉시 판별해드립니다."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "견적메이트 분석 비용은 얼마인가요?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "견적서 상세 분석은 1회 1만원입니다. 항목별 적정가 판별, 전문가 협상 팁, 절약 포인트까지 포함됩니다."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "신혼집 인테리어 견적이 적정한지 어떻게 알 수 있나요?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "견적메이트에 견적서를 업로드하면 평수, 지역, 공정별로 실 거래 데이터와 비교하여 적정 여부를 판단해드립니다. 20~30평대 아파트 기준 평균 견적가와 비교할 수 있습니다."
-      }
-    }
-  ]
-}
-</script>
-
 <!-- Google tag (gtag.js) — Google Ads + GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18075373576"></script>
 <script>
@@ -623,6 +555,20 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .bar-login-btn:hover{background:rgba(255,255,255,.18);}
 .bar-logout-btn{font-size:11px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;font-family:inherit;}
 
+/* ── 일일 한정 할인 배너 ── */
+.sale-banner{background:linear-gradient(135deg,#1F4FD8,#3B6DE8);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;color:#fff;animation:salePulse 3s ease-in-out infinite;}
+@keyframes salePulse{0%,100%{box-shadow:0 0 0 0 rgba(31,79,216,.3);}50%{box-shadow:0 0 0 6px rgba(31,79,216,0);}}
+.sale-badge{background:#fff;color:#1F4FD8;font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.5px;flex-shrink:0;}
+.sale-info{flex:1;}
+.sale-title{font-size:13px;font-weight:800;letter-spacing:-.2px;}
+.sale-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+.sale-count{text-align:right;flex-shrink:0;}
+.sale-remaining{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+.sale-total{font-size:10px;color:rgba(255,255,255,.6);}
+.sale-ended{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.sale-ended strong{color:var(--ink);font-weight:800;}
+.price-strike{text-decoration:line-through;color:var(--hint);font-size:12px;font-weight:500;margin-right:4px;}
+
 /* ── 랜딩 섹션 ── */
 .landing-section{padding:0 1.5rem;}
 .landing-inner{max-width:820px;margin:0 auto;}
@@ -1090,7 +1036,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="footer-info-row">
         <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
         <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
-        <span>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a8d9ddc7dccd85c9c6c9c4d1dbc1dbe8cfc5c9c1c486cbc7c5">[email&#160;protected]</a></span>
+        <span>이메일: quote-analysis@gmail.com</span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
@@ -1198,11 +1144,13 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
               <span id="creditBadge">0 크레딧</span>
             </div>
           </div>
+          <!-- 일일 한정 할인 배너 -->
+          <div id="saleBannerWrap"></div>
           <button class="btn-pay" id="btnPay" onclick="startPayment()">
             상세 분석 열람하기 <span class="btn-pay-price" id="payPriceTag">1크레딧</span>
           </button>
-          <div class="refund-notice">
-            크레딧 없을 시 10,000원 결제<br>
+          <div class="refund-notice" id="payPriceNotice">
+            크레딧 없을 시 <span id="payPriceDisplay">10,000</span>원 결제<br>
             <span onclick="goLegal('refund')">환불정책 확인</span>
           </div>
         </div>
@@ -1376,15 +1324,17 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </div>
     </div>
     <div id="creditChargeSection">
+      <!-- 일일 할인 배너 (마이페이지) -->
+      <div id="mpSaleBanner"></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;" id="creditQtyBtns">
         <button onclick="selectCreditQty(1,this)" class="credit-qty-btn active">
-          <div class="cq-n">1개</div><div class="cq-p">₩10,000</div>
+          <div class="cq-n">1개</div><div class="cq-p" id="cqPrice1">₩10,000</div>
         </button>
         <button onclick="selectCreditQty(3,this)" class="credit-qty-btn">
-          <div class="cq-n">3개</div><div class="cq-p">₩30,000</div>
+          <div class="cq-n">3개</div><div class="cq-p" id="cqPrice3">₩30,000</div>
         </button>
         <button onclick="selectCreditQty(5,this)" class="credit-qty-btn">
-          <div class="cq-n">5개</div><div class="cq-p">₩50,000</div>
+          <div class="cq-n">5개</div><div class="cq-p" id="cqPrice5">₩50,000</div>
           <div class="cq-badge">인기</div>
         </button>
       </div>
@@ -1488,7 +1438,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -3031,15 +2981,16 @@ async function startPayment(){
 
   /* 크레딧 없으면 결제 */
   if(typeof TossPayments==='undefined'){alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.');return;}
+  const payPrice = getCurrentUnitPrice();
   const orderId='EST-'+Date.now();
   const baseUrl=window.location.href.split('?')[0];
   try{
     const tp=TossPayments(TOSS_CLIENT_KEY);
     const payment=tp.payment({customerKey: currentUser ? currentUser.id : 'GUEST-'+Date.now()});
     await payment.requestPayment({
-      method:'CARD',amount:{currency:'KRW',value:10000},
+      method:'CARD',amount:{currency:'KRW',value:payPrice},
       orderId,orderName:'인테리어 견적 상세 분석 (1크레딧)',
-      successUrl:baseUrl+'?orderId='+orderId+'&amount=10000',
+      successUrl:baseUrl+'?orderId='+orderId+'&amount='+payPrice,
       failUrl:baseUrl+'?payFail=1',
     });
   }catch(err){if(err.code==='USER_CANCEL')return;alert('결제 오류: '+err.message);}
@@ -3075,6 +3026,9 @@ async function checkPaymentReturn(){
     if(data.success||resp.ok||!paymentKey){
       /* 📊 GA: 상세분석 결제 완료 */
       GAnalytics.purchase({ amount: parseInt(amount), credits: 1 });
+      /* 일일 할인 카운터 증가 */
+      try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty:1}) }); } catch(e){}
+      await fetchDailySaleStatus();
       render(lastResult);
       setTimeout(()=>renderPaidDetail(),400);
     } else {
@@ -3096,6 +3050,7 @@ window.addEventListener('load', async () => {
   }
   await restoreAuth();
   await loadUserCredits();
+  await fetchDailySaleStatus();
   await checkSocialLoginReturn();
   await checkPaymentReturn();
   await checkCreditChargeReturn();
@@ -3306,13 +3261,86 @@ async function openCreditHistory(){
 
 let selectedCreditQty = 1;
 
+/* ── 일일 한정 할인 시스템 ── */
+let dailySaleState = { isSaleActive: true, remaining: 100, salePrice: 10000, normalPrice: 20000, currentPrice: 10000 };
+
+async function fetchDailySaleStatus() {
+  try {
+    const resp = await fetch('/api/daily-credit?action=status');
+    const ct = resp.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) { console.warn('daily-credit API 미배포 상태'); return; }
+    const data = await resp.json();
+    if (data.success) {
+      dailySaleState = data;
+      renderSaleBanners();
+      updateAllPrices();
+    }
+  } catch(e) { console.warn('할인 상태 조회 실패 (API 미배포 시 정상):', e.message); }
+}
+
+function renderSaleBanners() {
+  const s = dailySaleState;
+  const paywallBanner = document.getElementById('saleBannerWrap');
+  const mpBanner = document.getElementById('mpSaleBanner');
+  
+  if (s.isSaleActive && s.remaining > 0) {
+    const html = `<div class="sale-banner">
+      <div class="sale-badge">50% OFF</div>
+      <div class="sale-info">
+        <div class="sale-title">오늘의 할인가 ${(s.salePrice/10000).toLocaleString()}만원</div>
+        <div class="sale-sub">매일 오전 9시 리셋 · 100개 한정</div>
+      </div>
+      <div class="sale-count">
+        <div class="sale-remaining">${s.remaining}개</div>
+        <div class="sale-total">/ ${s.dailyLimit}개</div>
+      </div>
+    </div>`;
+    if (paywallBanner) paywallBanner.innerHTML = html;
+    if (mpBanner) mpBanner.innerHTML = html;
+  } else {
+    const html = `<div class="sale-ended">
+      <span>⏰</span>
+      <div>오늘의 할인 수량이 모두 소진됐어요. <strong>정상가 ${(s.normalPrice/10000).toLocaleString()}만원</strong>으로 구매 가능합니다.<br>내일 오전 9시에 다시 할인이 시작돼요!</div>
+    </div>`;
+    if (paywallBanner) paywallBanner.innerHTML = html;
+    if (mpBanner) mpBanner.innerHTML = html;
+  }
+}
+
+function getCurrentUnitPrice() {
+  return dailySaleState.isSaleActive && dailySaleState.remaining > 0
+    ? dailySaleState.salePrice
+    : dailySaleState.normalPrice;
+}
+
+function updateAllPrices() {
+  const price = getCurrentUnitPrice();
+  const priceStr = price.toLocaleString('ko-KR');
+  
+  /* 페이월 결제 안내 */
+  const priceDisplay = document.getElementById('payPriceDisplay');
+  if (priceDisplay) priceDisplay.textContent = priceStr;
+  
+  /* 마이페이지 크레딧 가격 */
+  const cq1 = document.getElementById('cqPrice1');
+  const cq3 = document.getElementById('cqPrice3');
+  const cq5 = document.getElementById('cqPrice5');
+  if (cq1) cq1.textContent = `₩${priceStr}`;
+  if (cq3) cq3.textContent = `₩${(price*3).toLocaleString('ko-KR')}`;
+  if (cq5) cq5.textContent = `₩${(price*5).toLocaleString('ko-KR')}`;
+  
+  /* 충전 버튼 텍스트 */
+  selectCreditQty(selectedCreditQty, document.querySelector('.credit-qty-btn.active'));
+}
+
 function selectCreditQty(qty, btn){
   selectedCreditQty = qty;
   document.querySelectorAll('.credit-qty-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const price = (qty * 10000).toLocaleString('ko-KR');
+  if (btn) btn.classList.add('active');
+  const unitPrice = getCurrentUnitPrice();
+  const total = qty * unitPrice;
   const chargeBtn = document.getElementById('chargeButtonText');
-  if(chargeBtn) chargeBtn.textContent = `${qty}크레딧 충전하기 (₩${price})`;
+  if(chargeBtn) chargeBtn.textContent = `${qty}크레딧 충전하기 (₩${total.toLocaleString('ko-KR')})`;
 }
 
 async function startCreditCharge(){
@@ -3320,7 +3348,8 @@ async function startCreditCharge(){
   if(typeof TossPayments==='undefined'){ alert('결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
 
   const qty = selectedCreditQty || 1;
-  const totalAmount = qty * 10000;
+  const unitPrice = getCurrentUnitPrice();
+  const totalAmount = qty * unitPrice;
 
   const btn = document.getElementById('btnCreditCharge');
   if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
@@ -3358,20 +3387,24 @@ async function checkCreditChargeReturn(){
     const resp = await fetch('/api/credits?action=reward', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ amount: qty, type: 'charge', description: `크레딧 ${qty}개 충전 (₩${(qty*10000).toLocaleString('ko-KR')})` })
+      body: JSON.stringify({ amount: qty, type: 'charge', description: `크레딧 ${qty}개 충전 (₩${(qty*getCurrentUnitPrice()).toLocaleString('ko-KR')})` })
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error);
     userCredits = data.credits;
     updatePayButton();
+    /* 일일 할인 카운터 증가 */
+    try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty}) }); } catch(e){}
+    await fetchDailySaleStatus();
     goMypage();
     setTimeout(()=>{
       const el = document.getElementById('mpCreditBalance');
       if(el) el.textContent = userCredits + ' 크레딧';
     }, 500);
+    const unitPrice = getCurrentUnitPrice();
     alert(`✓ ${qty}크레딧 충전 완료! 현재 ${userCredits}크레딧 보유 중이에요.`);
     /* 📊 GA: 크레딧 충전 결제 완료 */
-    GAnalytics.purchase({ amount: qty * 10000, credits: qty });
+    GAnalytics.purchase({ amount: qty * unitPrice, credits: qty });
   }catch(err){
     alert('충전 처리 오류: ' + err.message);
   }
@@ -3716,4 +3749,15 @@ const GAnalytics = (() => {
       send('detail_unlock', { event_category: 'conversion', credits_used: data.creditsUsed || 1, value: 10000, currency: 'KRW' });
     },
 
-    /** SPA 가상 
+    /** SPA 가상 페이지뷰 */
+    pageView(screen) {
+      send('page_view', { page_title: screen, page_path: '/' + screen });
+    }
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', () => { GAnalytics.init(); });
+</script>
+
+</body>
+</html>
