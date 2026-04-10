@@ -431,7 +431,45 @@ function showError(title, sub){
     </div>`;
 }
 
-loadShare();
+/* 이메일 인증 완료 후 hash fragment로 토큰이 오는 경우 처리 */
+async function checkEmailVerifyReturn() {
+  const hash = window.location.hash;
+  if (!hash.includes('access_token')) return false;
+
+  const hashParams = new URLSearchParams(hash.replace('#', ''));
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token') || '';
+  const type = hashParams.get('type');
+
+  if (!accessToken || type !== 'signup') return false;
+
+  /* URL 정리 */
+  window.history.replaceState({}, '', location.pathname);
+
+  try {
+    await _supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    await rewardAndShow(accessToken);
+    return true;
+  } catch(e) {
+    console.error('이메일 인증 세션 복원 실패:', e);
+    return false;
+  }
+}
+
+/* onAuthStateChange — 소셜/이메일 인증 완료 자동 감지 */
+_supabase.auth.onAuthStateChange(async (event, session) => {
+  if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+    const params = new URLSearchParams(location.search);
+    if (params.get('socialReturn')) return; /* socialReturn은 별도 처리 */
+    if (document.getElementById('mainWrap')?.querySelector('.unlocked-badge')) return; /* 이미 열람 중 */
+    await rewardAndShow(session.access_token, session.user?.id);
+  }
+});
+
+(async () => {
+  const handled = await checkEmailVerifyReturn();
+  if (!handled) await loadShare();
+})();
 </script>
 </body>
 </html>
