@@ -653,19 +653,6 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .proof-item{text-align:center;}
 .proof-num{font-size:20px;font-weight:800;color:#A0BFF8;letter-spacing:-0.5px;}
 .proof-label{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;margin-top:2px;letter-spacing:0.3px;}
-/* ── 약관 동의 체크박스 ── */
-.terms-wrap{display:none;margin:12px 0 4px;}
-.terms-wrap.show{display:block;}
-.terms-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);}
-.terms-row:last-child{border-bottom:none;}
-.terms-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
-.terms-label{flex:1;font-size:12px;color:var(--ink2);line-height:1.4;}
-.terms-label .req{font-size:10px;font-weight:700;color:var(--exp);margin-right:3px;}
-.terms-label .opt{font-size:10px;font-weight:700;color:var(--muted);margin-right:3px;}
-.terms-view{font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:underline;}
-.terms-all-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--paper);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;}
-.terms-all-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
-.terms-all-label{font-size:13px;font-weight:700;color:var(--ink);flex:1;}
 </style>
 </head>
 <body>
@@ -1400,33 +1387,12 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
     <!-- 소셜 로그인 -->
 
-    <!-- 약관 동의 (회원가입 탭에서만 표시) -->
-    <div class="terms-wrap" id="termsWrap">
-      <div class="terms-all-row" onclick="toggleAllTerms()">
-        <input type="checkbox" class="terms-all-check" id="chkAll" onclick="event.stopPropagation();toggleAllTerms()">
-        <span class="terms-all-label">전체 동의</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="chkTerms" onchange="onTermsChange()">
-        <span class="terms-label"><span class="req">[필수]</span>이용약관 동의</span>
-        <span class="terms-view" onclick="goLegal('terms')">보기</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="chkPrivacy" onchange="onTermsChange()">
-        <span class="terms-label"><span class="req">[필수]</span>개인정보처리방침 동의</span>
-        <span class="terms-view" onclick="goLegal('privacy')">보기</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="chkMarketing" onchange="onTermsChange()">
-        <span class="terms-label"><span class="opt">[선택]</span>마케팅 정보 수신 동의</span>
-      </div>
-    </div>
 
-    <button class="btn-social-auth kakao" id="btnKakao" onclick="doSocialAuth('kakao')">
+    <button class="btn-social-auth kakao" onclick="doSocialAuth('kakao')">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.134 1 1 3.471 1 6.5c0 1.924 1.152 3.614 2.9 4.634L3.2 14l3.45-2.27c.44.06.89.09 1.35.09 3.866 0 7-2.471 7-5.5S11.866 1 8 1z" fill="#3C1E1E"/></svg>
       카카오로 계속하기
     </button>
-    <button class="btn-social-auth" id="btnGoogle" onclick="doSocialAuth('google')">
+    <button class="btn-social-auth" onclick="doSocialAuth('google')">
       <svg width="16" height="16" viewBox="0 0 16 16"><path d="M15.545 6.558a9.42 9.42 0 010 2.884H8.18v-2.884h4.157a4.44 4.44 0 00-.632-1.94L8.18 7.558V4.558l2.93-.001a7.5 7.5 0 014.435 2z" fill="#4285F4"/><path d="M8.18 15.5c2.07 0 3.806-.686 5.074-1.857l-2.47-1.94c-.685.46-1.56.73-2.604.73a4.513 4.513 0 01-4.257-3.115H1.4v2.004A7.5 7.5 0 008.18 15.5z" fill="#34A853"/><path d="M3.923 9.318A4.5 4.5 0 013.68 8a4.5 4.5 0 01.243-1.318V4.678H1.4A7.5 7.5 0 00.68 8c0 1.21.29 2.356.8 3.322l2.444-2.004z" fill="#FBBC05"/><path d="M8.18 3.5a4.09 4.09 0 012.883 1.127l2.16-2.16A7.27 7.27 0 008.18.5a7.5 7.5 0 00-6.78 4.178l2.523 1.96A4.513 4.513 0 018.18 3.5z" fill="#EA4335"/></svg>
       Google로 계속하기
     </button>
@@ -1631,38 +1597,6 @@ function closeEmailVerifyPopup() {
   document.getElementById('emailVerifyOverlay').classList.remove('show');
 }
 
-/* ── 약관 동의 체크박스 로직 ── */
-function updateSocialBtns() {
-  /* 회원가입 탭일 때만 필수 체크 여부로 소셜 버튼 제어 */
-  if (currentAuthTab !== 'signup') return;
-  const ok = document.getElementById('chkTerms')?.checked && document.getElementById('chkPrivacy')?.checked;
-  ['btnKakao','btnGoogle'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (!btn) return;
-    btn.style.opacity = ok ? '1' : '0.45';
-  });
-}
-
-function toggleAllTerms() {
-  const chkAll = document.getElementById('chkAll');
-  const checked = !chkAll.checked; /* 클릭 전 상태이므로 반전 */
-  chkAll.checked = checked;
-  ['chkTerms','chkPrivacy','chkMarketing'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.checked = checked;
-  });
-  updateSocialBtns();
-}
-
-function onTermsChange() {
-  const t = document.getElementById('chkTerms')?.checked;
-  const p = document.getElementById('chkPrivacy')?.checked;
-  const m = document.getElementById('chkMarketing')?.checked;
-  const chkAll = document.getElementById('chkAll');
-  if (chkAll) chkAll.checked = t && p && m;
-  updateSocialBtns();
-}
-
 function switchAuthTab(tab, btn) {
   currentAuthTab = tab;
   document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
@@ -1680,22 +1614,6 @@ function switchAuthTab(tab, btn) {
     ? '이미 계정이 있으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'login\',null)">로그인</span>'
     : '계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'signup\',null)">회원가입</span>';
   document.getElementById('authError').classList.remove('show');
-
-  /* 약관 동의 영역 — 회원가입 탭에서만 표시 */
-  const termsWrap = document.getElementById('termsWrap');
-  if (termsWrap) {
-    if (isSignup) {
-      termsWrap.classList.add('show');
-    } else {
-      termsWrap.classList.remove('show');
-      /* 로그인 탭으로 돌아오면 체크 초기화 */
-      ['chkAll','chkTerms','chkPrivacy','chkMarketing'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.checked = false;
-      });
-    }
-    updateSocialBtns();
-  }
 }
 
 function showAuthError(msg) {
@@ -1719,8 +1637,6 @@ async function doEmailAuth() {
     const passwordConfirm = document.getElementById('authPasswordConfirm').value;
     if (!passwordConfirm) return showAuthError('비밀번호를 한 번 더 입력해주세요');
     if (password !== passwordConfirm) return showAuthError('비밀번호가 일치하지 않아요');
-    if (!document.getElementById('chkTerms')?.checked) return showAuthError('이용약관에 동의해주세요');
-    if (!document.getElementById('chkPrivacy')?.checked) return showAuthError('개인정보처리방침에 동의해주세요');
   }
 
   btn.disabled = true;
@@ -1886,15 +1802,6 @@ async function doPasswordReset() {
 }
 
 function doSocialAuth(provider) {
-  /* 회원가입 탭일 때만 약관 필수 검증 */
-  if (currentAuthTab === 'signup') {
-    if (!document.getElementById('chkTerms')?.checked) {
-      showAuthError('이용약관에 동의해주세요'); return;
-    }
-    if (!document.getElementById('chkPrivacy')?.checked) {
-      showAuthError('개인정보처리방침에 동의해주세요'); return;
-    }
-  }
   document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=true; b.style.opacity='0.6'; });
   const supabaseUrl = 'https://vzztfgqubrguwujlsadh.supabase.co';
   const returnUrl = window.location.origin + '/?socialLogin=1';
@@ -1934,99 +1841,6 @@ async function doWithdraw() {
 
 
 /* ── 소셜 신규 가입 약관 동의 모달 ── */
-function showSocialTermsModal(user, accessToken, provider) {
-  openAuthModal('login');
-  const sheet = document.querySelector('.auth-sheet');
-  sheet.innerHTML = `
-    <button class="auth-close" onclick="closeAuthModal()">×</button>
-    <div class="auth-handle"></div>
-    <div class="auth-icon">📋</div>
-    <div class="auth-title" style="font-size:18px;">서비스 이용 동의</div>
-    <div class="auth-sub" style="margin-bottom:16px;">견적메이트 서비스 이용을 위해<br>아래 약관에 동의해주세요</div>
-
-    <div style="margin-bottom:16px;">
-      <div class="terms-all-row" onclick="socialToggleAll(this)">
-        <input type="checkbox" class="terms-all-check" id="sChkAll" onclick="event.stopPropagation()">
-        <span class="terms-all-label">전체 동의</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="sChkTerms" onchange="socialTermsChange()">
-        <span class="terms-label"><span class="req">[필수]</span>이용약관 동의</span>
-        <span class="terms-view" onclick="goLegal('terms')">보기</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="sChkPrivacy" onchange="socialTermsChange()">
-        <span class="terms-label"><span class="req">[필수]</span>개인정보처리방침 동의</span>
-        <span class="terms-view" onclick="goLegal('privacy')">보기</span>
-      </div>
-      <div class="terms-row">
-        <input type="checkbox" class="terms-check" id="sChkMarketing" onchange="socialTermsChange()">
-        <span class="terms-label"><span class="opt">[선택]</span>마케팅 정보 수신 동의</span>
-      </div>
-    </div>
-
-    <div class="auth-error" id="socialTermsError"></div>
-
-    <button class="btn-auth" id="btnSocialTermsConfirm"
-      onclick="confirmSocialTerms('${user.id}','${user.email}','${user.name}','${accessToken}','${provider}')"
-      style="opacity:0.45;">
-      동의하고 시작하기
-    </button>
-    <div style="text-align:center;margin-top:10px;">
-      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="cancelSocialSignup('${accessToken}')">
-        동의하지 않고 취소
-      </span>
-    </div>
-  `;
-}
-
-function socialToggleAll(row) {
-  const chkAll = document.getElementById('sChkAll');
-  const checked = !chkAll.checked;
-  chkAll.checked = checked;
-  ['sChkTerms','sChkPrivacy','sChkMarketing'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.checked = checked;
-  });
-  socialTermsChange();
-}
-
-function socialTermsChange() {
-  const t = document.getElementById('sChkTerms')?.checked;
-  const p = document.getElementById('sChkPrivacy')?.checked;
-  const m = document.getElementById('sChkMarketing')?.checked;
-  const chkAll = document.getElementById('sChkAll');
-  if (chkAll) chkAll.checked = t && p && m;
-  const btn = document.getElementById('btnSocialTermsConfirm');
-  if (btn) btn.style.opacity = (t && p) ? '1' : '0.45';
-}
-
-async function confirmSocialTerms(userId, email, name, accessToken, provider) {
-  if (!document.getElementById('sChkTerms')?.checked) {
-    const err = document.getElementById('socialTermsError');
-    if (err) { err.textContent = '이용약관에 동의해주세요'; err.classList.add('show'); }
-    return;
-  }
-  if (!document.getElementById('sChkPrivacy')?.checked) {
-    const err = document.getElementById('socialTermsError');
-    if (err) { err.textContent = '개인정보처리방침에 동의해주세요'; err.classList.add('show'); }
-    return;
-  }
-  closeAuthModal();
-  const user = { id: userId, email, name };
-  saveAuth(user, accessToken);
-  loadUserCredits();
-  GAnalytics.signUp({ method: provider });
-  saveUserAcquisition(userId, provider);
-  if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
-  else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
-}
-
-async function cancelSocialSignup(accessToken) {
-  /* 약관 거부 시 Supabase 세션 삭제 */
-  try { await window._supabase.auth.signOut(); } catch(e) {}
-  closeAuthModal();
-}
 
 async function checkSocialLoginReturn() {
   const params = new URLSearchParams(window.location.search);
@@ -2043,20 +1857,13 @@ async function checkSocialLoginReturn() {
         || session.user.user_metadata?.name
         || session.user.email?.split('@')[0] || '회원'
     };
-    const provider = session.user.app_metadata?.provider || 'social';
-    const createdAt = new Date(session.user.created_at);
-    const isNewUser = (Date.now() - createdAt.getTime()) < 60000; /* 1분 이내면 신규 가입 */
-
-    /* 신규 가입이면 약관 동의 먼저 */
-    if (isNewUser) {
-      showSocialTermsModal(user, session.access_token, provider);
-      return;
-    }
-
-    /* 기존 유저면 바로 로그인 */
     saveAuth(user, session.access_token);
     loadUserCredits();
+    const provider = session.user.app_metadata?.provider || 'social';
     GAnalytics.login({ method: provider });
+    const createdAt = new Date(session.user.created_at);
+    const isNewUser = (Date.now() - createdAt.getTime()) < 60000;
+    if (isNewUser) saveUserAcquisition(session.user.id, provider);
     if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
