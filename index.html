@@ -39,6 +39,21 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.5;}
 
+
+/* ── 약관 동의 체크박스 ── */
+.terms-wrap{display:none;margin:12px 0 4px;}
+.terms-wrap.show{display:block;}
+.terms-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);}
+.terms-row:last-child{border-bottom:none;}
+.terms-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
+.terms-label{flex:1;font-size:12px;color:var(--ink2);line-height:1.4;}
+.terms-label .req{font-size:10px;font-weight:700;color:var(--exp);margin-right:3px;}
+.terms-label .opt{font-size:10px;font-weight:700;color:var(--muted);margin-right:3px;}
+.terms-view{font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:underline;}
+.terms-all-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--paper);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;}
+.terms-all-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
+.terms-all-label{font-size:13px;font-weight:700;color:var(--ink);flex:1;}
+
 /* ── 페이지 전환 ── */
 .page{display:none;}
 .page.active{display:block;}
@@ -1385,11 +1400,34 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     </div>
 
     <!-- 소셜 로그인 -->
-    <button class="btn-social-auth kakao" onclick="doSocialAuth('kakao')">
+
+    <!-- 약관 동의 (회원가입 탭에서만 표시) -->
+    <div class="terms-wrap" id="termsWrap">
+      <div class="terms-all-row" onclick="toggleAllTerms()">
+        <input type="checkbox" class="terms-all-check" id="chkAll" onclick="event.stopPropagation();toggleAllTerms()">
+        <span class="terms-all-label">전체 동의</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="chkTerms" onchange="onTermsChange()">
+        <span class="terms-label"><span class="req">[필수]</span>이용약관 동의</span>
+        <span class="terms-view" onclick="goLegal('terms')">보기</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="chkPrivacy" onchange="onTermsChange()">
+        <span class="terms-label"><span class="req">[필수]</span>개인정보처리방침 동의</span>
+        <span class="terms-view" onclick="goLegal('privacy')">보기</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="chkMarketing" onchange="onTermsChange()">
+        <span class="terms-label"><span class="opt">[선택]</span>마케팅 정보 수신 동의</span>
+      </div>
+    </div>
+
+    <button class="btn-social-auth kakao" id="btnKakao" onclick="doSocialAuth('kakao')">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.134 1 1 3.471 1 6.5c0 1.924 1.152 3.614 2.9 4.634L3.2 14l3.45-2.27c.44.06.89.09 1.35.09 3.866 0 7-2.471 7-5.5S11.866 1 8 1z" fill="#3C1E1E"/></svg>
       카카오로 계속하기
     </button>
-    <button class="btn-social-auth" onclick="doSocialAuth('google')">
+    <button class="btn-social-auth" id="btnGoogle" onclick="doSocialAuth('google')">
       <svg width="16" height="16" viewBox="0 0 16 16"><path d="M15.545 6.558a9.42 9.42 0 010 2.884H8.18v-2.884h4.157a4.44 4.44 0 00-.632-1.94L8.18 7.558V4.558l2.93-.001a7.5 7.5 0 014.435 2z" fill="#4285F4"/><path d="M8.18 15.5c2.07 0 3.806-.686 5.074-1.857l-2.47-1.94c-.685.46-1.56.73-2.604.73a4.513 4.513 0 01-4.257-3.115H1.4v2.004A7.5 7.5 0 008.18 15.5z" fill="#34A853"/><path d="M3.923 9.318A4.5 4.5 0 013.68 8a4.5 4.5 0 01.243-1.318V4.678H1.4A7.5 7.5 0 00.68 8c0 1.21.29 2.356.8 3.322l2.444-2.004z" fill="#FBBC05"/><path d="M8.18 3.5a4.09 4.09 0 012.883 1.127l2.16-2.16A7.27 7.27 0 008.18.5a7.5 7.5 0 00-6.78 4.178l2.523 1.96A4.513 4.513 0 018.18 3.5z" fill="#EA4335"/></svg>
       Google로 계속하기
     </button>
@@ -1594,6 +1632,38 @@ function closeEmailVerifyPopup() {
   document.getElementById('emailVerifyOverlay').classList.remove('show');
 }
 
+/* ── 약관 동의 체크박스 로직 ── */
+function updateSocialBtns() {
+  /* 회원가입 탭일 때만 필수 체크 여부로 소셜 버튼 제어 */
+  if (currentAuthTab !== 'signup') return;
+  const ok = document.getElementById('chkTerms')?.checked && document.getElementById('chkPrivacy')?.checked;
+  ['btnKakao','btnGoogle'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.style.opacity = ok ? '1' : '0.45';
+  });
+}
+
+function toggleAllTerms() {
+  const chkAll = document.getElementById('chkAll');
+  const checked = !chkAll.checked; /* 클릭 전 상태이므로 반전 */
+  chkAll.checked = checked;
+  ['chkTerms','chkPrivacy','chkMarketing'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = checked;
+  });
+  updateSocialBtns();
+}
+
+function onTermsChange() {
+  const t = document.getElementById('chkTerms')?.checked;
+  const p = document.getElementById('chkPrivacy')?.checked;
+  const m = document.getElementById('chkMarketing')?.checked;
+  const chkAll = document.getElementById('chkAll');
+  if (chkAll) chkAll.checked = t && p && m;
+  updateSocialBtns();
+}
+
 function switchAuthTab(tab, btn) {
   currentAuthTab = tab;
   document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
@@ -1611,6 +1681,22 @@ function switchAuthTab(tab, btn) {
     ? '이미 계정이 있으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'login\',null)">로그인</span>'
     : '계정이 없으신가요? <span style="color:var(--accent);cursor:pointer;font-weight:700;" onclick="switchAuthTab(\'signup\',null)">회원가입</span>';
   document.getElementById('authError').classList.remove('show');
+
+  /* 약관 동의 영역 — 회원가입 탭에서만 표시 */
+  const termsWrap = document.getElementById('termsWrap');
+  if (termsWrap) {
+    if (isSignup) {
+      termsWrap.classList.add('show');
+    } else {
+      termsWrap.classList.remove('show');
+      /* 로그인 탭으로 돌아오면 체크 초기화 */
+      ['chkAll','chkTerms','chkPrivacy','chkMarketing'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+      });
+    }
+    updateSocialBtns();
+  }
 }
 
 function showAuthError(msg) {
@@ -1634,6 +1720,8 @@ async function doEmailAuth() {
     const passwordConfirm = document.getElementById('authPasswordConfirm').value;
     if (!passwordConfirm) return showAuthError('비밀번호를 한 번 더 입력해주세요');
     if (password !== passwordConfirm) return showAuthError('비밀번호가 일치하지 않아요');
+    if (!document.getElementById('chkTerms')?.checked) return showAuthError('이용약관에 동의해주세요');
+    if (!document.getElementById('chkPrivacy')?.checked) return showAuthError('개인정보처리방침에 동의해주세요');
   }
 
   btn.disabled = true;
@@ -1799,6 +1887,15 @@ async function doPasswordReset() {
 }
 
 function doSocialAuth(provider) {
+  /* 회원가입 탭일 때만 약관 필수 검증 */
+  if (currentAuthTab === 'signup') {
+    if (!document.getElementById('chkTerms')?.checked) {
+      showAuthError('이용약관에 동의해주세요'); return;
+    }
+    if (!document.getElementById('chkPrivacy')?.checked) {
+      showAuthError('개인정보처리방침에 동의해주세요'); return;
+    }
+  }
   document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=true; b.style.opacity='0.6'; });
   const supabaseUrl = 'https://vzztfgqubrguwujlsadh.supabase.co';
   const returnUrl = window.location.origin + '/?socialLogin=1';
@@ -1886,6 +1983,21 @@ let prevPage='pageInput';
 
 /* ── 보안: XSS 이스케이프 유틸리티 ── */
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+
+/* ── 약관 동의 체크박스 ── */
+.terms-wrap{display:none;margin:12px 0 4px;}
+.terms-wrap.show{display:block;}
+.terms-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);}
+.terms-row:last-child{border-bottom:none;}
+.terms-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
+.terms-label{flex:1;font-size:12px;color:var(--ink2);line-height:1.4;}
+.terms-label .req{font-size:10px;font-weight:700;color:var(--exp);margin-right:3px;}
+.terms-label .opt{font-size:10px;font-weight:700;color:var(--muted);margin-right:3px;}
+.terms-view{font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:underline;}
+.terms-all-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--paper);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;}
+.terms-all-check{width:17px;height:17px;border:1.5px solid var(--rule);border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--ink);}
+.terms-all-label{font-size:13px;font-weight:700;color:var(--ink);flex:1;}
 
 /* ── 페이지 전환 ── */
 function showPage(id){
