@@ -1932,6 +1932,102 @@ async function doWithdraw() {
   }
 }
 
+
+/* ── 소셜 신규 가입 약관 동의 모달 ── */
+function showSocialTermsModal(user, accessToken, provider) {
+  openAuthModal('login');
+  const sheet = document.querySelector('.auth-sheet');
+  sheet.innerHTML = `
+    <button class="auth-close" onclick="closeAuthModal()">×</button>
+    <div class="auth-handle"></div>
+    <div class="auth-icon">📋</div>
+    <div class="auth-title" style="font-size:18px;">서비스 이용 동의</div>
+    <div class="auth-sub" style="margin-bottom:16px;">견적메이트 서비스 이용을 위해<br>아래 약관에 동의해주세요</div>
+
+    <div style="margin-bottom:16px;">
+      <div class="terms-all-row" onclick="socialToggleAll(this)">
+        <input type="checkbox" class="terms-all-check" id="sChkAll" onclick="event.stopPropagation()">
+        <span class="terms-all-label">전체 동의</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="sChkTerms" onchange="socialTermsChange()">
+        <span class="terms-label"><span class="req">[필수]</span>이용약관 동의</span>
+        <span class="terms-view" onclick="goLegal('terms')">보기</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="sChkPrivacy" onchange="socialTermsChange()">
+        <span class="terms-label"><span class="req">[필수]</span>개인정보처리방침 동의</span>
+        <span class="terms-view" onclick="goLegal('privacy')">보기</span>
+      </div>
+      <div class="terms-row">
+        <input type="checkbox" class="terms-check" id="sChkMarketing" onchange="socialTermsChange()">
+        <span class="terms-label"><span class="opt">[선택]</span>마케팅 정보 수신 동의</span>
+      </div>
+    </div>
+
+    <div class="auth-error" id="socialTermsError"></div>
+
+    <button class="btn-auth" id="btnSocialTermsConfirm"
+      onclick="confirmSocialTerms('${user.id}','${user.email}','${user.name}','${accessToken}','${provider}')"
+      style="opacity:0.45;">
+      동의하고 시작하기
+    </button>
+    <div style="text-align:center;margin-top:10px;">
+      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="cancelSocialSignup('${accessToken}')">
+        동의하지 않고 취소
+      </span>
+    </div>
+  `;
+}
+
+function socialToggleAll(row) {
+  const chkAll = document.getElementById('sChkAll');
+  const checked = !chkAll.checked;
+  chkAll.checked = checked;
+  ['sChkTerms','sChkPrivacy','sChkMarketing'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = checked;
+  });
+  socialTermsChange();
+}
+
+function socialTermsChange() {
+  const t = document.getElementById('sChkTerms')?.checked;
+  const p = document.getElementById('sChkPrivacy')?.checked;
+  const m = document.getElementById('sChkMarketing')?.checked;
+  const chkAll = document.getElementById('sChkAll');
+  if (chkAll) chkAll.checked = t && p && m;
+  const btn = document.getElementById('btnSocialTermsConfirm');
+  if (btn) btn.style.opacity = (t && p) ? '1' : '0.45';
+}
+
+async function confirmSocialTerms(userId, email, name, accessToken, provider) {
+  if (!document.getElementById('sChkTerms')?.checked) {
+    const err = document.getElementById('socialTermsError');
+    if (err) { err.textContent = '이용약관에 동의해주세요'; err.classList.add('show'); }
+    return;
+  }
+  if (!document.getElementById('sChkPrivacy')?.checked) {
+    const err = document.getElementById('socialTermsError');
+    if (err) { err.textContent = '개인정보처리방침에 동의해주세요'; err.classList.add('show'); }
+    return;
+  }
+  closeAuthModal();
+  const user = { id: userId, email, name };
+  saveAuth(user, accessToken);
+  loadUserCredits();
+  GAnalytics.signUp({ method: provider });
+  saveUserAcquisition(userId, provider);
+  if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
+  else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
+}
+
+async function cancelSocialSignup(accessToken) {
+  /* 약관 거부 시 Supabase 세션 삭제 */
+  try { await window._supabase.auth.signOut(); } catch(e) {}
+  closeAuthModal();
+}
+
 async function checkSocialLoginReturn() {
   const params = new URLSearchParams(window.location.search);
   if (!params.get('socialLogin')) return;
@@ -1947,15 +2043,20 @@ async function checkSocialLoginReturn() {
         || session.user.user_metadata?.name
         || session.user.email?.split('@')[0] || '회원'
     };
-    saveAuth(user, session.access_token);
-    loadUserCredits();
-    /* 📊 GA: 소셜 로그인 (provider: kakao 또는 google) */
     const provider = session.user.app_metadata?.provider || 'social';
-    GAnalytics.login({ method: provider });
-    /* 📊 Supabase: 소셜 가입 시 유입 경로 저장 (최초 1회) */
     const createdAt = new Date(session.user.created_at);
     const isNewUser = (Date.now() - createdAt.getTime()) < 60000; /* 1분 이내면 신규 가입 */
-    if (isNewUser) saveUserAcquisition(session.user.id, provider);
+
+    /* 신규 가입이면 약관 동의 먼저 */
+    if (isNewUser) {
+      showSocialTermsModal(user, session.access_token, provider);
+      return;
+    }
+
+    /* 기존 유저면 바로 로그인 */
+    saveAuth(user, session.access_token);
+    loadUserCredits();
+    GAnalytics.login({ method: provider });
     if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
     else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
