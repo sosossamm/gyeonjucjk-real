@@ -14,7 +14,8 @@ async function getSupabase() {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://quote-analysis.site';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -26,6 +27,12 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const { analysisResult, logId } = req.body || {};
+
+      // analysisResult 크기 제한 — 과도하게 큰 데이터 주입 방지
+      if (analysisResult) {
+        const size = JSON.stringify(analysisResult).length;
+        if (size > 500_000) return res.status(400).json({ error: '분석 결과 데이터가 너무 큽니다.' });
+      }
       const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
       const baseUrl = req.headers.origin || 'https://gyeonjucjk-real.vercel.app';
       const shareId = genId(8);
@@ -77,7 +84,7 @@ export default async function handler(req, res) {
 
     } catch (err) {
       console.error('share create error:', err);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: '공유 링크 생성에 실패했어요. 다시 시도해주세요.' });
     }
   }
 
@@ -134,7 +141,7 @@ export default async function handler(req, res) {
 
     } catch (err) {
       console.error('share get error:', err);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: '공유 링크 조회에 실패했어요.' });
     }
   }
 
