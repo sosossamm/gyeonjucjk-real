@@ -1035,7 +1035,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="footer-info-row">
         <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
         <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
-        <span>이메일: quote-analysis@gmail.com</span>
+        <span>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e5f5b415a4b034f404f42575d475d6e49434f4742004d4143">[email&#160;protected]</a></span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
@@ -1438,7 +1438,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -2950,10 +2950,10 @@ async function startPayment(){
       return item;
     });
     updated.totalAmount=updated.items.reduce((s,i)=>s+(i.amount||0),0);
-    localStorage.setItem('analysisResult', JSON.stringify(updated));
+    localStorage.setItem('analysisResult',JSON.stringify(updated));
     lastResult=updated;allItems=updated.items||[];
   } else {
-    localStorage.setItem('analysisResult', JSON.stringify(lastResult));
+    localStorage.setItem('analysisResult',JSON.stringify(lastResult));
   }
 
   /* 크레딧 있으면 크레딧 사용 */
@@ -2990,7 +2990,7 @@ async function startPayment(){
     await payment.requestPayment({
       method:'CARD',amount:{currency:'KRW',value:payPrice},
       orderId,orderName:'인테리어 견적 상세 분석 (1크레딧)',
-      successUrl:baseUrl+'?orderId='+orderId+'&amount='+payPrice,
+      successUrl:baseUrl+'?orderId='+orderId,
       failUrl:baseUrl+'?payFail=1',
     });
   }catch(err){if(err.code==='USER_CANCEL')return;alert('결제 오류: '+err.message);}
@@ -2999,34 +2999,51 @@ async function startPayment(){
 async function checkPaymentReturn(){
   const params=new URLSearchParams(window.location.search);
   const orderId=params.get('orderId');
-  const amount=params.get('amount');
 
-  /* 결제 파라미터 없으면 즉시 종료 + 남은 세션 데이터 정리 */
-  if(!orderId||!amount){
-    sessionStorage.removeItem('analysisResult');
+  /* orderId 없으면 일반 페이지 로드 — 세션 정리 후 종료 */
+  if(!orderId){
+    localStorage.removeItem('analysisResult');
     return;
   }
 
+  /* CRD- 는 크레딧 충전 주문 — checkCreditChargeReturn에서 처리 */
+  if(orderId.startsWith('CRD-')) return;
+
+  /* paymentKey는 토스가 붙여주는 필수 값 — 없으면 위조된 요청 */
   const paymentKey=params.get('paymentKey');
+  if(!paymentKey){
+    localStorage.removeItem('analysisResult');
+    alert('결제 정보가 올바르지 않아요. 처음부터 다시 시도해주세요.');
+    return;
+  }
+
   window.history.replaceState({},'',window.location.pathname);
 
-  const saved = localStorage.getItem('analysisResult');
-  localStorage.removeItem('analysisResult'); /* 사용 후 즉시 삭제 */
+  /* 분석 결과 복원 — sessionStorage 실패 시 localStorage fallback */
+  const saved = localStorage.getItem('analysisResult') || sessionStorage.getItem('analysisResult');
+  localStorage.removeItem('analysisResult');
+  sessionStorage.removeItem('analysisResult');
 
   if(!saved){alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.');return;}
   lastResult=JSON.parse(saved);allItems=lastResult.items||[];
+
   try{
+    /* amount는 URL에서 받지 않고 서버가 orderId로 직접 조회 — 금액 위조 방지 */
     const resp=await fetch('/api/verify',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({paymentKey:paymentKey||'',orderId,amount:parseInt(amount)})
+      headers:{
+        'Content-Type':'application/json',
+        ...(authToken ? {'Authorization':'Bearer '+authToken} : {})
+      },
+      body:JSON.stringify({paymentKey, orderId})
     });
     let data={success:false};
     try{ data=await resp.json(); }catch(jsonErr){}
-    if(data.success||resp.ok||!paymentKey){
-      /* 📊 GA: 상세분석 결제 완료 */
-      GAnalytics.purchase({ amount: parseInt(amount), credits: 1 });
-      /* 일일 할인 카운터 증가 */
+
+    /* paymentKey + 서버 success 모두 충족해야만 열람 허용 */
+    if(data.success){
+      /* 📊 GA: 상세분석 결제 완료 — 금액은 서버 응답값 사용 */
+      GAnalytics.purchase({ amount: data.amount || 10000, credits: data.credits || 1 });
       try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty:1}) }); } catch(e){}
       await fetchDailySaleStatus();
       render(lastResult);
@@ -3035,8 +3052,8 @@ async function checkPaymentReturn(){
       alert('결제 검증 실패: '+(data.message||'다시 시도해주세요'));
     }
   }catch(e){
-    render(lastResult);
-    setTimeout(()=>renderPaidDetail(),400);
+    /* 네트워크 오류 시 결제는 됐을 수 있으므로 고객센터 안내 */
+    alert('결제 확인 중 오류가 발생했어요. 결제가 완료된 경우 고객센터로 문의해주세요.\n(오류: '+e.message+')');
   }
 }
 window.addEventListener('load', async () => {
@@ -3366,7 +3383,7 @@ async function startCreditCharge(){
       amount: { currency: 'KRW', value: totalAmount },
       orderId,
       orderName: `견적메이트 크레딧 ${qty}개`,
-      successUrl: baseUrl + '?chargeOrderId=' + orderId + '&chargeQty=' + qty,
+      successUrl: baseUrl + '?orderId=' + orderId,
       failUrl: baseUrl + '?chargeFail=1',
     });
   }catch(err){
@@ -3377,34 +3394,44 @@ async function startCreditCharge(){
 
 async function checkCreditChargeReturn(){
   const params = new URLSearchParams(window.location.search);
-  const orderId = params.get('chargeOrderId');
-  const qty = parseInt(params.get('chargeQty')) || 1;
+  const orderId = params.get('orderId');
   if(!orderId) return;
+
+  /* paymentKey 없으면 위조 요청으로 차단 */
+  const paymentKey = params.get('paymentKey');
+  if(!paymentKey){
+    alert('결제 정보가 올바르지 않아요. 처음부터 다시 시도해주세요.');
+    return;
+  }
 
   window.history.replaceState({}, '', window.location.pathname);
 
+  /* qty는 sessionStorage에 저장해둔 값 사용 (URL 파라미터 신뢰 안 함) */
+  const qty = parseInt(sessionStorage.getItem('chargeQty')) || 1;
+  sessionStorage.removeItem('chargeQty');
+
   try{
+    /* 서버에 paymentKey + orderId 전달 — 금액과 수량은 서버가 orderId로 조회 */
     const resp = await fetch('/api/credits?action=reward', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ amount: qty, type: 'charge', description: `크레딧 ${qty}개 충전 (₩${(qty*getCurrentUnitPrice()).toLocaleString('ko-KR')})` })
+      body: JSON.stringify({ paymentKey, orderId, type: 'charge' })
     });
     const data = await resp.json();
-    if(!resp.ok) throw new Error(data.error);
+    if(!resp.ok) throw new Error(data.error || '충전 처리 실패');
     userCredits = data.credits;
+    const chargedQty = data.chargedQty || qty;
+    const chargedAmount = data.amount || chargedQty * getCurrentUnitPrice();
     updatePayButton();
-    /* 일일 할인 카운터 증가 */
-    try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty}) }); } catch(e){}
+    try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty: chargedQty}) }); } catch(e){}
     await fetchDailySaleStatus();
     goMypage();
     setTimeout(()=>{
       const el = document.getElementById('mpCreditBalance');
       if(el) el.textContent = userCredits + ' 크레딧';
     }, 500);
-    const unitPrice = getCurrentUnitPrice();
-    alert(`✓ ${qty}크레딧 충전 완료! 현재 ${userCredits}크레딧 보유 중이에요.`);
-    /* 📊 GA: 크레딧 충전 결제 완료 */
-    GAnalytics.purchase({ amount: qty * unitPrice, credits: qty });
+    alert(`✓ ${chargedQty}크레딧 충전 완료! 현재 ${userCredits}크레딧 보유 중이에요.`);
+    GAnalytics.purchase({ amount: chargedAmount, credits: chargedQty });
   }catch(err){
     alert('충전 처리 오류: ' + err.message);
   }
@@ -3577,7 +3604,8 @@ function goHome(){
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
   currentShareUrl='';
-  sessionStorage.removeItem('analysisResult');  // → localStorage.removeItem('analysisResult');
+  localStorage.removeItem('analysisResult');
+  sessionStorage.removeItem('analysisResult');
   const shareCTA=document.getElementById('shareCTAWrap');
   if(shareCTA){shareCTA.style.display='none';}
   const shareLinkWrap=document.getElementById('shareLinkWrap');
@@ -3648,7 +3676,7 @@ const GAnalytics = (() => {
         };
         localStorage.setItem('user_acquisition', JSON.stringify(acq));
       } catch(e) {}
-      const keep = ['orderId','amount','payFail','chargeOrderId','chargeQty','chargeFail','socialLogin','ref'];
+      const keep = ['orderId','payFail','chargeFail','socialLogin','ref'];
       const clean = new URLSearchParams();
       keep.forEach(k => { const v = params.get(k); if (v) clean.set(k, v); });
       const qs = clean.toString();
@@ -3749,15 +3777,4 @@ const GAnalytics = (() => {
       send('detail_unlock', { event_category: 'conversion', credits_used: data.creditsUsed || 1, value: 10000, currency: 'KRW' });
     },
 
-    /** SPA 가상 페이지뷰 */
-    pageView(screen) {
-      send('page_view', { page_title: screen, page_path: '/' + screen });
-    }
-  };
-})();
-
-document.addEventListener('DOMContentLoaded', () => { GAnalytics.init(); });
-</script>
-
-</body>
-</html>
+    /** SPA 가상 
