@@ -2950,10 +2950,10 @@ async function startPayment(){
       return item;
     });
     updated.totalAmount=updated.items.reduce((s,i)=>s+(i.amount||0),0);
-    sessionStorage.setItem('analysisResult',JSON.stringify(updated));
+    localStorage.setItem('analysisResult', JSON.stringify(updated));
     lastResult=updated;allItems=updated.items||[];
   } else {
-    sessionStorage.setItem('analysisResult',JSON.stringify(lastResult));
+    localStorage.setItem('analysisResult', JSON.stringify(lastResult));
   }
 
   /* 크레딧 있으면 크레딧 사용 */
@@ -3010,8 +3010,8 @@ async function checkPaymentReturn(){
   const paymentKey=params.get('paymentKey');
   window.history.replaceState({},'',window.location.pathname);
 
-  const saved=sessionStorage.getItem('analysisResult');
-  sessionStorage.removeItem('analysisResult'); /* 사용 후 즉시 삭제 */
+  const saved = localStorage.getItem('analysisResult');
+  localStorage.removeItem('analysisResult'); /* 사용 후 즉시 삭제 */
 
   if(!saved){alert('결제는 완료됐지만 분석 결과를 찾을 수 없어요. 견적서를 다시 분석해주세요.');return;}
   lastResult=JSON.parse(saved);allItems=lastResult.items||[];
@@ -3577,7 +3577,7 @@ function goHome(){
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
   currentShareUrl='';
-  sessionStorage.removeItem('analysisResult');
+  sessionStorage.removeItem('analysisResult');  // → localStorage.removeItem('analysisResult');
   const shareCTA=document.getElementById('shareCTAWrap');
   if(shareCTA){shareCTA.style.display='none';}
   const shareLinkWrap=document.getElementById('shareLinkWrap');
