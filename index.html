@@ -556,15 +556,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .bar-logout-btn{font-size:11px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;font-family:inherit;}
 
 /* ── 일일 한정 할인 배너 ── */
-.sale-banner{background:linear-gradient(135deg,#1F4FD8,#3B6DE8);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;color:#fff;animation:salePulse 3s ease-in-out infinite;}
-@keyframes salePulse{0%,100%{box-shadow:0 0 0 0 rgba(31,79,216,.3);}50%{box-shadow:0 0 0 6px rgba(31,79,216,0);}}
-.sale-badge{background:#fff;color:#1F4FD8;font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.5px;flex-shrink:0;}
+.sale-banner{background:#0F0E0C;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;color:#fff;}
+.sale-badge{background:#FCD34D;color:#0F0E0C;font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.5px;flex-shrink:0;}
 .sale-info{flex:1;}
 .sale-title{font-size:13px;font-weight:800;letter-spacing:-.2px;}
-.sale-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+.sale-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;}
 .sale-count{text-align:right;flex-shrink:0;}
 .sale-remaining{font-size:20px;font-weight:800;letter-spacing:-.5px;}
-.sale-total{font-size:10px;color:rgba(255,255,255,.6);}
+.sale-total{font-size:10px;color:rgba(255,255,255,.4);}
 .sale-ended{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
 .sale-ended strong{color:var(--ink);font-weight:800;}
 .price-strike{text-decoration:line-through;color:var(--hint);font-size:12px;font-weight:500;margin-right:4px;}
@@ -1112,6 +1111,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     </div>
   </div>
 
+  <!-- 일일 한정 할인 배너 (결과 페이지) -->
+  <div id="saleBannerWrap"></div>
+
   <div class="paywall-wrap">
     <div class="paywall-preview">
       <div class="section-header" style="margin-bottom:0;">
@@ -1144,8 +1146,6 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
               <span id="creditBadge">0 크레딧</span>
             </div>
           </div>
-          <!-- 일일 한정 할인 배너 -->
-          <div id="saleBannerWrap"></div>
           <button class="btn-pay" id="btnPay" onclick="startPayment()">
             상세 분석 열람하기 <span class="btn-pay-price" id="payPriceTag">1크레딧</span>
           </button>
@@ -3280,29 +3280,29 @@ async function fetchDailySaleStatus() {
 
 function renderSaleBanners() {
   const s = dailySaleState;
-  const paywallBanner = document.getElementById('saleBannerWrap');
+  const saleBanner = document.getElementById('saleBannerWrap');
   const mpBanner = document.getElementById('mpSaleBanner');
   
   if (s.isSaleActive && s.remaining > 0) {
     const html = `<div class="sale-banner">
-      <div class="sale-badge">50% OFF</div>
+      <div class="sale-badge">EVENT</div>
       <div class="sale-info">
-        <div class="sale-title">오늘의 할인가 ${(s.salePrice/10000).toLocaleString()}만원</div>
-        <div class="sale-sub">매일 오전 9시 리셋 · 100개 한정</div>
+        <div class="sale-title">매일 100개 크레딧 <span style="color:#FCD34D;">단돈 1만 원!</span></div>
+        <div class="sale-sub">정상가 2만원 → 50% 할인 · 매일 오전 9시 리셋</div>
       </div>
       <div class="sale-count">
         <div class="sale-remaining">${s.remaining}개</div>
         <div class="sale-total">/ ${s.dailyLimit}개</div>
       </div>
     </div>`;
-    if (paywallBanner) paywallBanner.innerHTML = html;
+    if (saleBanner) saleBanner.innerHTML = html;
     if (mpBanner) mpBanner.innerHTML = html;
   } else {
     const html = `<div class="sale-ended">
       <span>⏰</span>
       <div>오늘의 할인 수량이 모두 소진됐어요. <strong>정상가 ${(s.normalPrice/10000).toLocaleString()}만원</strong>으로 구매 가능합니다.<br>내일 오전 9시에 다시 할인이 시작돼요!</div>
     </div>`;
-    if (paywallBanner) paywallBanner.innerHTML = html;
+    if (saleBanner) saleBanner.innerHTML = html;
     if (mpBanner) mpBanner.innerHTML = html;
   }
 }
