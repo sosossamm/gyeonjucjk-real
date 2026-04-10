@@ -2522,7 +2522,7 @@ function renderOcrList(){
     const amtWan=item.amount||0;
     const catOpts=OCR_CATS.map(c=>`<option value="${c}"${c===item.category?' selected':''}>${c}</option>`).join('');
     return `<div class="ocr-row">
-      <div class="ocr-name">${item.name||''}</div>
+      <div class="ocr-name">${esc(item.name||'')}</div>
       <div class="ocr-cat-cell">
         <select class="ocr-select" onchange="ocrUpdateCat(${i},this.value)">${catOpts}</select>
       </div>
@@ -2737,10 +2737,10 @@ function render(r){
     const barPct=Math.min(ratio/2,100);
     return `<div class="item-card ${c}">
       <div class="item-verdict-dot ${c}"></div>
-      <div class="item-name">${item.name}<span class="item-cat-tag">${item.category||''}</span></div>
+      <div class="item-name">${esc(item.name)}<span class="item-cat-tag">${esc(item.category||''  )}</span></div>
       <div class="item-amount">${fmt(item.amount)}</div>
-      <div class="item-detail">${item.qty||1}${item.unit||'식'} · ${item.reason||''}</div>
-      <div class="item-pill ${c}">${item.verdict||'적정'}</div>
+      <div class="item-detail">${item.qty||1}${item.unit||'식'} · ${esc(item.reason||''  )}</div>
+      <div class="item-pill ${c}">${esc(item.verdict||'적정')}</div>
       <div class="item-bar-row">
         <div class="item-bar-track"><div class="item-bar-fill ${c}" style="width:${barPct}%"></div></div>
         <div class="item-range">시중가 ${fmt(item.marketMin)}~${fmt(item.marketMax)}</div>
@@ -2817,8 +2817,8 @@ function renderPaidDetail(){
           <div class="tip-header-left">
             <div class="tip-icon ${c}">${tip.icon||'💡'}</div>
             <div>
-              <div class="tip-cat">${tip.category||''}</div>
-              <div class="tip-name">${tip.itemName||''}</div>
+              <div class="tip-cat">${esc(tip.category||''  )}</div>
+              <div class="tip-name">${esc(tip.itemName||''  )}</div>
             </div>
           </div>
           <div class="tip-amounts">
@@ -2839,12 +2839,12 @@ function renderPaidDetail(){
           ${tip.ways.map((w,wi)=>`
             <div class="tip-way">
               <div class="tip-way-num ${c}">${wi+1}</div>
-              <div class="tip-way-text">${w}</div>
+              <div class="tip-way-text">${esc(w)}</div>
             </div>`).join('')}`:''}
           ${tip.question?`
           <div class="tip-question">
             <div class="tip-question-label">업체에 물어보세요</div>
-            ${tip.question}
+            ${esc(tip.question)}
           </div>`:''}
         </div>
       </div>`;
@@ -2876,9 +2876,9 @@ function renderItems(filter){
     const barPct=Math.min((item.ratioVsAvg||100)/2,100);
     return `<div class="item-card ${c}" style="animation-delay:${idx*35}ms">
       <div class="item-verdict-dot ${c}"></div>
-      <div class="item-name">${item.name}<span class="item-cat-tag">${item.category||''}</span></div>
+      <div class="item-name">${esc(item.name)}<span class="item-cat-tag">${esc(item.category||''  )}</span></div>
       <div class="item-amount">${fmt(item.amount)}</div>
-      <div class="item-detail">${item.qty||1}${item.unit||'식'} · ${item.reason||''}</div>
+      <div class="item-detail">${item.qty||1}${item.unit||'식'} · ${esc(item.reason||''  )}</div>
       <div class="item-pill ${c}">${label[item.verdict]||'적정'}</div>
       <div class="item-bar-row">
         <div class="item-bar-track"><div class="item-bar-fill ${c}" style="width:${barPct}%"></div></div>
@@ -3044,7 +3044,6 @@ async function checkPaymentReturn(){
     if(data.success){
       /* 📊 GA: 상세분석 결제 완료 — 금액은 서버 응답값 사용 */
       GAnalytics.purchase({ amount: data.amount || 10000, credits: data.credits || 1 });
-      try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty:1}) }); } catch(e){}
       await fetchDailySaleStatus();
       render(lastResult);
       setTimeout(()=>renderPaidDetail(),400);
@@ -3265,7 +3264,7 @@ async function openCreditHistory(){
       const color = typeColor[log.type] || 'var(--ink)';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--rule);">
         <div>
-          <div style="font-size:12px;font-weight:600;color:var(--ink);">${log.description||label}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--ink);">${esc(log.description||label)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:2px;">${date} · ${label}</div>
         </div>
         <div style="font-size:14px;font-weight:800;color:${color};">${sign}${log.amount}크레딧</div>
@@ -3423,7 +3422,6 @@ async function checkCreditChargeReturn(){
     const chargedQty = data.chargedQty || qty;
     const chargedAmount = data.amount || chargedQty * getCurrentUnitPrice();
     updatePayButton();
-    try { await fetch('/api/daily-credit?action=purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({qty: chargedQty}) }); } catch(e){}
     await fetchDailySaleStatus();
     goMypage();
     setTimeout(()=>{
@@ -3513,7 +3511,7 @@ async function loadMypage() {
           <div class="mp-hist-top">
             <div class="mp-hist-meta">
               <span class="mp-date">${fmtDate(h.created_at)}</span>
-              ${h.region ? `<span class="mp-region">${h.region}</span>` : ''}
+              ${h.region ? `<span class="mp-region">${esc(h.region)}</span>` : ''}
               ${h.area_py ? `<span class="mp-area">${Math.round(h.area_py)}평</span>` : ''}
             </div>
             <span class="mp-vpill ${c}">${h.verdict==='비쌈'?'🔴 비쌈':h.verdict==='저렴'?'💚 저렴':'🟡 적정'}</span>
@@ -3526,11 +3524,11 @@ async function loadMypage() {
             <span class="mp-dot-item"><span class="mp-dot cheap"></span>저렴 ${h.cheap_count}개</span>
           </div>` : ''}
           <div class="mp-actions">
-            <button class="mp-btn-view" onclick="viewHistory('${h.id}')">
+            <button class="mp-btn-view" onclick="viewHistory('${esc(h.id)}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg>
               결과 보기
             </button>
-            <button class="mp-btn-share" onclick="shareHistory('${h.id}')">
+            <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
               이 견적 공유하고 1회 무료 견적 분석 받기
             </button>
