@@ -237,6 +237,13 @@ export default async function handler(req, res) {
         created_at: new Date().toISOString(),
       });
 
+      // daily sale 카운팅 — Supabase RPC로 직접 처리 (HTTP 호출 없음)
+      try {
+        await supabase.rpc('increment_daily_sold', { qty: chargedQty });
+      } catch(e) {
+        console.error('daily sale 카운팅 실패 (결제는 정상):', e.message);
+      }
+
       return res.status(200).json({
         success: true,
         credits: newCredits,
