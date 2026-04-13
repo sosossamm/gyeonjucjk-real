@@ -1,70 +1,71 @@
-// api/daily-credit.js — 일일 한정 할인 크레딧 API
-const { createClient } = require('@supabase/supabase-js');
+export const config = { api: { bodyParser: true } };
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+async function getSupabase() {
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+}
 
-module.exports = async (req, res) => {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://quote-analysis.site';
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+const DAILY_LIMIT = 100;
+const SALE_PRICE = 10000;
+const NORMAL_PRICE = 20000;
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const action = req.query.action || (req.method === 'GET' ? 'status' : 'purchase');
+  const action = req.query.action;
 
   try {
-    // ── 상태 조회 (인증 불필요 — 배너 표시용) ──
+    const supabase = await getSupabase();
+
+    /* ── 할인 상태 조회 ── */
     if (action === 'status') {
-      const { data, error } = await supabase.rpc('get_daily_credit_status');
-      if (error) throw error;
-      const row = data?.[0] || data;
+      /* 오늘 날짜 (KST 기준) */
+      const now = new Date();
+      const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const today = kst.toISOString().slice(0, 10);
+
+      /* 오늘 할인으로 판매된 크레딧 수 조회 */
+      const { data: logs } = await supabase
+        .from('credit_logs')
+        .select('amount')
+        .eq('type', 'charge')
+        .gte('created_at', `${today}T00:00:00+09:00`)
+        .lt('created_at', `${today}T23:59:59+09:00`);
+
+      const sold = (logs || []).reduce((s, l) => s + (l.amount || 0), 0);
+      const remaining = Math.max(0, DAILY_LIMIT - sold);
+      const isSaleActive = remaining > 0;
+
       return res.status(200).json({
         success: true,
-        soldToday:   row.sold_today,
-        dailyLimit:  row.daily_limit,
-        remaining:   row.remaining,
-        isSaleActive: row.is_sale_active,
-        salePrice:   row.sale_price,
-        normalPrice: row.normal_price,
-        currentPrice: row.is_sale_active ? row.sale_price : row.normal_price
+        isSaleActive,
+        remaining,
+        sold,
+        dailyLimit: DAILY_LIMIT,
+        salePrice: SALE_PRICE,
+        normalPrice: NORMAL_PRICE,
+        currentPrice: isSaleActive ? SALE_PRICE : NORMAL_PRICE,
+        today
       });
     }
 
-    // ── 카운터 증가 — 서버 내부(credits API)에서만 호출 ──
-    // 외부에서 직접 호출 시 서버 시크릿으로 검증
-    if (action === 'purchase') {
-      if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
-
-      // 내부 서버 호출 검증 — INTERNAL_SECRET이 일치해야만 허용
-      const internalSecret = process.env.INTERNAL_API_SECRET;
-      const reqSecret = req.headers['x-internal-secret'];
-      if (internalSecret && reqSecret !== internalSecret) {
-        return res.status(403).json({ error: '직접 호출이 허용되지 않습니다.' });
-      }
-
-      const qty = parseInt(req.body?.qty) || 1;
-      if (qty < 1 || qty > 10) return res.status(400).json({ error: '잘못된 수량' });
-
-      const { data, error } = await supabase.rpc('increment_daily_sold', { qty });
-      if (error) throw error;
-      const row = data?.[0] || data;
-      return res.status(200).json({
-        success: true,
-        isSale:     row.is_sale,
-        unitPrice:  row.unit_price,
-        totalPrice: row.unit_price * qty,
-        newSold:    row.new_sold,
-        dailyLimit: row.daily_limit
-      });
-    }
-
-    return res.status(400).json({ error: 'Invalid action' });
+    return res.status(400).json({ error: '알 수 없는 요청' });
 
   } catch (err) {
-    console.error('Daily credit API error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('daily-credit error:', err);
+    /* API 오류 시 기본값 반환 (서비스 중단 방지) */
+    return res.status(200).json({
+      success: true,
+      isSaleActive: true,
+      remaining: DAILY_LIMIT,
+      sold: 0,
+      dailyLimit: DAILY_LIMIT,
+      salePrice: SALE_PRICE,
+      normalPrice: NORMAL_PRICE,
+      currentPrice: SALE_PRICE,
+    });
   }
-};
+}
