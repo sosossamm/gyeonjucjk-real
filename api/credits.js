@@ -149,6 +149,40 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, credits: updated.credits });
     }
 
+    // ── createOrder: 결제 전 주문 등록 ──────────────────────────────────────
+    // 프론트에서 토스 결제 요청 직전에 호출 — 금액/수량을 서버에 선등록
+    if (action === 'createOrder' && req.method === 'POST') {
+      const { orderId, qty, amount } = req.body || {};
+      if (!orderId || !qty || !amount) {
+        return res.status(400).json({ error: 'orderId, qty, amount가 필요합니다.' });
+      }
+      if (!/^CRD-\d+$/.test(orderId)) {
+        return res.status(400).json({ error: '잘못된 주문 번호 형식입니다.' });
+      }
+      if (!ALLOWED_QTYS.includes(Number(qty))) {
+        return res.status(400).json({ error: '허용되지 않은 수량입니다.' });
+      }
+      if (Number(amount) !== Number(qty) * UNIT_PRICE) {
+        return res.status(400).json({ error: '금액이 올바르지 않습니다.' });
+      }
+
+      const { error: insertErr } = await supabase
+        .from('pending_orders')
+        .insert({
+          order_id: orderId,
+          user_id: user.id,
+          qty: Number(qty),
+          amount: Number(amount),
+          created_at: new Date().toISOString()
+        });
+
+      if (insertErr) {
+        console.error('pending_orders insert error:', insertErr);
+        return res.status(500).json({ error: '주문 등록 실패' });
+      }
+      return res.status(200).json({ success: true });
+    }
+
     // ── reward: 토스 결제 후 크레딧 충전 ────────────────────────────────────
     if (action === 'reward' && req.method === 'POST') {
       const { paymentKey, orderId, type = 'charge' } = req.body || {};
@@ -180,38 +214,40 @@ export default async function handler(req, res) {
         });
       }
 
-      // 토스 결제 승인 — ALLOWED_QTYS 순서로 금액 시도
-      let tossResult = null;
-      let chargedQty = 0;
+      // pending_orders에서 저장된 금액/수량 조회
+      const { data: pendingOrder } = await supabase
+        .from('pending_orders')
+        .select('qty, amount, user_id')
+        .eq('order_id', orderId)
+        .maybeSingle();
 
-      for (const qty of ALLOWED_QTYS) {
-        const amount = qty * UNIT_PRICE;
-        const result = await confirmTossPayment(paymentKey, orderId, amount);
-
-        if (result.ok && result.data.status === 'DONE') {
-          tossResult = result.data;
-          chargedQty = qty;
-          break;
-        }
-        // 이미 승인된 결제를 재시도한 경우
-        if (result.data?.code === 'ALREADY_PROCESSED') {
-          return res.status(409).json({ error: '이미 처리된 결제입니다.' });
-        }
-        // 금액 불일치 외 다른 오류면 바로 중단
-        if (result.data?.code && result.data.code !== 'NOT_FOUND_PAYMENT') {
-          console.error('Toss error:', result.data);
-          return res.status(400).json({
-            error: result.data.message || '결제 승인에 실패했습니다.',
-          });
-        }
+      if (!pendingOrder) {
+        return res.status(400).json({ error: '주문 정보를 찾을 수 없어요. 처음부터 다시 시도해주세요.' });
       }
 
-      if (!tossResult || chargedQty === 0) {
-        console.error('Toss confirm failed for orderId:', orderId);
+      // 본인 주문인지 확인
+      if (pendingOrder.user_id !== user.id) {
+        return res.status(403).json({ error: '주문 정보가 일치하지 않아요.' });
+      }
+
+      // 토스 결제 승인 — 저장된 금액으로 정확히 1회만 호출
+      const result = await confirmTossPayment(paymentKey, orderId, pendingOrder.amount);
+
+      if (result.data?.code === 'ALREADY_PROCESSED_PAYMENT') {
+        // 이미 승인된 건이면 크레딧만 확인해서 반환
+        const { data: userData } = await supabase.from('users').select('credits').eq('id', user.id).maybeSingle();
+        return res.status(200).json({ success: true, credits: userData?.credits ?? 0, chargedQty: 0, message: 'already_processed' });
+      }
+
+      if (!result.ok || result.data?.status !== 'DONE') {
+        console.error('Toss confirm failed:', result.data);
         return res.status(400).json({
-          error: '결제 승인에 실패했습니다. 다시 시도하거나 고객센터로 문의해주세요.',
+          error: result.data?.message || '결제 승인에 실패했습니다. 다시 시도하거나 고객센터로 문의해주세요.',
         });
       }
+
+      const tossResult = result.data;
+      const chargedQty = pendingOrder.qty;
 
       // 크레딧 적립
       const { data: userData } = await supabase
@@ -243,6 +279,9 @@ export default async function handler(req, res) {
       } catch(e) {
         console.error('daily sale 카운팅 실패 (결제는 정상):', e.message);
       }
+
+      // 처리 완료된 pending_order 삭제
+      await supabase.from('pending_orders').delete().eq('order_id', orderId);
 
       return res.status(200).json({
         success: true,
