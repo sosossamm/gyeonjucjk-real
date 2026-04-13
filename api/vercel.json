@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/share/:shareId", "destination": "/public/index.html" },
     { "source": "/((?!api/).*)", "destination": "/public/$1" }
   ],
   "headers": [
