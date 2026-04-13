@@ -312,6 +312,8 @@ async function submitAuth(){
 
     /* 회원가입 — 이메일 인증 대기 */
     if(authMode === 'signup'){
+      /* 인증 메일 클릭 후 복귀 시 신규 가입 보상을 주기 위해 플래그 저장 */
+      try { localStorage.setItem('pending_new_signup', '1'); } catch(e) {}
       document.getElementById('authSheetTitle').textContent = '이메일을 확인해주세요';
       document.getElementById('authSheetSub').textContent = `${email} 로 인증 메일을 보냈어요.\n메일의 링크를 클릭하면 가입이 완료돼요.`;
       document.getElementById('authSheetSub').style.whiteSpace = 'pre-line';
@@ -450,16 +452,26 @@ async function checkEmailVerifyReturn() {
   const hashParams = new URLSearchParams(hash.replace('#', ''));
   const accessToken = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token') || '';
-  const type = hashParams.get('type');
+  const type = hashParams.get('type'); /* 'signup' | 'email' | 'recovery' 등 */
 
-  if (!accessToken || type !== 'signup') return false;
+  /* type이 signup 또는 email(이메일 인증)이거나,
+     localStorage에 pending_new_signup 플래그가 있으면 신규 가입으로 처리 */
+  const pendingNew = localStorage.getItem('pending_new_signup') === '1';
+  const isNewSignup = (type === 'signup' || type === 'email' || pendingNew);
 
-  /* URL 정리 */
-  window.history.replaceState({}, '', location.pathname);
+  if (!accessToken) return false;
+
+  /* URL 해시 정리 */
+  window.history.replaceState({}, '', location.pathname + location.search);
 
   try {
     await _supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-    await rewardAndShow(accessToken, null, true);
+    if (isNewSignup) {
+      localStorage.removeItem('pending_new_signup');
+      await rewardAndShow(accessToken, null, true);
+    } else {
+      await rewardAndShow(accessToken, null, false);
+    }
     return true;
   } catch(e) {
     console.error('이메일 인증 세션 복원 실패:', e);
@@ -472,9 +484,17 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
   if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
     const params = new URLSearchParams(location.search);
     if (params.get('socialReturn')) return; /* socialReturn은 별도 처리 */
-    if (document.getElementById('mainWrap')?.querySelector('.unlocked-badge')) return; /* 이미 열람 중 */
+    if (document.getElementById('mainWrap')?.querySelector('.unlocked-banner')) return; /* 이미 열람 중 */
+
+    /* 신규 가입 여부: localStorage 플래그(이메일 인증) 또는 60초 이내 생성 계정 */
+    const pendingNew = localStorage.getItem('pending_new_signup') === '1';
     const createdAt = new Date(session.user?.created_at);
-    const isNew = (Date.now() - createdAt.getTime()) < 60000;
+    const isNew = pendingNew || (Date.now() - createdAt.getTime()) < 60000;
+
+    if (pendingNew) {
+      try { localStorage.removeItem('pending_new_signup'); } catch(e) {}
+    }
+
     await rewardAndShow(session.access_token, session.user?.id, isNew);
   }
 });
