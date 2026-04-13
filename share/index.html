@@ -355,34 +355,42 @@ function doSocialInShare(provider){
   window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}`;
 }
 
-async function rewardAndShow(directToken, directUserId){
+async function rewardAndShow(directToken, directUserId, isNewUser = false){
   /* 토큰 확보 — 직접 전달받거나 세션에서 가져오기 */
   let userId = directUserId;
   if(!userId){
     const { data: { session } } = await _supabase.auth.getSession();
     if(!session){ console.warn('rewardAndShow: 세션 없음'); await loadShare(); return; }
     userId = session.user.id;
+    /* session에서 신규 가입 여부 판단 (1분 이내 생성된 계정) */
+    if(!isNewUser){
+      const createdAt = new Date(session.user.created_at);
+      isNewUser = (Date.now() - createdAt.getTime()) < 60000;
+    }
   }
 
-  /* 공유자 크레딧 보상 시도 */
-  try{
-    const shareResp = await fetch(`/api/share?id=${currentShareId}`);
-    const shareJson = await shareResp.json();
-    const sharerId = shareJson.data?.sharerId;
-    console.log('보상 시도 - sharerId:', sharerId, 'userId:', userId);
+  /* 보상은 신규 가입자에게만 지급 */
+  if(isNewUser){
+    try{
+      const shareResp = await fetch(`/api/share?id=${currentShareId}`);
+      const shareJson = await shareResp.json();
+      const sharerId = shareJson.data?.sharerId;
 
-    if(sharerId && sharerId !== userId){
-      const rewardResp = await fetch('/api/credits?action=rewardSharer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
-      });
-      const rewardData = await rewardResp.json();
-      console.log('보상 결과:', rewardData);
-    } else {
-      console.log('보상 스킵 - sharerId 없거나 본인 링크');
-    }
-  }catch(e){ console.error('보상 처리 실패:', e); }
+      if(sharerId && sharerId !== userId){
+        const rewardResp = await fetch('/api/credits?action=rewardSharer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
+        });
+        const rewardData = await rewardResp.json();
+        console.log('보상 결과:', rewardData);
+      } else {
+        console.log('보상 스킵 - sharerId 없거나 본인 링크');
+      }
+    }catch(e){ console.error('보상 처리 실패:', e); }
+  } else {
+    console.log('보상 스킵 - 기존 유저 로그인');
+  }
 
   /* 결과 다시 로드해서 잠금 해제 */
   await loadShare();
@@ -407,7 +415,10 @@ async function loadShare(){
     const params = new URLSearchParams(location.search);
     if(params.get('socialReturn') && session){
       window.history.replaceState({}, '', location.pathname);
-      await rewardAndShow();
+      const { data: { session: soc } } = await _supabase.auth.getSession();
+      const socCreatedAt = new Date(soc?.user?.created_at);
+      const socIsNew = (Date.now() - socCreatedAt.getTime()) < 60000;
+      await rewardAndShow(soc?.access_token, soc?.user?.id, socIsNew);
       return;
     }
 
@@ -448,7 +459,7 @@ async function checkEmailVerifyReturn() {
 
   try {
     await _supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-    await rewardAndShow(accessToken);
+    await rewardAndShow(accessToken, null, true);
     return true;
   } catch(e) {
     console.error('이메일 인증 세션 복원 실패:', e);
@@ -462,7 +473,9 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
     const params = new URLSearchParams(location.search);
     if (params.get('socialReturn')) return; /* socialReturn은 별도 처리 */
     if (document.getElementById('mainWrap')?.querySelector('.unlocked-badge')) return; /* 이미 열람 중 */
-    await rewardAndShow(session.access_token, session.user?.id);
+    const createdAt = new Date(session.user?.created_at);
+    const isNew = (Date.now() - createdAt.getTime()) < 60000;
+    await rewardAndShow(session.access_token, session.user?.id, isNew);
   }
 });
 
