@@ -3238,7 +3238,68 @@ window.addEventListener('load', async () => {
   await checkPaymentReturn();
   await checkCreditChargeReturn();
   await checkPasswordResetReturn(); /* 비밀번호 재설정 링크 복귀 처리 */
+  await checkSharePage();           /* 공유 링크 접속 시 결과 복원 */
 });
+
+/* ── 공유 링크 감지 및 결과 로드 ── */
+async function checkSharePage() {
+  /* /share/SHARE_ID 형태 URL 감지 */
+  const match = window.location.pathname.match(/^\/share\/([a-zA-Z0-9_-]+)$/);
+  if (!match) return;
+
+  const shareId = match[1];
+
+  /* ref 파라미터 저장 (추천인 추적) — 이미 captureUTM에서 처리되지만 여기서도 보완 */
+  const refParam = new URLSearchParams(window.location.search).get('ref');
+  if (refParam) {
+    try { localStorage.setItem('referral_ref', refParam); } catch(e) {}
+  }
+
+  /* URL을 메인으로 교체 (뒤로가기 시 메인으로 이동하도록) */
+  window.history.replaceState({}, '', '/');
+
+  /* 로딩 표시 */
+  showPage('pageResult');
+  document.getElementById('resultHeaderTitle').textContent = '공유 결과 불러오는 중...';
+  document.getElementById('verdictBanner').className = 'verdict-banner fair';
+  document.getElementById('verdictIcon').textContent = '⏳';
+  document.getElementById('verdictLabel').textContent = '잠시만 기다려주세요';
+  document.getElementById('verdictTitle').textContent = '공유된 견적 분석을 불러오고 있어요';
+  document.getElementById('verdictSub').textContent = '';
+  document.getElementById('itemsListFree').innerHTML = '';
+
+  try {
+    const resp = await fetch(`/api/share?id=${shareId}`);
+    if (!resp.ok) throw new Error('공유 결과를 찾을 수 없어요');
+    const data = await resp.json();
+    if (!data.analysisResult) throw new Error('분석 결과 데이터가 없어요');
+
+    /* 결과 렌더링 — 기존 render() 함수 재사용 */
+    render(data.analysisResult);
+    setStep(3);
+
+    /* 공유 링크이므로 공유 CTA 숨김, 상단에 안내 배너 표시 */
+    const shareCTA = document.getElementById('shareCTAWrap');
+    if (shareCTA) shareCTA.style.display = 'none';
+
+    /* 상단에 "공유된 결과" 안내 표시 */
+    const resultHeader = document.getElementById('resultHeaderTitle');
+    if (resultHeader) {
+      const verdict = data.analysisResult.overallVerdict;
+      resultHeader.textContent =
+        verdict === '비쌈' ? '⚠️ 비싼 견적입니다 (공유된 결과)' :
+        verdict === '저렴' ? '✅ 저렴한 견적입니다 (공유된 결과)' :
+        '✅ 적정한 견적입니다 (공유된 결과)';
+    }
+
+  } catch(err) {
+    document.getElementById('resultHeaderTitle').textContent = '결과를 불러올 수 없어요';
+    document.getElementById('verdictIcon').textContent = '❌';
+    document.getElementById('verdictLabel').textContent = '링크가 만료됐거나 잘못된 주소예요';
+    document.getElementById('verdictTitle').textContent = err.message;
+    document.getElementById('verdictSub').textContent = '새 견적을 분석하시려면 아래 버튼을 눌러주세요';
+  }
+}
 
 /* ── 비밀번호 재설정 링크 복귀 처리 ── */
 async function checkPasswordResetReturn(){
