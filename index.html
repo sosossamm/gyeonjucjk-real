@@ -1897,12 +1897,14 @@ async function doEmailAuth() {
     closeAuthModal();
     loadUserCredits();
 
-    /* 로그인 후 pending 액션 실행 */
-    if (authPendingAction === 'analyze') {
-      authPendingAction = null;
+    /* 로그인 후 pending 액션 실행 — 저장된 입력 상태 먼저 복원 */
+    const restoredAction = _restoreAnalysisStateAfterLogin();
+    const pendingAction = restoredAction || authPendingAction;
+    authPendingAction = null;
+
+    if (pendingAction === 'analyze') {
       doAnalyze();
-    } else if (authPendingAction === 'analyzeManual') {
-      authPendingAction = null;
+    } else if (pendingAction === 'analyzeManual') {
       doManualAnalyze();
     }
 
@@ -1991,6 +1993,10 @@ async function doPasswordReset() {
 
 function doSocialAuth(provider) {
   document.querySelectorAll('.btn-social-auth').forEach(b => { b.disabled=true; b.style.opacity='0.6'; });
+  /* 소셜 로그인은 외부로 나갔다 돌아오므로 pendingAction을 sessionStorage에 보존 */
+  if (authPendingAction) {
+    try { sessionStorage.setItem('_socialPendingAction', authPendingAction); } catch(e) {}
+  }
   const supabaseUrl = 'https://vzztfgqubrguwujlsadh.supabase.co';
   const returnUrl = window.location.origin + '/?socialLogin=1';
   window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(returnUrl)}`;
@@ -2052,8 +2058,17 @@ async function checkSocialLoginReturn() {
     const createdAt = new Date(session.user.created_at);
     const isNewUser = (Date.now() - createdAt.getTime()) < 60000;
     if (isNewUser) saveUserAcquisition(session.user.id, provider);
-    if (authPendingAction === 'analyze') { authPendingAction = null; doAnalyze(); }
-    else if (authPendingAction === 'analyzeManual') { authPendingAction = null; doManualAnalyze(); }
+
+    /* 소셜 로그인은 페이지 새로고침이므로 저장된 상태 복원 후 분석 실행 */
+    const restoredAction = _restoreAnalysisStateAfterLogin();
+    /* sessionStorage에 저장된 pendingAction도 복원 */
+    const socialPending = sessionStorage.getItem('_socialPendingAction');
+    if (socialPending) sessionStorage.removeItem('_socialPendingAction');
+    const pendingAction = restoredAction || socialPending || authPendingAction;
+    authPendingAction = null;
+
+    if (pendingAction === 'analyze') doAnalyze();
+    else if (pendingAction === 'analyzeManual') doManualAnalyze();
   } catch(e) { console.error('소셜 로그인 복원 실패:', e); }
 }
 /* ── 분석 버튼 게이트: 비로그인 시 모달 표시 ── */
@@ -2061,6 +2076,7 @@ function gateAnalyze() {
   if (currentUser) {
     doAnalyze();
   } else {
+    _saveAnalysisStateBeforeLogin('analyze');
     openAuthModal('login', 'analyze');
   }
 }
@@ -2068,8 +2084,57 @@ function gateManualAnalyze() {
   if (currentUser) {
     doManualAnalyze();
   } else {
+    _saveAnalysisStateBeforeLogin('analyzeManual');
     openAuthModal('login', 'analyzeManual');
   }
+}
+
+/* 로그인 전 입력 상태 저장 — 소셜 로그인 시 페이지 새로고침으로 날아가는 것 방지 */
+function _saveAnalysisStateBeforeLogin(pendingAction) {
+  try {
+    const state = {
+      pendingAction,
+      pdfText,
+      imageBase64,
+      imageMime,
+      region: document.getElementById('region')?.value || '',
+      areaNum: document.getElementById('areaNum')?.value || '',
+      areaUnit: document.getElementById('areaUnit')?.value || '',
+      roomCount: document.getElementById('roomCount')?.value || '',
+      bathCount: document.getElementById('bathCount')?.value || '',
+    };
+    sessionStorage.setItem('_pendingAnalysis', JSON.stringify(state));
+  } catch(e) {}
+}
+
+/* 로그인 복귀 후 상태 복원 */
+function _restoreAnalysisStateAfterLogin() {
+  try {
+    const raw = sessionStorage.getItem('_pendingAnalysis');
+    if (!raw) return null;
+    sessionStorage.removeItem('_pendingAnalysis');
+    const state = JSON.parse(raw);
+
+    /* 메모리 상태 복원 */
+    if (state.pdfText)     pdfText = state.pdfText;
+    if (state.imageBase64) { imageBase64 = state.imageBase64; imageMime = state.imageMime || 'image/jpeg'; }
+
+    /* 폼 값 복원 */
+    if (state.region)    { const el = document.getElementById('region');    if(el) el.value = state.region; }
+    if (state.areaNum)   { const el = document.getElementById('areaNum');   if(el) el.value = state.areaNum; }
+    if (state.areaUnit)  { const el = document.getElementById('areaUnit');  if(el) el.value = state.areaUnit; }
+    if (state.roomCount) { const el = document.getElementById('roomCount'); if(el) el.value = state.roomCount; }
+    if (state.bathCount) { const el = document.getElementById('bathCount'); if(el) el.value = state.bathCount; }
+
+    /* 분석 버튼 활성화 */
+    if (state.pdfText || state.imageBase64) {
+      const btn = document.getElementById('analyzeBtn');
+      if (btn) btn.disabled = false;
+      setStep(2);
+    }
+
+    return state.pendingAction || null;
+  } catch(e) { return null; }
 }
 
 /* ── 핵심 상태 변수 ── */
