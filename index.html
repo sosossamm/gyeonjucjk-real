@@ -2390,28 +2390,30 @@ function startProgress(isImg, mode='ocr'){
   /* 전용 로딩 페이지로 전환 */
   showPage('pageAnalyzing');
 
-  /* pageAnalyzing의 스텝 영역에 렌더링 */
+  /* analyzingSteps 영역에만 렌더링 (중복 ID 방지) */
   const el = document.getElementById('analyzingSteps');
   if(el){
-    el.innerHTML = STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
-  }
-  /* 기존 progressCard도 유지 (하위 호환) */
-  const card=document.getElementById('progressCard');if(card)card.classList.add('show');
-  const el2=document.getElementById('progressSteps');
-  if(el2) el2.innerHTML=STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
-
-  let cur=0;
-  if(document.getElementById('pd0')){
+    el.innerHTML = STEPS.map((s,i)=>`
+      <div class="prog-item">
+        <div class="prog-dot" id="pd${i}"></div>
+        <span class="prog-label" id="pl${i}">${s}</span>
+      </div>`).join('');
     document.getElementById('pd0').className='prog-dot active';
     document.getElementById('pl0').className='prog-label active';
   }
+
+  let cur=0;
   progTimer=setInterval(()=>{
-    if(cur<STEPS.length-1){
-      if(document.getElementById('pd'+cur)) document.getElementById('pd'+cur).className='prog-dot done';
-      if(document.getElementById('pl'+cur)) document.getElementById('pl'+cur).className='prog-label done';
+    if(cur < STEPS.length-1){
+      const dot=document.getElementById('pd'+cur);
+      const lbl=document.getElementById('pl'+cur);
+      if(dot) dot.className='prog-dot done';
+      if(lbl) lbl.className='prog-label done';
       cur++;
-      if(document.getElementById('pd'+cur)) document.getElementById('pd'+cur).className='prog-dot active';
-      if(document.getElementById('pl'+cur)) document.getElementById('pl'+cur).className='prog-label active';
+      const ndot=document.getElementById('pd'+cur);
+      const nlbl=document.getElementById('pl'+cur);
+      if(ndot) ndot.className='prog-dot active';
+      if(nlbl) nlbl.className='prog-label active';
     }
   },900);
 }
