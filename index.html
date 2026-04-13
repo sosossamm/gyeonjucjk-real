@@ -1173,6 +1173,27 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div><!-- /pageInput -->
 
 
+
+<!-- ════════════════════════════════════════
+     PAGE: 분석 중 로딩 화면
+════════════════════════════════════════ -->
+<div id="pageAnalyzing" class="page">
+<header class="top-bar">
+  <div class="logo-mark"><svg viewBox="0 0 22 22" fill="none" stroke="var(--ink)" stroke-width="2"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M7 11h8M7 7h5M7 15h3"/></svg></div>
+  <span class="logo-word">견적<span>메이트</span></span>
+</header>
+<div style="min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center;">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;">
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="13" cy="13" r="9"/><path d="M20 20l7 7"/></svg>
+  </div>
+  <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.5rem;">견적 분석 중입니다</div>
+  <div style="font-size:14px;color:var(--muted);margin-bottom:2.5rem;">AI가 견적서를 꼼꼼히 살펴보고 있어요<br>잠시만 기다려주세요</div>
+  <div style="width:100%;max-width:360px;background:var(--ink2);border-radius:var(--radius);padding:1.5rem;" id="analyzingSteps">
+    <!-- startProgress가 채워줌 -->
+  </div>
+</div>
+</div>
+
 <!-- ════════════════════════════════════════
      PAGE 2: 결과 화면
 ════════════════════════════════════════ -->
@@ -2365,24 +2386,48 @@ let progTimer=null;
 
 function startProgress(isImg, mode='ocr'){
   const STEPS = mode==='final' ? PROG_FINAL : (isImg ? PROG_OCR_IMG : PROG_OCR_PDF);
-  const card=document.getElementById('progressCard');card.classList.add('show');
-  const el=document.getElementById('progressSteps');
-  el.innerHTML=STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
+
+  /* 전용 로딩 페이지로 전환 */
+  showPage('pageAnalyzing');
+
+  /* pageAnalyzing의 스텝 영역에 렌더링 */
+  const el = document.getElementById('analyzingSteps');
+  if(el){
+    el.innerHTML = STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
+  }
+  /* 기존 progressCard도 유지 (하위 호환) */
+  const card=document.getElementById('progressCard');if(card)card.classList.add('show');
+  const el2=document.getElementById('progressSteps');
+  if(el2) el2.innerHTML=STEPS.map((s,i)=>`<div class="prog-item"><div class="prog-dot" id="pd${i}"></div><span class="prog-label" id="pl${i}">${s}</span></div>`).join('');
+
   let cur=0;
-  document.getElementById('pd0').className='prog-dot active';
-  document.getElementById('pl0').className='prog-label active';
+  if(document.getElementById('pd0')){
+    document.getElementById('pd0').className='prog-dot active';
+    document.getElementById('pl0').className='prog-label active';
+  }
   progTimer=setInterval(()=>{
     if(cur<STEPS.length-1){
-      document.getElementById('pd'+cur).className='prog-dot done';
-      document.getElementById('pl'+cur).className='prog-label done';
+      if(document.getElementById('pd'+cur)) document.getElementById('pd'+cur).className='prog-dot done';
+      if(document.getElementById('pl'+cur)) document.getElementById('pl'+cur).className='prog-label done';
       cur++;
-      document.getElementById('pd'+cur).className='prog-dot active';
-      document.getElementById('pl'+cur).className='prog-label active';
+      if(document.getElementById('pd'+cur)) document.getElementById('pd'+cur).className='prog-dot active';
+      if(document.getElementById('pl'+cur)) document.getElementById('pl'+cur).className='prog-label active';
     }
   },900);
 }
-function stopProgress(){clearInterval(progTimer);document.getElementById('progressCard').classList.remove('show');}
-function showError(msg){stopProgress();const eb=document.getElementById('errorBox');eb.textContent='⚠ '+msg;eb.style.display='block';}
+function stopProgress(){
+  clearInterval(progTimer);
+  const card=document.getElementById('progressCard');
+  if(card) card.classList.remove('show');
+}
+function showError(msg){
+  stopProgress();
+  /* 에러 시 입력 페이지로 복귀 */
+  showPage('pageInput');
+  const eb=document.getElementById('errorBox');
+  eb.textContent='⚠ '+msg;
+  eb.style.display='block';
+}
 
 /* ── 카테고리 아이콘 SVG ── */
 /* ── MANUAL INPUT ── */
@@ -3698,6 +3743,15 @@ async function startCreditCharge(){
   const orderId = 'CRD-' + Date.now();
   const baseUrl = window.location.href.split('?')[0];
   try{
+    /* 결제 전 서버에 주문 선등록 — 승인 시 금액 조회 기준 */
+    const orderResp = await fetch('/api/credits?action=createOrder', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ orderId, qty, amount: totalAmount })
+    });
+    const orderData = await orderResp.json();
+    if (!orderResp.ok) throw new Error(orderData.error || '주문 등록 실패');
+
     const tp = TossPayments(TOSS_CLIENT_KEY);
     const payment = tp.payment({ customerKey: currentUser.id });
     await payment.requestPayment({
