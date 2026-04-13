@@ -61,6 +61,8 @@ const GAnalytics = (() => {
           referrer: document.referrer || ''
         };
         localStorage.setItem('user_acquisition', JSON.stringify(acq));
+        /* ref(추천인 ID)는 별도 키로 영속 보존 — 가입 전 페이지 이동해도 유지 */
+        if (utm.ref) localStorage.setItem('referral_ref', utm.ref);
       } catch(e) {}
       const keep = ['orderId','payFail','chargeFail','socialLogin','ref'];
       const clean = new URLSearchParams();
@@ -1231,6 +1233,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="share-copy-row">
         <button class="btn-copy" id="btnCopy" onclick="copyShareLink()">링크 복사</button>
         <div class="share-soc">
+          <button class="btn-soc kakao" onclick="shareKakao()">카카오 공유</button>
           <button class="btn-soc twitter" onclick="shareTwitter()">트위터</button>
         </div>
       </div>
@@ -1572,7 +1575,18 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <script>
 const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
-window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storageKey: 'sb-qm-auth',          /* 고유 키 — 탭 간 락 충돌 방지 */
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    lock: async (name, acquireTimeout, fn) => {
+      /* 락 획득 실패 시 기다리지 않고 바로 실행 — "stole" 에러 원천 차단 */
+      try { return await fn(); } catch(e) { return await fn(); }
+    }
+  }
+});
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* ══ AUTH 상태 ══ */
@@ -1606,12 +1620,15 @@ async function saveUserAcquisition(userIdOrEmail, signupMethod) {
   try {
     const raw = localStorage.getItem('user_acquisition');
     const acq = raw ? JSON.parse(raw) : {};
+    /* ref는 별도 키에서도 보완 — user_acquisition이 없어도 ref는 살아있을 수 있음 */
+    const ref = acq.ref || localStorage.getItem('referral_ref') || '';
     await fetch('/api/acquisition', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: userIdOrEmail,
         signup_method: signupMethod,
+        ref: ref,                              /* 추천인 userId — 서버에서 크레딧 지급 트리거 */
         utm_source: acq.utm_source || 'direct',
         utm_medium: acq.utm_medium || '',
         utm_campaign: acq.utm_campaign || '',
@@ -1625,6 +1642,7 @@ async function saveUserAcquisition(userIdOrEmail, signupMethod) {
       })
     });
     localStorage.removeItem('user_acquisition');
+    localStorage.removeItem('referral_ref');   /* 지급 후 정리 */
   } catch(e) { console.error('유입 추적 저장 실패:', e); }
 }
 
@@ -1644,9 +1662,28 @@ function updateHeaderUser() {
   }
 }
 
+/* ── 세션 캐시 (getSession 중복 호출 방지) ── */
+let _cachedSession = null;
+async function getSessionOnce() {
+  if (_cachedSession !== null) return _cachedSession;
+  try {
+    const { data } = await window._supabase.auth.getSession();
+    _cachedSession = data?.session || false;
+  } catch(e) { _cachedSession = false; }
+  return _cachedSession;
+}
+
+/* 토큰 갱신 시 캐시 무효화 + authToken 자동 업데이트 */
+window._supabase.auth.onAuthStateChange((event, session) => {
+  _cachedSession = session || false;
+  if (session?.access_token && currentUser) {
+    authToken = session.access_token;
+  }
+});
+
 async function restoreAuth() {
   try {
-    const { data: { session } } = await window._supabase.auth.getSession();
+    const session = await getSessionOnce();
     if (session?.user) {
       currentUser = {
         id: session.user.id,
@@ -1973,7 +2010,7 @@ async function checkSocialLoginReturn() {
   /* URL에서 shareId 복원 (소셜 로그인 경유) */
   window.history.replaceState({}, '', window.location.pathname);
   try {
-    const { data: { session } } = await window._supabase.auth.getSession();
+    const session = await getSessionOnce();  /* 캐시된 세션 재사용 — 중복 호출 없음 */
     if (!session) return;
     const user = {
       id: session.user.id,
@@ -2815,7 +2852,7 @@ function fmt(n){
 }
 
 function render(r){
-  allItems=r.items||[];lastResult=r;
+  allItems=(r.items||[]).filter(item=>item.amount&&item.amount>0);lastResult=r;
   /* sessionStorage는 결제 후 복귀 시에만 사용 — 일반 분석 후엔 저장 안 함 */
 
   /* 공유 CTA 버튼 표시 */
@@ -3301,7 +3338,7 @@ async function createShareLink(){
     const resp = await fetch('/api/share', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ analysisResult: lastResult })
+      body: JSON.stringify({ analysisResult: lastResult, referrerId: currentUser?.id || null })
     });
     const ct = resp.headers.get('content-type')||'';
     if(!ct.includes('application/json')){
@@ -3311,8 +3348,12 @@ async function createShareLink(){
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || '링크 생성 실패');
 
-    /* 링크 저장 — 이후 클릭 시 재사용 */
-    currentShareUrl = data.url;
+    /* ref 파라미터 추가 — 친구 가입 시 발신자 추적용 */
+    const baseShareUrl = data.url;
+    currentShareUrl = currentUser?.id
+      ? baseShareUrl + (baseShareUrl.includes('?') ? '&' : '?') + 'ref=' + currentUser.id
+      : baseShareUrl;
+
     document.getElementById('shareLinkUrl').textContent = currentShareUrl;
     document.getElementById('shareLinkWrap').style.display = 'block';
     if(btn){ btn.innerHTML='✓ 링크 복사됨'; btn.style.background='var(--cheap)'; btn.disabled=false; }
