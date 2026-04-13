@@ -2008,7 +2008,7 @@ function isImage(f){return f.type.startsWith('image/');}
 function isPDF(f){return f.type==='application/pdf';}
 async function handleFile(file){
   /* 📊 GA: 파일 업로드 */
-  GAnalytics.fileUpload({ fileType: file.type.split('/')[1] || 'unknown', fileSize: file.size });
+  if(typeof GAnalytics !== 'undefined') GAnalytics.fileUpload({ fileType: file.type.split('/')[1] || 'unknown', fileSize: file.size });
   if(isPDF(file))await loadPDF(file);
   else if(isImage(file))await loadImage(file);
   else alert('PDF 또는 이미지 파일만 지원합니다.');
@@ -2078,7 +2078,7 @@ function setStep(n){
 function switchMode(mode){
   const isPDF=mode==='pdf';
   /* 📊 GA: 직접 입력 시작 */
-  if(!isPDF) GAnalytics.manualInputStart();
+  if(!isPDF && typeof GAnalytics !== 'undefined') GAnalytics.manualInputStart();
   document.getElementById('modePDF').className='mode-btn'+(isPDF?' active':'');
   document.getElementById('modeManual').className='mode-btn'+(!isPDF?' active':'');
   document.getElementById('uploadCard').style.display=isPDF?'':'none';
