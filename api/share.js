@@ -26,24 +26,22 @@ export default async function handler(req, res) {
   /* ── POST: 공유 링크 생성 ── */
   if (req.method === 'POST') {
     try {
-      const { analysisResult, logId } = req.body || {};
+      const { analysisResult, logId, referrerId } = req.body || {};
 
-      // analysisResult 크기 제한 — 과도하게 큰 데이터 주입 방지
+      // analysisResult 크기 제한
       if (analysisResult) {
         const size = JSON.stringify(analysisResult).length;
         if (size > 500_000) return res.status(400).json({ error: '분석 결과 데이터가 너무 큽니다.' });
       }
       const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
-      const baseUrl = req.headers.origin || 'https://gyeonjucjk-real.vercel.app';
+      const baseUrl = process.env.ALLOWED_ORIGIN || 'https://quote-analysis.site';
       const shareId = genId(8);
 
       let targetLogId = null;
 
       if (logId) {
-        /* 마이페이지에서 기존 log_id로 공유 */
         targetLogId = logId;
       } else if (analysisResult) {
-        /* 결과 화면에서 analysisResult 직접 전달 */
         const { data: log, error: logErr } = await supabase
           .from('estimate_logs')
           .insert({
@@ -63,17 +61,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '분석 결과 없음' });
       }
 
-      /* share_links 레코드 삽입 */
-      /* 공유자 ID 추출 */
-      const sharerId = req.headers.authorization
-        ? await (async () => {
-            try {
-              const tok = req.headers.authorization.replace('Bearer ', '');
-              const { data: { user } } = await supabase.auth.getUser(tok);
-              return user?.id || null;
-            } catch(e) { return null; }
-          })()
-        : null;
+      /* 공유자 ID 추출 (Authorization 헤더 또는 body의 referrerId) */
+      let sharerId = referrerId || null;
+      if (!sharerId && req.headers.authorization) {
+        try {
+          const tok = req.headers.authorization.replace('Bearer ', '');
+          const { data: { user } } = await supabase.auth.getUser(tok);
+          sharerId = user?.id || null;
+        } catch(e) {}
+      }
 
       const { error: shareErr } = await supabase
         .from('share_links')
@@ -102,7 +98,7 @@ export default async function handler(req, res) {
 
       if (linkErr || !link) return res.status(404).json({ error: '링크를 찾을 수 없어요' });
 
-      /* 조회수 업데이트 */
+      /* 조회수 비동기 업데이트 */
       supabase.from('share_links')
         .update({ view_count: (link.view_count || 0) + 1 })
         .eq('id', shareId)
@@ -116,28 +112,21 @@ export default async function handler(req, res) {
 
       if (logErr || !log) return res.status(404).json({ error: '분석 결과를 찾을 수 없어요' });
 
-      const result = log.analysis_result || {};
-      const safeResult = {
-        totalAmount:    result.totalAmount || log.total_amount,
-        overallVerdict: result.overallVerdict,
-        overallComment: result.overallComment,
-        itemCount:      (result.items || []).length,
-        expCount:       (result.items || []).filter(i => i.verdict === '비쌈').length,
-        fairCount:      (result.items || []).filter(i => i.verdict === '적정').length,
-        cheapCount:     (result.items || []).filter(i => i.verdict === '저렴').length,
-        region:         log.region,
-        createdAt:      log.created_at,
-        viewCount:      (link.view_count || 0) + 1,
-        sharerId:       link.sharer_id || null,
-        allItems:       (result.items || []).map(i => ({
-          name: i.name, category: i.category, verdict: i.verdict, amount: i.amount,
-        })),
-        previewItems:   (result.items || []).slice(0, 2).map(i => ({
-          name: i.name, category: i.category, verdict: i.verdict, amount: i.amount,
-        })),
-      };
+      /* analysisResult 전체 반환 — 프론트 render() 함수가 필요로 하는 전체 구조 */
+      const analysisResult = log.analysis_result || {};
 
-      return res.status(200).json({ success: true, data: safeResult, shareId });
+      /* totalAmount 보완 */
+      if (!analysisResult.totalAmount && log.total_amount) {
+        analysisResult.totalAmount = log.total_amount;
+      }
+
+      return res.status(200).json({
+        success: true,
+        analysisResult,          /* render()에 바로 넣을 수 있는 전체 결과 */
+        sharerId: link.sharer_id || null,
+        viewCount: (link.view_count || 0) + 1,
+        shareId,
+      });
 
     } catch (err) {
       console.error('share get error:', err);
