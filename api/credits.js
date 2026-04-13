@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       }
 
       // shareId 형식 검증 (임의 문자열 주입 방지)
-      if (!/^[a-zA-Z0-9_-]{4,64}$/.test(shareId)) {
+      if (!/^[a-zA-Z0-9_:\-]{4,128}$/.test(shareId)) {
         return res.status(400).json({ error: '잘못된 shareId 형식입니다.' });
       }
 
