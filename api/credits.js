@@ -1,6 +1,7 @@
 export const config = { api: { bodyParser: true } };
 
-const UNIT_PRICE    = 10000; // 크레딧 1개 단가 (원)
+const UNIT_PRICE    = 10000; // 할인가 (크레딧 1개)
+const NORMAL_PRICE  = 20000; // 정상가 (크레딧 1개)
 const ALLOWED_QTYS  = [1, 3, 5]; // 허용된 충전 수량
 
 async function getSupabase() {
@@ -162,7 +163,9 @@ export default async function handler(req, res) {
       if (!ALLOWED_QTYS.includes(Number(qty))) {
         return res.status(400).json({ error: '허용되지 않은 수량입니다.' });
       }
-      if (Number(amount) !== Number(qty) * UNIT_PRICE) {
+      /* 할인가(10,000) 또는 정상가(20,000) 둘 다 허용 */
+      const unitPrice = Number(qty) > 0 ? Math.round(Number(amount) / Number(qty)) : 0;
+      if (unitPrice !== UNIT_PRICE && unitPrice !== NORMAL_PRICE) {
         return res.status(400).json({ error: '금액이 올바르지 않습니다.' });
       }
 
