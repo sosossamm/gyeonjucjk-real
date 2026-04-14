@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       console.error('Result parse error:', parseErr.message);
     }
 
-    return res.status(200).json(data);
+    return res.status(200).json({ ...data, _logId: logId || null });
 
   } catch (err) {
     console.error('analyze handler error:', err);
