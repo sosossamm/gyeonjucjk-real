@@ -5,7 +5,7 @@ async function getSupabase() {
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 }
 
-const DAILY_LIMIT   = 100;      /* 하루 할인 한도 */
+const DAILY_LIMIT   = 30;       /* 하루 할인 한도 (선착순 30명) */
 const SALE_PRICE    = 10000;   /* 할인가 */
 const NORMAL_PRICE  = 20000;   /* 정상가 */
 
@@ -30,15 +30,17 @@ export default async function handler(req, res) {
       const todayStartUTC = `${today}T00:00:00+09:00`; /* KST 00:00 = UTC 전날 15:00 */
       const todayEndUTC   = `${today}T23:59:59+09:00`; /* KST 23:59 = UTC 당일 14:59 */
 
-      /* 오늘 할인가(charge 타입)로 판매된 크레딧 수 조회 */
+      /* 오늘 할인가(charge 타입)로 충전한 고유 유저 수 조회 */
       const { data: logs } = await supabase
         .from('credit_logs')
-        .select('amount')
+        .select('user_id')
         .eq('type', 'charge')
         .gte('created_at', todayStartUTC)
         .lte('created_at', todayEndUTC);
 
-      const sold = (logs || []).reduce((s, l) => s + (l.amount || 0), 0);
+      /* 동일 유저 중복 제거 — 1인 1회 기준 */
+      const uniqueUsers = new Set((logs || []).map(l => l.user_id));
+      const sold = uniqueUsers.size;
       const remaining = Math.max(0, DAILY_LIMIT - sold);
 
       /* remaining이 0이면 할인 종료 → 정상가 적용 */
