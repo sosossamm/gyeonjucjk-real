@@ -3633,18 +3633,18 @@ async function openCreditHistory(){
 let selectedCreditQty = 1;
 
 /* ── 일일 한정 할인 시스템 ── */
-let dailySaleState = { isSaleActive: true, remaining: 100, salePrice: 10000, normalPrice: 20000, currentPrice: 10000 };
+let dailySaleState = { isSaleActive: true, remaining: 30, salePrice: 10000, normalPrice: 20000, currentPrice: 10000 };
 
-/* 시간대별 랜덤 감소 — 오전 9시 기준 하루 100개가 자연스럽게 소진되는 것처럼 보임 */
-function getPseudoRemaining(dailyLimit = 100) {
+/* 시간대별 랜덤 감소 — 오전 9시 기준 하루 30명이 자연스럽게 소진되는 것처럼 보임 */
+function getPseudoRemaining(dailyLimit = 30) {
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
 
-  /* 오전 9시 이전은 리셋 상태 — 100개 전부 남음 */
+  /* 오전 9시 이전은 리셋 상태 — 30명 전부 남음 */
   if (hour < 9) return dailyLimit;
 
-  /* 오전 9시부터 자정까지 15시간 동안 100개 소진 */
+  /* 오전 9시부터 자정까지 15시간 동안 30명 소진 */
   const minutesSince9 = (hour - 9) * 60 + minute;
   const totalMinutes = 15 * 60; /* 15시간 */
 
@@ -3655,16 +3655,16 @@ function getPseudoRemaining(dailyLimit = 100) {
     return x - Math.floor(x);
   };
 
-  /* 100개를 시간대별로 불균등하게 분배 — 오전에 빠르게, 오후에 천천히 소진 */
+  /* 30명을 시간대별로 불균등하게 분배 — 오전에 빠르게, 오후에 천천히 소진 */
   const slots = Array.from({length: dailyLimit}, (_, i) => {
-    /* 지수 3.0 — 오전 9~12시에 약 60개 소진, 오후엔 천천히 줄어드는 패턴 */
+    /* 지수 3.0 — 오전 9~12시에 약 60% 소진, 오후엔 천천히 줄어드는 패턴 */
     const base = Math.pow((i + 1) / dailyLimit, 3.0) * totalMinutes;
     /* ±10분 랜덤 편차 */
     const jitter = (seeded(i) - 0.5) * 20;
     return Math.max(0, Math.min(totalMinutes, Math.round(base + jitter)));
   }).sort((a, b) => a - b);
 
-  /* 현재 시간까지 몇 개가 팔렸는지 계산 */
+  /* 현재 시간까지 몇 명이 신청했는지 계산 */
   const sold = slots.filter(t => t <= minutesSince9).length;
   return Math.max(0, dailyLimit - sold);
 }
@@ -3675,11 +3675,11 @@ async function fetchDailySaleStatus() {
     const ct = resp.headers.get('content-type') || '';
     if (!ct.includes('application/json')) {
       /* API 미배포 시 — 시간대별 랜덤 감소로 표시 */
-      const pseudoRemaining = getPseudoRemaining(100);
+      const pseudoRemaining = getPseudoRemaining(30);
       dailySaleState = {
         ...dailySaleState,
         remaining: pseudoRemaining,
-        dailyLimit: 100,
+        dailyLimit: 30,
         isSaleActive: true,
         success: true
       };
@@ -3690,14 +3690,14 @@ async function fetchDailySaleStatus() {
     const data = await resp.json();
     if (data.success) {
       /* API가 있어도 표시 숫자는 pseudo remaining 사용 (실제 판매량 + 자연 감소 효과) */
-      const realSold = (data.dailyLimit || 100) - (data.remaining || 0);
-      const pseudoRemaining = getPseudoRemaining(data.dailyLimit || 100);
-      /* 실제 판매량이 더 많으면 실제값 우선 */
-      const displayRemaining = Math.min(pseudoRemaining, data.remaining ?? pseudoRemaining);
+      const realSold = (data.dailyLimit || 30) - (data.remaining || 0);
+      const pseudoRemaining = getPseudoRemaining(data.dailyLimit || 30);
+      /* pseudo 기본값에서 실제 판매량만큼 추가로 빼서 표시 (실제 판매가 반드시 반영되도록) */
+      const displayRemaining = Math.max(0, Math.min(pseudoRemaining - realSold, data.remaining));
       dailySaleState = {
         ...data,
         remaining: Math.max(0, displayRemaining),
-        dailyLimit: data.dailyLimit || 100,
+        dailyLimit: data.dailyLimit || 30,
       };
       renderSaleBanners();
       updateAllPrices();
@@ -3714,12 +3714,12 @@ function renderSaleBanners() {
     const html = `<div class="sale-banner">
       <div class="sale-badge">EVENT</div>
       <div class="sale-info">
-        <div class="sale-title">매일 선착순 100명 크레딧 <span style="color:#FCD34D;">단돈 1만 원!</span></div>
+        <div class="sale-title">매일 선착순 30명 크레딧 <span style="color:#FCD34D;">단돈 1만 원!</span></div>
         <div class="sale-sub">정상가 2만원 → 50% 할인 · 매일 오전 9시 리셋</div>
       </div>
       <div class="sale-count">
-        <div class="sale-remaining">${s.remaining}개</div>
-        <div class="sale-total">/ ${s.dailyLimit}개</div>
+        <div class="sale-remaining">${s.remaining}명</div>
+        <div class="sale-total">/ ${s.dailyLimit}명</div>
       </div>
     </div>`;
     if (saleBanner) saleBanner.innerHTML = html;
