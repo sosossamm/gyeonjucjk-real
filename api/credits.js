@@ -225,7 +225,35 @@ export default async function handler(req, res) {
         .maybeSingle();
 
       if (!pendingOrder) {
-        return res.status(400).json({ error: '주문 정보를 찾을 수 없어요. 처음부터 다시 시도해주세요.' });
+        /* pending_orders에 없는 경우 — createOrder 실패했지만 결제는 됐을 수 있음
+           amount 파라미터가 URL에 있으면 폴백으로 직접 승인 시도 */
+        const fallbackAmount = req.body?.fallbackAmount;
+        if (!fallbackAmount || !ALLOWED_QTYS.includes(Math.round(fallbackAmount / 10000)) && !ALLOWED_QTYS.includes(Math.round(fallbackAmount / 20000))) {
+          return res.status(400).json({ error: '주문 정보를 찾을 수 없어요. 고객센터로 문의해주세요.' });
+        }
+        const fallbackQty = fallbackAmount / 10000 <= 5 && ALLOWED_QTYS.includes(fallbackAmount / 10000)
+          ? fallbackAmount / 10000
+          : fallbackAmount / 20000;
+        console.log('Fallback order - orderId:', orderId, 'fallbackAmount:', fallbackAmount, 'fallbackQty:', fallbackQty);
+        // 폴백 pendingOrder 구성
+        const fallbackOrder = { qty: fallbackQty, amount: fallbackAmount, user_id: user.id };
+        Object.assign(pendingOrder || {}, fallbackOrder);
+        // 아래 코드가 이 폴백 데이터를 사용할 수 있도록 재할당
+        const result2 = await confirmTossPayment(paymentKey, orderId, fallbackAmount);
+        if (!result2.ok || result2.data?.status !== 'DONE') {
+          console.error('Fallback Toss confirm failed:', JSON.stringify(result2.data));
+          return res.status(400).json({ error: result2.data?.message || '결제 승인에 실패했습니다.' });
+        }
+        // 크레딧 적립
+        const { data: uData } = await supabase.from('users').select('credits').eq('id', user.id).maybeSingle();
+        const newCr = (uData?.credits || 0) + fallbackQty;
+        await supabase.from('users').update({ credits: newCr }).eq('id', user.id);
+        await supabase.from('credit_logs').insert({
+          user_id: user.id, amount: fallbackQty, type,
+          description: `크레딧 ${fallbackQty}개 충전 (폴백)`,
+          order_id: orderId, payment_key: paymentKey, created_at: new Date().toISOString()
+        });
+        return res.status(200).json({ success: true, credits: newCr, chargedQty: fallbackQty, amount: fallbackAmount });
       }
 
       // 본인 주문인지 확인
