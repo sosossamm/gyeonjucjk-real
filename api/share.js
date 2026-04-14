@@ -120,9 +120,30 @@ export default async function handler(req, res) {
         analysisResult.totalAmount = log.total_amount;
       }
 
+      const items = (analysisResult.items || []).filter(i => i.amount && i.amount > 0);
+
+      /* share_page_v4.html 호환용 data 구조 */
+      const safeData = {
+        totalAmount:    analysisResult.totalAmount || log.total_amount,
+        overallVerdict: analysisResult.overallVerdict,
+        overallComment: analysisResult.overallComment,
+        itemCount:      items.length,
+        expCount:       items.filter(i => i.verdict === '비쌈').length,
+        fairCount:      items.filter(i => i.verdict === '적정').length,
+        cheapCount:     items.filter(i => i.verdict === '저렴').length,
+        region:         log.region,
+        createdAt:      log.created_at,
+        viewCount:      (link.view_count || 0) + 1,
+        sharerId:       link.sharer_id || null,
+        allItems:       items.map(i => ({
+          name: i.name, category: i.category, verdict: i.verdict, amount: i.amount,
+        })),
+      };
+
       return res.status(200).json({
         success: true,
-        analysisResult,          /* render()에 바로 넣을 수 있는 전체 결과 */
+        analysisResult,   /* index.html의 render()용 전체 구조 */
+        data: safeData,   /* share_page_v4.html 호환용 */
         sharerId: link.sharer_id || null,
         viewCount: (link.view_count || 0) + 1,
         shareId,
