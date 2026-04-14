@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/share/:id",
-      "destination": "/index.html"
+      "destination": "/share/index.html"
     },
     {
       "source": "/reset-password",
