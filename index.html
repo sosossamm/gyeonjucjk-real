@@ -3678,12 +3678,12 @@ function getPseudoRemaining(dailyLimit = 100) {
     return x - Math.floor(x);
   };
 
-  /* 100개를 시간대별로 불균등하게 분배 (오전에 더 많이 팔리는 패턴) */
+  /* 100개를 시간대별로 불균등하게 분배 — 오전에 빠르게, 오후에 천천히 소진 */
   const slots = Array.from({length: dailyLimit}, (_, i) => {
-    /* 앞쪽(오전)에 몰리도록 제곱근 분포 */
-    const base = Math.pow((i + 1) / dailyLimit, 0.6) * totalMinutes;
-    /* ±15분 랜덤 편차 */
-    const jitter = (seeded(i) - 0.5) * 30;
+    /* 지수 3.0 — 오전 9~12시에 약 60개 소진, 오후엔 천천히 줄어드는 패턴 */
+    const base = Math.pow((i + 1) / dailyLimit, 3.0) * totalMinutes;
+    /* ±10분 랜덤 편차 */
+    const jitter = (seeded(i) - 0.5) * 20;
     return Math.max(0, Math.min(totalMinutes, Math.round(base + jitter)));
   }).sort((a, b) => a - b);
 
