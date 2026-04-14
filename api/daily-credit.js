@@ -5,9 +5,9 @@ async function getSupabase() {
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 }
 
-const DAILY_LIMIT = 100;
-const SALE_PRICE = 10000;
-const NORMAL_PRICE = 20000;
+const DAILY_LIMIT   = 100;      /* 하루 할인 한도 */
+const SALE_PRICE    = 10000;   /* 할인가 */
+const NORMAL_PRICE  = 20000;   /* 정상가 */
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,22 +22,28 @@ export default async function handler(req, res) {
 
     /* ── 할인 상태 조회 ── */
     if (action === 'status') {
-      /* 오늘 날짜 (KST 기준) */
       const now = new Date();
       const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-      const today = kst.toISOString().slice(0, 10);
+      const today = kst.toISOString().slice(0, 10); /* KST 기준 오늘 날짜 */
 
-      /* 오늘 할인으로 판매된 크레딧 수 조회 */
+      /* UTC 기준 오늘 범위 계산 (DB는 UTC로 저장됨) */
+      const todayStartUTC = `${today}T00:00:00+09:00`; /* KST 00:00 = UTC 전날 15:00 */
+      const todayEndUTC   = `${today}T23:59:59+09:00`; /* KST 23:59 = UTC 당일 14:59 */
+
+      /* 오늘 할인가(charge 타입)로 판매된 크레딧 수 조회 */
       const { data: logs } = await supabase
         .from('credit_logs')
         .select('amount')
         .eq('type', 'charge')
-        .gte('created_at', `${today}T00:00:00+09:00`)
-        .lt('created_at', `${today}T23:59:59+09:00`);
+        .gte('created_at', todayStartUTC)
+        .lte('created_at', todayEndUTC);
 
       const sold = (logs || []).reduce((s, l) => s + (l.amount || 0), 0);
       const remaining = Math.max(0, DAILY_LIMIT - sold);
+
+      /* remaining이 0이면 할인 종료 → 정상가 적용 */
       const isSaleActive = remaining > 0;
+      const currentPrice = isSaleActive ? SALE_PRICE : NORMAL_PRICE;
 
       return res.status(200).json({
         success: true,
@@ -47,7 +53,7 @@ export default async function handler(req, res) {
         dailyLimit: DAILY_LIMIT,
         salePrice: SALE_PRICE,
         normalPrice: NORMAL_PRICE,
-        currentPrice: isSaleActive ? SALE_PRICE : NORMAL_PRICE,
+        currentPrice,
         today
       });
     }
