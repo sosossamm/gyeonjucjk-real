@@ -119,7 +119,7 @@ export default async function handler(req, res) {
 
     // ── use: 크레딧 1개 차감 ────────────────────────────────────────────────
     if (action === 'use' && req.method === 'POST') {
-      const { description = '상세 분석 열람' } = req.body || {};
+      const { description = '상세 분석 열람', logId } = req.body || {};
 
       const { data: userData } = await supabase
         .from('users').select('credits').eq('id', user.id).maybeSingle();
@@ -129,12 +129,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '크레딧이 부족해요' });
       }
 
-      // 동시성 제어 — credits 값이 변하지 않았을 때만 차감
+      // 동시성 제어
       const { data: updated, error: updateErr } = await supabase
         .from('users')
         .update({ credits: currentCredits - 1 })
         .eq('id', user.id)
-        .eq('credits', currentCredits) // 동시 요청으로 이미 차감됐으면 업데이트 안 됨
+        .eq('credits', currentCredits)
         .select('credits')
         .single();
 
@@ -147,7 +147,30 @@ export default async function handler(req, res) {
         description, created_at: new Date().toISOString()
       });
 
+      /* logId가 있으면 열람 기록 저장 — 재방문 시 자동 잠금 해제용 */
+      if (logId) {
+        await supabase.from('unlocked_logs').upsert(
+          { user_id: user.id, log_id: logId, created_at: new Date().toISOString() },
+          { onConflict: 'user_id,log_id' }
+        ).catch(() => {}); // 테이블 없어도 크레딧 차감은 정상 처리
+      }
+
       return res.status(200).json({ success: true, credits: updated.credits });
+    }
+
+    // ── isUnlocked: 열람 기록 확인 ──────────────────────────────────────────
+    if (action === 'isUnlocked' && req.method === 'GET') {
+      const logId = req.query.logId;
+      if (!logId) return res.status(400).json({ error: 'logId 필요' });
+
+      const { data: record } = await supabase
+        .from('unlocked_logs')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('log_id', logId)
+        .maybeSingle();
+
+      return res.status(200).json({ unlocked: !!record });
     }
 
     // ── createOrder: 결제 전 주문 등록 ──────────────────────────────────────
