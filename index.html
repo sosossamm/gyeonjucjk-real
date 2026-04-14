@@ -3881,8 +3881,9 @@ async function checkCreditChargeReturn(){
     /* 상세 에러 메시지 출력 */
     if(!resp.ok){
       const errMsg = data.error || data.message || `서버 오류 (${resp.status})`;
+      const errCode = data.code ? ` [${data.code}]` : '';
       console.error('충전 실패 상세:', data);
-      alert(`충전 처리 오류: ${errMsg}\n\n결제는 완료됐을 수 있습니다. 고객센터로 문의해주세요.\norderId: ${orderId}`);
+      alert(`충전 처리 오류: ${errMsg}${errCode}\n\n결제는 완료됐을 수 있습니다. 고객센터로 문의해주세요.\norderId: ${orderId}`);
       return;
     }
 
