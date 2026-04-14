@@ -243,9 +243,11 @@ export default async function handler(req, res) {
       }
 
       if (!result.ok || result.data?.status !== 'DONE') {
-        console.error('Toss confirm failed:', result.data);
+        console.error('Toss confirm failed:', JSON.stringify(result.data));
+        console.error('Toss confirm params - orderId:', orderId, 'amount:', pendingOrder.amount, 'paymentKey prefix:', paymentKey?.slice(0,20));
         return res.status(400).json({
           error: result.data?.message || '결제 승인에 실패했습니다. 다시 시도하거나 고객센터로 문의해주세요.',
+          code: result.data?.code || 'UNKNOWN'
         });
       }
 
