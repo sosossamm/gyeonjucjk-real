@@ -3815,8 +3815,16 @@ async function startCreditCharge(){
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
       body: JSON.stringify({ orderId, qty, amount: totalAmount })
     });
+
+    /* Content-Type 확인 — HTML이 오면 API 라우팅 문제 */
+    const ct = orderResp.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      const text = await orderResp.text();
+      throw new Error(`주문 등록 실패 (서버 응답 오류): ${text.slice(0,80)}`);
+    }
+
     const orderData = await orderResp.json();
-    if (!orderResp.ok) throw new Error(orderData.error || '주문 등록 실패');
+    if (!orderResp.ok) throw new Error(orderData.error || `주문 등록 실패 (${orderResp.status})`);
 
     const tp = TossPayments(TOSS_CLIENT_KEY);
     const payment = tp.payment({ customerKey: currentUser.id });
@@ -3867,6 +3875,10 @@ async function checkCreditChargeReturn(){
   const qty = parseInt(sessionStorage.getItem('chargeQty')) || 1;
   sessionStorage.removeItem('chargeQty');
 
+  /* URL의 amount 파라미터도 폴백용으로 읽어둠 */
+  const urlAmount = parseInt(new URLSearchParams(window.location.search).get('amount')) || null;
+  const fallbackAmount = urlAmount || (qty * getCurrentUnitPrice());
+
   /* 마이페이지로 먼저 이동 — 충전 완료 후에도 여기 머뭄 */
   goMypage();
 
@@ -3874,7 +3886,7 @@ async function checkCreditChargeReturn(){
     const resp = await fetch('/api/credits?action=reward', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ paymentKey, orderId, type: 'charge' })
+      body: JSON.stringify({ paymentKey, orderId, type: 'charge', fallbackAmount })
     });
     const data = await resp.json();
 
