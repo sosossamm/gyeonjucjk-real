@@ -1313,7 +1313,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </div>
       <div style="display:none;padding:1.5rem;" id="paidDetail">
         <div class="section-header" style="margin-bottom:1rem;">
-          <div class="section-title"></div>
+          <div class="section-title">항목별 상세 분석</div>
           <div class="section-filter">
             <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
             <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
@@ -2674,25 +2674,25 @@ JSON format — items array MUST preserve original document order:
 {"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"tips":[{"category":"철거/방수","itemName":"전체철거","icon":"🔨","verdict":"비쌈","currentAmount":0,"marketMin":0,"marketMax":0,"diffAmount":0,"ways":["절약방법1","절약방법2","절약방법3"],"question":"업체에 물어볼 질문"}]}
 
 Verdict rules:
-- 저렴: amount < marketMin × 0.9
-- 적정: marketMin × 0.9 ≤ amount ≤ marketMax × 1.1
-- 비쌈: amount > marketMax × 1.1
+- 저렴: ratioVsAvg < 90
+- 적정: 90 ≤ ratioVsAvg < 180
+- 비쌈: ratioVsAvg ≥ 180
 - ratioVsAvg: (amount / ((marketMin+marketMax)/2)) × 100
 
 ${ALL_ITEMS_REF}
 
-For tips array, write one tip object per 비쌈 item (max 8), then fill remaining slots with 적정 items.
+For tips array, write one tip object per 비쌈 item (no limit), then fill remaining slots with 적정 items.
 Each tip object MUST have:
 - category: 공정 카테고리명
 - itemName: 견적서 항목명 (원본 그대로)
 - icon: 해당 공종 이모지 (🔨철거 🪟창호 🏗️설비 🪚목공 🪵바닥 🖼️도배 🎨도장 🟫타일 🚿욕실 🍳주방 🚪가구 💡전기 💰기업이윤 🔩기타)
-- verdict: 저렴/적정/비쌈
+- verdict: 반드시 아래 규칙으로 계산할 것 — ratioVsAvg = (currentAmount / ((marketMin+marketMax)/2)) × 100 기준으로 저렴(ratio < 90) / 적정(90 ≤ ratio < 180) / 비쌈(ratio ≥ 180). items 배열의 verdict와 반드시 일치해야 함.
 - currentAmount: 현재 견적 금액 (원)
 - marketMin: 시중가 최저 (원)
 - marketMax: 시중가 최고 (원)
 - diffAmount: currentAmount - (marketMin+marketMax)/2 양수면 초과 음수면 절감
-- ways: 절약 방법 3~5가지 배열. 각 항목은 구체적 금액·브랜드·수량 포함 (각 40~80자)
-- question: 업체에 반드시 물어봐야 할 핵심 질문 1개 (30~60자)
+- ways: 절약 방법 4~7가지 배열. 각 항목은 구체적 금액·브랜드·수량 포함 (각 100자 내외)
+- question: 이 항목에서 반드시 확인해야 할 체크리스트 내용 1개 (30~60자, 질문 형식 아닌 확인 사항으로 작성)
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
 Market refs per 평 (${region}기준):
@@ -2991,7 +2991,34 @@ function fmt(n){
   return n.toLocaleString('ko-KR')+'원';
 }
 
+function calcVerdict(ratio) {
+  if (ratio < 90)  return '저렴';
+  if (ratio < 180) return '적정';
+  return '비쌈';
+}
+
+function recalcVerdicts(r) {
+  /* items 재계산 */
+  (r.items || []).forEach(item => {
+    if (item.marketMin && item.marketMax) {
+      const avg = (item.marketMin + item.marketMax) / 2;
+      item.ratioVsAvg = Math.round(item.amount / avg * 100);
+      item.verdict = calcVerdict(item.ratioVsAvg);
+    }
+  });
+  /* tips 재계산 */
+  (r.tips || []).forEach(tip => {
+    if (tip.marketMin && tip.marketMax) {
+      const avg = (tip.marketMin + tip.marketMax) / 2;
+      tip.ratioVsAvg = Math.round(tip.currentAmount / avg * 100);
+      tip.verdict = calcVerdict(tip.ratioVsAvg);
+    }
+  });
+  return r;
+}
+
 function render(r){
+  r = recalcVerdicts(r);
   allItems=(r.items||[]).filter(item=>item.amount&&item.amount>0);lastResult=r;
   /* sessionStorage는 결제 후 복귀 시에만 사용 — 일반 분석 후엔 저장 안 함 */
 
@@ -3194,7 +3221,7 @@ function renderPaidDetail(){
             </div>`).join('')}`:''}
           ${tip.question?`
           <div class="tip-question">
-            <div class="tip-question-label">업체에 물어보세요</div>
+            <div class="tip-question-label">✅ Check List</div>
             ${esc(tip.question)}
           </div>`:''}
         </div>
