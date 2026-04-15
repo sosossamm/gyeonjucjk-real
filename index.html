@@ -2699,9 +2699,9 @@ JSON format — items array MUST preserve original document order:
 {"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"tips":[{"category":"철거/방수","itemName":"전체철거","icon":"🔨","verdict":"비쌈","currentAmount":0,"marketMin":0,"marketMax":0,"diffAmount":0,"ways":["절약방법1","절약방법2","절약방법3"],"question":"업체에 물어볼 질문"}]}
 
 Verdict rules:
-- 저렴: ratioVsAvg < 90
-- 적정: 90 ≤ ratioVsAvg < 180
-- 비쌈: ratioVsAvg ≥ 180
+- 저렴: ratioVsAvg < 85
+- 적정: 85 ≤ ratioVsAvg ≤ 130
+- 비쌈: ratioVsAvg > 130
 - ratioVsAvg: (amount / ((marketMin+marketMax)/2)) × 100
 
 ${ALL_ITEMS_REF}
@@ -2711,7 +2711,7 @@ Each tip object MUST have:
 - category: 공정 카테고리명
 - itemName: 견적서 항목명 (원본 그대로)
 - icon: 해당 공종 이모지 (🔨철거 🪟창호 🏗️설비 🪚목공 🪵바닥 🖼️도배 🎨도장 🟫타일 🚿욕실 🍳주방 🚪가구 💡전기 💰기업이윤 🔩기타)
-- verdict: 반드시 아래 규칙으로 계산할 것 — ratioVsAvg = (currentAmount / ((marketMin+marketMax)/2)) × 100 기준으로 저렴(ratio < 90) / 적정(90 ≤ ratio < 180) / 비쌈(ratio ≥ 180). items 배열의 verdict와 반드시 일치해야 함.
+- verdict: 반드시 아래 규칙으로 계산할 것 — ratioVsAvg = (currentAmount / ((marketMin+marketMax)/2)) × 100 기준으로 저렴(ratio < 85) / 적정(85 ≤ ratio ≤ 130) / 비쌈(ratio > 130). items 배열의 verdict와 반드시 일치해야 함.
 - currentAmount: 현재 견적 금액 (원)
 - marketMin: 시중가 최저 (원)
 - marketMax: 시중가 최고 (원)
@@ -2721,19 +2721,20 @@ Each tip object MUST have:
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
 Market refs per 평 (${region}기준):
-· 철거 평당15~25만 · 방수(발코니) m2당8~15만
-· 욕실타일 개소당100~200만 · 주방벽타일 m2당6~12만 · 거실타일 m2당6~14만
-· 강마루 m2당4~8만 · 원목마루 m2당8~15만 · 장판 m2당2~4만
-· 도배(실크) 평당3~5만 · 도배(합지) 평당2~3만
+· 철거 평당15~25만 · 방수(발코니) m2당8~15만 · 방수(욕실) m2당10~18만
+· 욕실타일 개소당100~200만 · 주방벽타일 m2당6~12만 · 거실타일 m2당6~14만 · 현관타일 m2당6~12만
+· 강마루 m2당4~8만 · 원목마루 m2당8~15만 · 장판 m2당2~4만 · 헤링본마루 m2당10~18만 · 데코타일 m2당3~6만
+· 도배(실크) 평당3~5만 · 도배(합지) 평당2~3만 · 도배(수입벽지) 평당6~12만 · 도배(방염) 평당5~9만
 · 도장 m2당2~4만
-· 욕실리모델링 개소당250~600만 · 양변기 30~80만 · 세면대 20~60만
-· 싱크대상부장 m당30~80만 · 싱크대하부장 m당40~100만 · 싱크대상판 m당20~50만
-· 붙박이장 90cm폭당60~150만 · 드레스룸 200~600만/식
-· 전기배선 평당10~20만 · 조명교체 평당3~7만 · 간접조명박스 평당4~9만
-· 발코니샷시 150~400만/식 · 현관문 80~200만
+· 욕실리모델링 개소당250~600만 · 양변기 30~80만 · 세면대 20~60만 · 샤워부스 60~150만 · 욕조 80~200만 · 수전교체 15~40만
+· 싱크대상부장 m당30~80만 · 싱크대하부장 m당40~100만 · 싱크대상판 m당20~50만 · 아일랜드식탁 150~400만/식
+· 붙박이장 90cm폭당60~150만 · 드레스룸 200~600만/식 · 신발장 80~200만/식 · 거실장·TV장 100~300만/식
+· 전기배선 평당10~20만 · 조명교체 평당3~7만 · 간접조명박스 평당4~9만 · 분전반교체 30~80만 · 스마트홈 100~300만/식
+· 발코니샷시 150~400만/식 · 현관문 80~200만 · 중문 80~250만 · 방창호교체 짝당30~80만
 · 목공(몰딩·걸레받이) 평당5~11만 · 목공(무몰딩) 평당9~22만
-· 목공(우물천장) m2당10~22만 · 목공(가벽) m2당10~22만 · 히든도어 짝당80~200만
-· 보일러 50~150만/식 · 발코니확장 평당150~350만
+· 목공(우물천장) m2당10~22만 · 목공(가벽) m2당10~22만 · 히든도어 짝당80~200만 · 커튼박스 m당8~18만
+· 보일러 50~150만/식 · 발코니확장 평당150~350만 · 환기시스템 150~400만/식 · 배관전체교체 평당15~30만
+· 입주청소 평당2~4만 · 폐기물처리 평당3~7만
 Category: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 목공 창호/샷시 확장/설비 기타`;
 
   const resp=await fetch('/api/analyze',{
@@ -3030,8 +3031,8 @@ function fmt(n){
 }
 
 function calcVerdict(ratio) {
-  if (ratio < 90)  return '저렴';
-  if (ratio < 180) return '적정';
+  if (ratio < 85)  return '저렴';
+  if (ratio <= 130) return '적정';
   return '비쌈';
 }
 
