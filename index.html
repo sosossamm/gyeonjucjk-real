@@ -1247,7 +1247,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <div id="shareCTAWrap" style="margin-bottom:1.25rem;display:none;">
     <button onclick="createShareLink()" style="width:100%;padding:1rem;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="3" r="1.8"/><circle cx="3" cy="8" r="1.8"/><circle cx="12" cy="13" r="1.8"/><path d="M4.7 9l5.7 3M10.4 4L4.7 7"/></svg>
-      견적 공유하고 상세분석 무료 1회 받기
+      친구 초대하면 나도 친구도 1만원 할인 🎁
     </button>
     <div class="share-link-wrap" id="shareLinkWrap" style="display:none;margin-top:8px;">
       <div class="share-link-url" id="shareLinkUrl"></div>
@@ -1505,7 +1505,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <div class="stat-card"><div class="stat-label">총 분석</div><div class="stat-val neutral" id="mpTotal">—</div></div>
     <div class="stat-card"><div class="stat-label">🔴 비쌈 판정</div><div class="stat-val exp" id="mpExp">—</div></div>
     <div class="stat-card"><div class="stat-label">🔗 공유 링크</div><div class="stat-val neutral" id="mpShare">—</div></div>
-    <div class="stat-card"><div class="stat-label">👥 가입한 친구</div><div class="stat-val neutral" id="mpFriends">—</div></div>
+    <div class="stat-card"><div class="stat-label">👥 초대한 친구</div><div class="stat-val neutral" id="mpFriends">—</div></div>
   </div>
 
   <!-- 분석 기록 -->
@@ -1720,6 +1720,11 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
             })
           });
           localStorage.removeItem('referral_ref');
+          /* 친구 초대로 가입한 신규 유저에게 안내 */
+          setTimeout(() => {
+            alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개(1만원 할인)가 지급되었습니다.');
+            loadUserCredits();
+          }, 800);
         } catch(e) {
           console.error('추천 리워드 지급 실패:', e);
         }
@@ -2871,6 +2876,11 @@ async function doAnalyzeFromOcr(){
   /* editedCats 초기화 */
   editedCats={};
   lastResult=null;
+  currentShareUrl=''; /* 새 분석마다 공유 링크 초기화 — 견적당 제한 없이 재생성 가능 */
+  const _slw = document.getElementById('shareLinkWrap');
+  if(_slw) _slw.style.display='none';
+  const _scb = document.querySelector('#shareCTAWrap button');
+  if(_scb){ _scb.innerHTML='<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="3" r="1.8"/><circle cx="3" cy="8" r="1.8"/><circle cx="12" cy="13" r="1.8"/><path d="M4.7 9l5.7 3M10.4 4L4.7 7"/></svg> 친구 초대하면 나도 친구도 1만원 할인 🎁'; _scb.style.background=''; _scb.disabled=false; }
   allItems=[];
 
   /* OCR 편집 페이지에서 바로 로딩 표시 */
@@ -3571,7 +3581,7 @@ async function createShareLink(){
     copyShareLink();
   }catch(err){
     alert('링크 생성 실패: ' + err.message);
-    if(btn){ btn.textContent='견적 공유하고 상세분석 무료 1회 받기'; btn.disabled=false; }
+    if(btn){ btn.textContent='친구 초대하면 나도 친구도 1만원 할인 🎁'; btn.disabled=false; }
   }
 }
 function copyShareLink(){
@@ -3588,14 +3598,14 @@ function shareKakao(){
   if(!currentShareUrl) return;
   /* 📊 GA: 카카오 공유 */
   if(typeof GAnalytics !== 'undefined') GAnalytics.share({ platform: 'kakao' });
-  const text = `내 인테리어 견적 분석 결과를 공유해요!\n총 견적: ${document.getElementById('verdictTotal')?.textContent||''}\n판정: ${lastResult?.overallVerdict||''}\n${currentShareUrl}`;
+  const text = `친구야, 이거 써봐! 인테리어 견적 바가지 쓰지 마 🏠\n나 ${lastResult?.overallVerdict||''}한 견적이었는데 항목별로 다 분석해줬어.\n이 링크로 가입하면 너도 나도 1만원 할인 받아 👇\n${currentShareUrl}`;
   window.open(`https://accounts.kakao.com/login?continue=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 function shareTwitter(){
   if(!currentShareUrl) return;
   /* 📊 GA: 트위터 공유 */
   if(typeof GAnalytics !== 'undefined') GAnalytics.share({ platform: 'twitter' });
-  const text = `내 인테리어 견적 분석 결과 — ${lastResult?.overallVerdict||'적정'}한 견적!\n견적메이트 서비스에서 확인했어요 👇`;
+  const text = `인테리어 견적 ${lastResult?.overallVerdict||'적정'} 판정 받았어요 🏠\n항목별 시중가 비교로 바가지 여부 즉시 확인.\n초대 링크로 가입하면 너도 나도 1만원 할인 크레딧 지급! 👇`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 
@@ -3962,9 +3972,9 @@ async function loadMypage() {
         headers: { 'Authorization': 'Bearer ' + authToken }
       });
       const cData = await cResp.json();
-      const friendCount = (cData.logs || []).filter(l => l.type === 'reward').length;
-      if (el('mpFriends')) el('mpFriends').textContent = friendCount + '명';
-    }catch(e){ if(el('mpFriends')) el('mpFriends').textContent = '0명'; }
+      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
+      if (el('mpFriends')) el('mpFriends').textContent = friendCount + '명 (+' + friendCount + '만원 적립)';
+    }catch(e){ if(el('mpFriends')) el('mpFriends').textContent = '0명 (+0만원 적립)'; }
 
     /* 기록 목록 */
     const list = document.getElementById('mpHistoryList');
