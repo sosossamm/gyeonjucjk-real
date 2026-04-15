@@ -182,10 +182,12 @@ export default async function handler(req, res) {
 
       /* logId가 있으면 열람 기록 저장 — 재방문 시 자동 잠금 해제용 */
       if (logId) {
-        await supabase.from('unlocked_logs').upsert(
-          { user_id: user.id, log_id: logId, created_at: new Date().toISOString() },
-          { onConflict: 'user_id,log_id' }
-        ).catch(() => {}); // 테이블 없어도 크레딧 차감은 정상 처리
+        try {
+          await supabase.from('unlocked_logs').upsert(
+            { user_id: user.id, log_id: logId, created_at: new Date().toISOString() },
+            { onConflict: 'user_id,log_id' }
+          );
+        } catch (e) {} // 테이블 없어도 크레딧 차감은 정상 처리
       }
 
       return res.status(200).json({ success: true, credits: updated.credits });
