@@ -92,6 +92,39 @@ export default async function handler(req, res) {
         description: `share:${shareId}`, created_at: new Date().toISOString()
       });
 
+      // 신규 가입 친구에게도 크레딧 1개 지급
+      // shareId 형식: 'referral:친구userId' — 친구 userId 추출
+      const newUserId = shareId.startsWith('referral:') ? shareId.slice('referral:'.length) : null;
+      if (newUserId && newUserId !== sharerId) {
+        const dupKey = `referral_welcome:${newUserId}`;
+        const { data: dupCheck } = await supabase
+          .from('credit_logs').select('id')
+          .eq('user_id', newUserId)
+          .eq('type', 'reward')
+          .eq('description', dupKey)
+          .maybeSingle();
+
+        if (!dupCheck) {
+          const { data: newUserData } = await supabase
+            .from('users').select('credits').eq('id', newUserId).maybeSingle();
+
+          if (!newUserData) {
+            await supabase.from('users').insert({
+              id: newUserId, credits: 1, created_at: new Date().toISOString()
+            });
+          } else {
+            await supabase.from('users').update({
+              credits: (newUserData.credits || 0) + 1
+            }).eq('id', newUserId);
+          }
+
+          await supabase.from('credit_logs').insert({
+            user_id: newUserId, amount: 1, type: 'reward',
+            description: dupKey, created_at: new Date().toISOString()
+          });
+        }
+      }
+
       return res.status(200).json({ success: true });
     }
 
