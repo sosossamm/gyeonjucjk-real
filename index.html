@@ -3574,7 +3574,9 @@ async function createShareLink(){
   }
 
   const btn = document.getElementById('shareCtaBtn');
-  if(btn){ btn.textContent='생성 중...'; btn.disabled=true; }
+  const wrap = btn?.closest('[onclick]');
+  if(btn){ btn.textContent='생성 중...'; }
+  if(wrap){ wrap.style.pointerEvents='none'; wrap.style.opacity='.6'; }
   try{
     const resp = await fetch('/api/share', {
       method:'POST',
@@ -3598,10 +3600,12 @@ async function createShareLink(){
     document.getElementById('shareLinkUrl').textContent = currentShareUrl;
     document.getElementById('shareLinkWrap').style.display = 'block';
     if(btn){ btn.innerHTML='✓ 복사됨'; btn.style.background='var(--cheap)'; }
+    if(wrap){ wrap.style.pointerEvents=''; wrap.style.opacity=''; }
     copyShareLink();
   }catch(err){
     alert('링크 생성 실패: ' + err.message);
-    if(btn){ btn.innerHTML='링크<br>복사'; }
+    if(btn){ btn.innerHTML='링크<br>복사'; btn.style.background=''; }
+    if(wrap){ wrap.style.pointerEvents=''; wrap.style.opacity=''; }
   }
 }
 function copyShareLink(){
