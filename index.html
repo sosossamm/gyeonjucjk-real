@@ -1268,8 +1268,8 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </svg>
       <div style="flex:1;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.3px;">INVITE FRIENDS</div>
-        <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.3px;line-height:1.35;">나도 친구도<br>1만원 할인 🎁</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;">초대 링크로 가입 시 양쪽 크레딧 1개씩 지급</div>
+        <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.3px;line-height:1.35;">나도 친구도<br>크레딧 1개 지급 🎁</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">초대 링크로 가입하면 나도 친구도 크레딧 1개씩 지급</div>
       </div>
       <div id="shareCtaBtn" style="background:var(--ink);color:#fff;font-size:11px;font-weight:800;padding:8px 13px;border-radius:8px;white-space:nowrap;flex-shrink:0;line-height:1.4;text-align:center;">링크<br>복사</div>
     </div>
@@ -1742,7 +1742,7 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
           localStorage.removeItem('referral_ref');
           /* 친구 초대로 가입한 신규 유저에게 안내 */
           setTimeout(() => {
-            alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개(1만원 할인)가 지급되었습니다.');
+            alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개가 지급되었습니다.');
             loadUserCredits();
           }, 800);
         } catch(e) {
@@ -3677,14 +3677,14 @@ function shareKakao(){
   if(!currentShareUrl) return;
   /* 📊 GA: 카카오 공유 */
   if(typeof GAnalytics !== 'undefined') GAnalytics.share({ platform: 'kakao' });
-  const text = `친구야, 이거 써봐! 인테리어 견적 바가지 쓰지 마 🏠\n나 ${lastResult?.overallVerdict||''}한 견적이었는데 항목별로 다 분석해줬어.\n이 링크로 가입하면 너도 나도 1만원 할인 받아 👇\n${currentShareUrl}`;
+  const text = `친구야, 이거 써봐! 인테리어 견적 바가지 쓰지 마 🏠\n나 ${lastResult?.overallVerdict||''}한 견적이었는데 항목별로 다 분석해줬어.\n이 링크로 가입하면 너도 나도 크레딧 1개씩 지급 받아 👇\n${currentShareUrl}`;
   window.open(`https://accounts.kakao.com/login?continue=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 function shareTwitter(){
   if(!currentShareUrl) return;
   /* 📊 GA: 트위터 공유 */
   if(typeof GAnalytics !== 'undefined') GAnalytics.share({ platform: 'twitter' });
-  const text = `인테리어 견적 ${lastResult?.overallVerdict||'적정'} 판정 받았어요 🏠\n항목별 시중가 비교로 바가지 여부 즉시 확인.\n초대 링크로 가입하면 너도 나도 1만원 할인 크레딧 지급! 👇`;
+  const text = `인테리어 견적 ${lastResult?.overallVerdict||'적정'} 판정 받았어요 🏠\n항목별 시중가 비교로 바가지 여부 즉시 확인.\n초대 링크로 가입하면 너도 나도 크레딧 1개씩 지급! 👇`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentShareUrl)}`, '_blank');
 }
 
