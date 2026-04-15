@@ -685,15 +685,18 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .bar-logout-btn{font-size:11px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;font-family:inherit;}
 
 /* ── 일일 한정 할인 배너 ── */
-.sale-banner{background:#0F0E0C;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;color:#fff;}
-.sale-badge{background:#FCD34D;color:#0F0E0C;font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.5px;flex-shrink:0;}
+.sale-banner{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;}
+.sale-badge{background:#FCD34D;color:#0F0E0C;font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.5px;flex-shrink:0;}
 .sale-info{flex:1;}
-.sale-title{font-size:13px;font-weight:800;letter-spacing:-.2px;}
-.sale-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;}
-.sale-count{text-align:right;flex-shrink:0;}
-.sale-remaining{font-size:20px;font-weight:800;letter-spacing:-.5px;}
-.sale-total{font-size:10px;color:rgba(255,255,255,.4);}
-.sale-ended{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.sale-info-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.sale-info-reset{font-size:10px;color:var(--muted);}
+.sale-title{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.35;color:var(--ink);}
+.sale-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.sale-count{text-align:center;flex-shrink:0;border-left:1px solid var(--rule);padding-left:16px;}
+.sale-remaining{font-size:28px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--ink);}
+.sale-total{font-size:10px;color:var(--hint);margin-top:2px;}
+.sale-remaining-label{font-size:9px;font-weight:700;color:var(--cheap);margin-top:3px;}
+.sale-ended{background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
 .sale-ended strong{color:var(--ink);font-weight:800;}
 .price-strike{text-decoration:line-through;color:var(--hint);font-size:12px;font-weight:500;margin-right:4px;}
 
@@ -1245,10 +1248,27 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
   <!-- 공유 CTA 버튼 -->
   <div id="shareCTAWrap" style="margin-bottom:1.25rem;display:none;">
-    <button onclick="createShareLink()" style="width:100%;padding:1rem;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="3" r="1.8"/><circle cx="3" cy="8" r="1.8"/><circle cx="12" cy="13" r="1.8"/><path d="M4.7 9l5.7 3M10.4 4L4.7 7"/></svg>
-      친구 초대하면 나도 친구도 1만원 할인 🎁
-    </button>
+    <div onclick="createShareLink()" style="background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink:0;">
+        <circle cx="40" cy="10" r="7" fill="#EBF0FE" stroke="#C0D0FA" stroke-width="1.2"/>
+        <circle cx="12" cy="26" r="7" fill="#EBF0FE" stroke="#C0D0FA" stroke-width="1.2"/>
+        <circle cx="40" cy="42" r="7" fill="#EBF0FE" stroke="#C0D0FA" stroke-width="1.2"/>
+        <line x1="19" y1="22" x2="33" y2="14" stroke="#1F4FD8" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2.5 2"/>
+        <line x1="19" y1="30" x2="33" y2="38" stroke="#1F4FD8" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2.5 2"/>
+        <circle cx="40" cy="10" r="3.5" fill="#1F4FD8"/>
+        <circle cx="12" cy="26" r="3.5" fill="#0F0E0C"/>
+        <circle cx="40" cy="42" r="3.5" fill="#1F4FD8"/>
+        <path d="M38.5 9l1.5 1.5 2.5-2.5" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38.5 41l1.5 1.5 2.5-2.5" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10.5 25l1.5 1.5 2.5-2.5" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.3px;">INVITE FRIENDS</div>
+        <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.3px;line-height:1.35;">나도 친구도<br>1만원 할인 🎁</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">초대 링크로 가입 시 양쪽 크레딧 1개씩 지급</div>
+      </div>
+      <div id="shareCtaBtn" style="background:var(--ink);color:#fff;font-size:11px;font-weight:800;padding:8px 13px;border-radius:8px;white-space:nowrap;flex-shrink:0;line-height:1.4;text-align:center;">링크<br>복사</div>
+    </div>
     <div class="share-link-wrap" id="shareLinkWrap" style="display:none;margin-top:8px;">
       <div class="share-link-url" id="shareLinkUrl"></div>
       <div class="share-copy-row">
@@ -2879,8 +2899,8 @@ async function doAnalyzeFromOcr(){
   currentShareUrl=''; /* 새 분석마다 공유 링크 초기화 — 견적당 제한 없이 재생성 가능 */
   const _slw = document.getElementById('shareLinkWrap');
   if(_slw) _slw.style.display='none';
-  const _scb = document.querySelector('#shareCTAWrap button');
-  if(_scb){ _scb.innerHTML='<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="3" r="1.8"/><circle cx="3" cy="8" r="1.8"/><circle cx="12" cy="13" r="1.8"/><path d="M4.7 9l5.7 3M10.4 4L4.7 7"/></svg> 친구 초대하면 나도 친구도 1만원 할인 🎁'; _scb.style.background=''; _scb.disabled=false; }
+  const _scb = document.getElementById('shareCtaBtn');
+  if(_scb){ _scb.innerHTML='링크<br>복사'; _scb.style.background=''; }
   allItems=[];
 
   /* OCR 편집 페이지에서 바로 로딩 표시 */
@@ -3553,7 +3573,7 @@ async function createShareLink(){
     return;
   }
 
-  const btn = document.querySelector('#shareCTAWrap button');
+  const btn = document.getElementById('shareCtaBtn');
   if(btn){ btn.textContent='생성 중...'; btn.disabled=true; }
   try{
     const resp = await fetch('/api/share', {
@@ -3577,11 +3597,11 @@ async function createShareLink(){
 
     document.getElementById('shareLinkUrl').textContent = currentShareUrl;
     document.getElementById('shareLinkWrap').style.display = 'block';
-    if(btn){ btn.innerHTML='✓ 링크 복사됨'; btn.style.background='var(--cheap)'; btn.disabled=false; }
+    if(btn){ btn.innerHTML='✓ 복사됨'; btn.style.background='var(--cheap)'; }
     copyShareLink();
   }catch(err){
     alert('링크 생성 실패: ' + err.message);
-    if(btn){ btn.textContent='친구 초대하면 나도 친구도 1만원 할인 🎁'; btn.disabled=false; }
+    if(btn){ btn.innerHTML='링크<br>복사'; }
   }
 }
 function copyShareLink(){
@@ -3749,14 +3769,29 @@ function renderSaleBanners() {
   
   if (s.isSaleActive && s.remaining > 0) {
     const html = `<div class="sale-banner">
-      <div class="sale-badge">EVENT</div>
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink:0;">
+        <rect x="4" y="16" width="34" height="22" rx="3.5" fill="#EBF7F0" stroke="#4CAF82" stroke-width="1.3"/>
+        <path d="M4 24h34" stroke="#4CAF82" stroke-width="1.3"/>
+        <circle cx="9" cy="20" r="2" fill="#4CAF82"/>
+        <circle cx="15" cy="20" r="2" fill="#4CAF82" opacity=".4"/>
+        <circle cx="21" cy="20" r="2" fill="#4CAF82" opacity=".2"/>
+        <rect x="10" y="29" width="22" height="5" rx="2" fill="#4CAF82" opacity=".25"/>
+        <rect x="10" y="29" width="13" height="5" rx="2" fill="#4CAF82"/>
+        <circle cx="40" cy="13" r="9" fill="#FCD34D" stroke="#EF9F27" stroke-width="1.2"/>
+        <path d="M37 13l2 2 4-4" stroke="#633806" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <div class="sale-info">
-        <div class="sale-title">매일 선착순 30명 크레딧 <span style="color:#FCD34D;">단돈 1만 원!</span></div>
-        <div class="sale-sub">정상가 2만원 → 50% 할인 · 매일 오전 9시 리셋</div>
+        <div class="sale-info-top">
+          <div class="sale-badge">EVENT</div>
+          <div class="sale-info-reset">매일 오전 9시 리셋</div>
+        </div>
+        <div class="sale-title">선착순 ${s.dailyLimit}명<br><span style="color:#7A6010;">크레딧 단돈 1만원!</span></div>
+        <div class="sale-sub">정상가 2만원 → 50% 할인</div>
       </div>
       <div class="sale-count">
-        <div class="sale-remaining">${s.remaining}명</div>
+        <div class="sale-remaining">${s.remaining}</div>
         <div class="sale-total">/ ${s.dailyLimit}명</div>
+        <div class="sale-remaining-label">잔여</div>
       </div>
     </div>`;
     if (saleBanner) saleBanner.innerHTML = html;
