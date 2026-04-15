@@ -531,32 +531,36 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .credit-qty-btn.active .cq-n{color:#1F4FD8;}
 .cq-p{font-size:11px;color:var(--muted);font-weight:600;}
 .cq-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#1F4FD8;color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;}
-.ocr-row{display:grid;grid-template-columns:1fr 150px 120px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--rule);transition:background .1s;}
-.ocr-row:last-child{border-bottom:none;}
-.ocr-row:hover{background:var(--paper);}
-.ocr-name{font-size:12px;font-weight:600;color:var(--ink);padding-right:8px;line-height:1.4;}
-.ocr-cat-cell{display:flex;justify-content:center;padding:0 8px;}
-.ocr-amt-cell{display:flex;align-items:center;justify-content:center;gap:3px;padding:0 8px;}
+.ocr-row{border:.5px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.ocr-row:last-child{margin-bottom:0;}
+.ocr-name-cell{background:var(--paper);padding:9px 13px;border-bottom:.5px solid var(--rule);}
+.ocr-name-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:2px;}
+.ocr-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;}
+.ocr-bottom-row{display:flex;align-items:center;gap:10px;padding:10px 13px;}
+.ocr-cat-cell{flex:1;}
+.ocr-cat-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
+.ocr-amt-cell{flex-shrink:0;text-align:right;}
+.ocr-amt-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
+.ocr-amt-row{display:flex;align-items:center;gap:4px;}
 .ocr-select{
-  width:100%;padding:6px 8px;
-  border:1.5px solid #E8E5E0;border-radius:7px;
-  font-family:inherit;font-size:11px;color:var(--ink3);
-  background:#F0EEE9;
-  outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;
-  text-align:center;transition:all .15s;
+  width:100%;padding:6px 10px;
+  border:1.5px solid var(--rule);border-radius:7px;
+  font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);
+  background:var(--paper);
+  outline:none;cursor:pointer;transition:all .15s;
 }
 .ocr-select:hover{background:#E8E5DF;border-color:#D0CEC9;}
 .ocr-select:focus{background:#fff;border-color:var(--accent);}
 .ocr-amt-input{
-  width:65px;padding:6px 8px;
-  border:1.5px solid #E8E5E0;border-radius:7px;
-  font-family:inherit;font-size:12px;font-weight:700;color:var(--ink);
-  background:#F0EEE9;
+  width:70px;padding:6px 8px;
+  border:1.5px solid var(--rule);border-radius:7px;
+  font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);
+  background:var(--paper);
   outline:none;text-align:right;transition:all .15s;
 }
 .ocr-amt-input:hover{background:#E8E5DF;border-color:#D0CEC9;}
 .ocr-amt-input:focus{background:#fff;border-color:var(--accent);}
-.ocr-unit{font-size:10px;color:var(--hint);white-space:nowrap;}
+.ocr-unit{font-size:11px;color:var(--muted);white-space:nowrap;}
 .mp-hist-card{border:1px solid var(--rule);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:10px;transition:border-color .15s;}
 .mp-hist-card:hover{border-color:var(--ink3);}
 .mp-hist-card.exp{border-left:3px solid var(--exp-mid);border-radius:0 var(--radius) var(--radius) 0;}
@@ -577,9 +581,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .mp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .mp-dot.exp{background:var(--exp-mid);}.mp-dot.fair{background:var(--fair-mid);}.mp-dot.cheap{background:var(--cheap-mid);}
 .mp-actions{display:flex;gap:7px;border-top:0.5px solid var(--rule);padding-top:10px;}
-.mp-btn-view{flex:1;height:36px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mp-btn-view{flex:1;height:36px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
 .mp-btn-view:hover{background:var(--rule);}
-.mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .mp-btn-share:hover{opacity:.85;}
 
 @media(max-width:640px){
@@ -1380,11 +1384,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       <div class="card-title" style="margin-bottom:0.75rem;">공종 분류 확인</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종 분류와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
 
-      <div style="display:grid;grid-template-columns:1fr 150px 120px;padding:6px 0;border-bottom:1.5px solid var(--rule);margin-bottom:2px;">
-        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);">항목명</span>
-        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">공종 분류</span>
-        <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);text-align:center;">금액</span>
-      </div>
+
 
       <div id="ocrEditList"></div>
 
@@ -2854,14 +2854,22 @@ function renderOcrList(){
     const amtWan=item.amount||0;
     const catOpts=OCR_CATS.map(c=>`<option value="${c}"${c===item.category?' selected':''}>${c}</option>`).join('');
     return `<div class="ocr-row">
-      <div class="ocr-name">${esc(item.name||'')}</div>
-      <div class="ocr-cat-cell">
-        <select class="ocr-select" onchange="ocrUpdateCat(${i},this.value)">${catOpts}</select>
+      <div class="ocr-name-cell">
+        <div class="ocr-name-label">인식된 텍스트</div>
+        <div class="ocr-name">${esc(item.name||'')}</div>
       </div>
-      <div class="ocr-amt-cell">
-        <input class="ocr-amt-input" type="number" value="${amtWan}" min="0"
-          oninput="ocrUpdateAmt(${i},this.value)">
-        <span class="ocr-unit">만원</span>
+      <div class="ocr-bottom-row">
+        <div class="ocr-cat-cell">
+          <div class="ocr-cat-label">공종 분류</div>
+          <select class="ocr-select" onchange="ocrUpdateCat(${i},this.value)">${catOpts}</select>
+        </div>
+        <div class="ocr-amt-cell">
+          <div class="ocr-amt-label">금액</div>
+          <div class="ocr-amt-row">
+            <input class="ocr-amt-input" type="number" value="${amtWan}" min="0" oninput="ocrUpdateAmt(${i},this.value)">
+            <span class="ocr-unit">만원</span>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -4012,8 +4020,8 @@ async function loadMypage() {
       });
       const cData = await cResp.json();
       const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
-      if (el('mpFriends')) el('mpFriends').textContent = friendCount + '명 (+' + friendCount + '만원 적립)';
-    }catch(e){ if(el('mpFriends')) el('mpFriends').textContent = '0명 (+0만원 적립)'; }
+      if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
+    }catch(e){ if(el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>'; }
 
     /* 기록 목록 */
     const list = document.getElementById('mpHistoryList');
@@ -4061,7 +4069,7 @@ async function loadMypage() {
             </button>
             <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
-              이 견적 공유하고 1회 무료 견적 분석 받기
+              공유하고 무료 분석 받기
             </button>
           </div>
         </div>`;
