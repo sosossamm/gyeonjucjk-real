@@ -1337,7 +1337,6 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
       </div>
       <div style="display:none;padding:1.5rem;" id="paidDetail">
         <div class="section-header" style="margin-bottom:1rem;">
-          <div class="section-title">항목별 상세 분석</div>
           <div class="section-filter">
             <button class="filter-btn active" onclick="filterItems('all',this)">전체</button>
             <button class="filter-btn" onclick="filterItems('cheap',this)">저렴</button>
@@ -2739,7 +2738,7 @@ Each tip object MUST have:
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
 Market refs per 평 (${region}기준, 지역 물가 보정 적용):
 ${(()=>{
-  const f={'서울':1.20,'수도권':1.12,'광역시':1.05,'기타':1.00}[region]||1.00;
+  const f={'서울':1.30,'수도권':1.15,'광역시':1.05,'기타':1.00}[region]||1.00;
   const r=(mn,mx)=>`${Math.round(mn*f)}~${Math.round(mx*f)}만`;
   return [
     `· 철거 평당${r(15,25)} · 방수(발코니) m2당${r(8,15)} · 방수(욕실) m2당${r(10,18)}`,
@@ -2756,7 +2755,7 @@ ${(()=>{
     `· 목공(우물천장) m2당${r(10,22)} · 목공(가벽) m2당${r(10,22)} · 히든도어 짝당${r(80,200)} · 커튼박스 m당${r(8,18)}`,
     `· 보일러 ${r(50,150)}/식 · 발코니확장 평당${r(150,350)} · 환기시스템 ${r(150,400)}/식 · 배관전체교체 평당${r(15,30)}`,
     `· 입주청소 평당${r(2,4)} · 폐기물처리 평당${r(3,7)}`,
-    `(지역보정계수: ${f.toFixed(2)} — 서울1.20/수도권1.12/광역시1.05/기타1.00 기준)`,
+    `(지역보정계수: ${f.toFixed(2)} — 서울1.30/수도권1.15/광역시1.05/기타1.00 기준)`,
   ].join('\n');
 })()}
 Category: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박이장 전기/조명 목공 창호/샷시 확장/설비 기타`;
