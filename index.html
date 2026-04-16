@@ -1485,6 +1485,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
     </button>
   </div>
 
+  <!-- 선착순 배너 (계정~크레딧 사이) -->
+  <div id="mpSaleBanner" style="margin-bottom:12px;"></div>
+
   <!-- 크레딧 -->
   <div class="card" id="mpCreditCard">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
@@ -1502,8 +1505,6 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
       </div>
     </div>
     <div id="creditChargeSection">
-      <!-- 일일 할인 배너 (마이페이지) -->
-      <div id="mpSaleBanner"></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;" id="creditQtyBtns">
         <button onclick="selectCreditQty(1,this)" class="credit-qty-btn active">
           <div class="cq-n">1개</div><div class="cq-p" id="cqPrice1">₩10,000</div>
@@ -1535,6 +1536,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
     <div class="stat-card"><div class="stat-label">🔗 공유 링크</div><div class="stat-val neutral" id="mpShare">—</div></div>
     <div class="stat-card"><div class="stat-label">👥 초대한 친구</div><div class="stat-val neutral" id="mpFriends">—</div></div>
   </div>
+
+  <!-- 친구 초대 배너 -->
+  <div id="mpFriendBanner" style="margin-bottom:12px;"></div>
 
   <!-- 분석 기록 -->
   <div class="card">
@@ -3902,10 +3906,72 @@ function renderSaleBanners() {
       </div>
     </div>`;
 
+  // 랜딩/결과 → 두 배너 합쳐서
   const html = banner1 + banner2;
   if (saleBanner) saleBanner.innerHTML = html;
-  if (mpBanner) mpBanner.innerHTML = html;
   if (ctaBanner) ctaBanner.innerHTML = html;
+
+  // 마이페이지 → 선착순 배너만 기존 디자인으로
+  if (mpBanner) {
+    if (s.isSaleActive && s.remaining > 0) {
+      mpBanner.innerHTML = `<div class="sale-banner">
+        <div class="sale-info">
+          <div class="sale-info-top">
+            <div class="sale-badge">EVENT</div>
+            <div class="sale-info-reset">매일 오전 9시 리셋</div>
+          </div>
+          <div class="sale-title">선착순 ${s.dailyLimit}명<br><span style="color:#7A6010;">크레딧 단돈 1만원!</span></div>
+          <div class="sale-sub">정상가 2만원 → 50% 할인</div>
+        </div>
+        <div class="sale-count">
+          <div class="sale-remaining">${s.remaining}</div>
+          <div class="sale-total">/ ${s.dailyLimit}명</div>
+          <div class="sale-remaining-label">잔여</div>
+        </div>
+      </div>`;
+    } else {
+      mpBanner.innerHTML = `<div class="sale-ended">
+        <span>⏰</span>
+        <div>오늘 선착순 마감됐어요. <strong>정상가 ${(s.normalPrice/10000).toLocaleString()}만원</strong>으로 구매 가능합니다.<br>내일 오전 9시에 다시 할인이 시작돼요!</div>
+      </div>`;
+    }
+  }
+
+  // 마이페이지 친구 초대 배너
+  const mpFriendBanner = document.getElementById('mpFriendBanner');
+  if (mpFriendBanner) {
+    mpFriendBanner.innerHTML = `<div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:16px;padding:20px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="flex:1;">
+          <div style="display:inline-flex;background:#EF9F27;border-radius:6px;padding:3px 10px;margin-bottom:10px;">
+            <span style="font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;">상시 EVENT</span>
+          </div>
+          <div style="font-size:20px;font-weight:900;color:#412402;line-height:1.2;letter-spacing:-.5px;margin-bottom:6px;">친구 초대하면<br><span style="color:#854F0B;">나도 친구도</span> 크레딧!</div>
+          <div style="font-size:12px;color:#BA7517;">초대 링크로 가입 시 양쪽 1개씩 즉시 지급</div>
+        </div>
+        <svg width="80" height="80" viewBox="0 0 88 88" fill="none" style="flex-shrink:0;">
+          <ellipse cx="26" cy="68" rx="12" ry="7" fill="#FDE68A"/>
+          <rect x="20" y="52" width="12" height="18" rx="4" fill="#FDE68A"/>
+          <circle cx="26" cy="46" r="9" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1.5"/>
+          <path d="M17 44c0-5 4-9 9-9s9 4 9 9" fill="#854F0B"/>
+          <path d="M23 46 q1 1.5 2.5 1.5 q1.5 0 2.5-1.5" stroke="#633806" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <circle cx="14" cy="38" r="8" fill="#EF9F27" stroke="#fff" stroke-width="1.5"/>
+          <text x="14" y="42" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="sans-serif">+1</text>
+          <ellipse cx="62" cy="68" rx="12" ry="7" fill="#FCD34D"/>
+          <rect x="56" y="52" width="12" height="18" rx="4" fill="#FCD34D"/>
+          <circle cx="62" cy="46" r="9" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1.5"/>
+          <path d="M53 44c0-5 4-9 9-9s9 4 9 9" fill="#412402"/>
+          <path d="M53 44 q-2 8 0 16" stroke="#412402" stroke-width="3" stroke-linecap="round"/>
+          <path d="M71 44 q2 8 0 16" stroke="#412402" stroke-width="3" stroke-linecap="round"/>
+          <path d="M59 46 q1 1.5 2.5 1.5 q1.5 0 2.5-1.5" stroke="#633806" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <circle cx="74" cy="38" r="8" fill="#EF9F27" stroke="#fff" stroke-width="1.5"/>
+          <text x="74" y="42" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="sans-serif">+1</text>
+          <path d="M38 50 C40 46 48 46 50 50" stroke="#EF9F27" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2"/>
+          <path d="M41 56 q3-4 3-4 q3 4 3 4 q0 3-3 5 q-3-2-3-5z" fill="#EF9F27"/>
+        </svg>
+      </div>
+    </div>`;
+  }
 }
 
 function getCurrentUnitPrice() {
