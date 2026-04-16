@@ -165,7 +165,8 @@ GAnalytics.init();
   --accent:#1F4FD8;--radius:14px;--radius-sm:8px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.5;}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;line-height:1.5;}
+.wrap{background:var(--surface);}
 
 
 /* ── 페이지 전환 ── */
@@ -205,10 +206,10 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 /* ── steps ── */
 .steps{display:flex;gap:0;margin-bottom:2rem;}
-.step{flex:1;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--hint);font-weight:600;position:relative;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;font-size:13px;color:var(--hint);font-weight:600;position:relative;}
 .step::after{content:'';position:absolute;top:15px;left:calc(50% + 16px);right:calc(-50% + 16px);height:1px;background:var(--rule);}
 .step:last-child::after{display:none;}
-.step-num{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--hint);background:var(--surface);margin-bottom:5px;position:relative;z-index:1;transition:all 0.3s;}
+.step-num{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--hint);background:var(--surface);margin-bottom:5px;position:relative;z-index:1;transition:all 0.3s;}
 .step.active .step-num{background:var(--ink);color:#fff;border-color:var(--ink);}
 .step.done .step-num{background:var(--cheap);color:#fff;border-color:var(--cheap);}
 .step.active{color:var(--ink);}
@@ -216,14 +217,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
 /* ── card ── */
 .card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;}
-.card-title{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;display:flex;align-items:center;gap:7px;}
+.card-title{font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;display:flex;align-items:center;gap:7px;}
 .card-title::before{content:'';display:block;width:3px;height:13px;background:var(--ink);border-radius:2px;}
 
 /* ── mode toggle ── */
 .mode-toggle{display:flex;gap:8px;margin-bottom:1.25rem;}
-.mode-btn{flex:1;padding:0.85rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);transition:all 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mode-btn{flex:1;padding:0.85rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:var(--muted);transition:all 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mode-btn.active{border-color:var(--ink);background:var(--ink);color:#fff;}
-.mode-btn span{display:block;font-size:10px;font-weight:400;margin-top:3px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mode-btn span{display:block;font-size:12px;font-weight:400;margin-top:3px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── upload zone ── */
 .upload-zone{border:2px dashed var(--rule);border-radius:var(--radius-sm);padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--paper);position:relative;}
@@ -234,7 +235,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .upload-icon-wrap svg{width:22px;height:22px;color:var(--muted);}
 .upload-zone:hover .upload-icon-wrap svg{color:var(--accent);}
 .upload-main{font-size:14px;font-weight:700;margin-bottom:3px;}
-.upload-sub{font-size:12px;color:var(--muted);}
+.upload-sub{font-size:13px;color:var(--muted);}
 .file-pill{display:inline-flex;align-items:center;gap:7px;margin-top:0.85rem;background:#EBF0FE;border:1px solid #C0D0FA;color:var(--accent);border-radius:6px;font-size:12px;font-weight:600;padding:5px 10px;}
 .file-pill button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 3px;}
 .file-type-badge{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-left:5px;}
@@ -245,7 +246,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 /* ── form ── */
 .form-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 .form-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:5px;}
-.form-field input,.form-field select{width:100%;padding:0.6rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
+.form-field input,.form-field select{width:100%;padding:0.6rem 0.5rem;border:1.5px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:15px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;transition:border-color 0.15s;appearance:none;}
 .form-field input:focus,.form-field select:focus{border-color:var(--accent);background:#fff;}
 @media(max-width:480px){.form-grid{grid-template-columns:repeat(2,1fr);}.form-grid .form-field:last-child{grid-column:1/-1;}}
 
@@ -329,9 +330,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .verdict-banner.fair .verdict-label{color:var(--fair);}
 .verdict-banner.exp .verdict-label{color:var(--exp);}
 .verdict-title{font-size:17px;font-weight:800;letter-spacing:-0.5px;margin-bottom:2px;}
-.verdict-sub{font-size:13px;color:var(--ink3);}
+.verdict-sub{font-size:14px;color:var(--ink3);}
 .verdict-total{margin-left:auto;text-align:right;flex-shrink:0;}
-.verdict-total .t-label{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.verdict-total .t-label{font-size:13px;color:var(--muted);margin-bottom:2px;}
 .verdict-total .t-amount{font-size:21px;font-weight:800;letter-spacing:-1px;}
 
 /* stats */
@@ -346,7 +347,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .stat-val.exp{color:var(--exp);}
 
 /* cat edit */
-.edit-notice{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--accent);background:#EEF3FE;border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:13px;line-height:1.5;}
+.edit-notice{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--accent);background:#EEF3FE;border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:13px;line-height:1.5;}
 .cat-edit-list{display:flex;flex-direction:column;margin-bottom:12px;}
 .cat-edit-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--rule);}
 .cat-edit-row:last-child{border-bottom:none;}
@@ -369,16 +370,16 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .paywall-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px 20px;text-align:center;width:100%;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
 .paywall-card-icon{width:48px;height:48px;border-radius:50%;background:var(--paper);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
 .paywall-card-title{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.5px;margin-bottom:5px;}
-.paywall-card-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.paywall-card-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
 .gate-save-msg{font-size:13px;font-weight:700;color:var(--cheap);background:var(--cheap-bg);border:1px solid var(--cheap-mid);border-radius:8px;padding:7px 13px;margin-bottom:13px;line-height:1.5;}
 .gate-features{display:flex;flex-direction:column;gap:6px;margin-bottom:15px;text-align:left;}
-.gate-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3);}
+.gate-feat{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink3);}
 .gate-feat-check{width:17px;height:17px;border-radius:50%;background:var(--cheap-bg);color:var(--cheap);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .btn-pay{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);padding:13px 0;width:100%;font-family:inherit;font-size:15px;font-weight:800;letter-spacing:-0.3px;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
 .btn-pay:hover{opacity:0.85;}
 .btn-pay:active{transform:scale(0.99);}
 .btn-pay-price{background:#fff;color:var(--ink);font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;}
-.refund-notice{font-size:11px;color:rgba(0,0,0,0.4);margin-top:9px;line-height:1.6;text-align:center;}
+.refund-notice{font-size:12px;color:rgba(0,0,0,0.4);margin-top:9px;line-height:1.6;text-align:center;}
 .refund-notice span{text-decoration:underline;cursor:pointer;color:var(--muted);}
 .blur-target{padding:1.5rem;}
 .paid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--cheap-bg);color:var(--cheap);border:1px solid var(--cheap-mid);font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px;}
@@ -401,7 +402,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
 .section-title{font-size:14px;font-weight:800;letter-spacing:-0.3px;}
 .section-filter{display:flex;gap:5px;}
-.filter-btn{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1.5px solid var(--rule);background:none;cursor:pointer;color:var(--muted);font-family:inherit;transition:all 0.15s;}
+.filter-btn{font-size:13px;font-weight:700;padding:4px 11px;border-radius:20px;border:1.5px solid var(--rule);background:none;cursor:pointer;color:var(--muted);font-family:inherit;transition:all 0.15s;}
 .filter-btn.active{border-color:var(--ink);background:var(--ink);color:#fff;}
 .items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
 .item-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:1rem 1.25rem;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto;gap:0 12px;align-items:start;animation:fadeIn 0.3s ease both;}
@@ -414,7 +415,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .item-verdict-dot.fair{background:var(--fair-mid);}
 .item-verdict-dot.exp{background:var(--exp-mid);}
 .item-name{font-size:14px;font-weight:700;grid-column:2;grid-row:1;}
-.item-cat-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--paper);color:var(--muted);margin-left:5px;vertical-align:middle;}
+.item-cat-tag{font-size:12px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--paper);color:var(--muted);margin-left:5px;vertical-align:middle;}
 .item-amount{font-size:15px;font-weight:800;letter-spacing:-0.5px;grid-column:3;grid-row:1;text-align:right;}
 .item-detail{font-size:12px;color:var(--muted);grid-column:2;grid-row:2;padding-top:2px;}
 .item-pill{font-size:10px;font-weight:800;letter-spacing:0.3px;padding:2px 8px;border-radius:4px;grid-column:3;grid-row:2;align-self:start;text-align:center;margin-top:2px;}
@@ -441,7 +442,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .tip-icon.fair{background:var(--fair-bg);}
 .tip-icon.cheap{background:var(--cheap-bg);}
 .tip-icon.neutral{background:var(--paper);}
-.tip-cat{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.tip-cat{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
 .tip-name{font-size:14px;font-weight:700;color:var(--ink);}
 .tip-amounts{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:4px;}
 .tip-current{font-size:17px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);}
@@ -450,7 +451,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .tip-diff.fair{background:var(--fair-bg);color:var(--fair);}
 .tip-diff.cheap{background:var(--cheap-bg);color:var(--cheap);}
 .tip-market{display:flex;align-items:center;gap:8px;padding:7px 16px;background:var(--paper);border-bottom:0.5px solid var(--rule);}
-.tip-market-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.tip-market-label{font-size:12px;color:var(--muted);white-space:nowrap;}
 .tip-market-range{font-size:12px;font-weight:700;color:var(--ink3);white-space:nowrap;}
 .tip-bar-wrap{flex:1;height:4px;background:var(--rule);border-radius:2px;overflow:hidden;}
 .tip-bar-fill{height:100%;border-radius:2px;}
@@ -462,15 +463,15 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .tip-ratio.fair{color:var(--fair);}
 .tip-ratio.cheap{color:var(--cheap);}
 .tip-body{padding:12px 16px 14px;}
-.tip-ways-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.tip-ways-label{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
 .tip-way{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--rule);}
 .tip-way:last-of-type{border-bottom:none;padding-bottom:0;}
 .tip-way-num{width:20px;height:20px;border-radius:50%;background:var(--paper);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .tip-way-num.exp{background:var(--exp-bg);color:var(--exp);}
 .tip-way-num.fair{background:var(--fair-bg);color:var(--fair);}
-.tip-way-text{font-size:13px;color:var(--ink3);line-height:1.65;word-break:keep-all;}
+.tip-way-text{font-size:14px;color:var(--ink3);line-height:1.65;word-break:keep-all;}
 .tip-question{margin-top:10px;padding:9px 12px;background:var(--paper);border-radius:var(--radius-sm);border:0.5px solid var(--rule);font-size:12px;color:var(--ink3);line-height:1.6;}
-.tip-question-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.tip-question-label{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
 
 /* ── 약관 페이지 ── */
 .legal-wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
@@ -534,13 +535,13 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .ocr-row{border:.5px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:10px;}
 .ocr-row:last-child{margin-bottom:0;}
 .ocr-name-cell{background:var(--paper);padding:9px 13px;border-bottom:.5px solid var(--rule);}
-.ocr-name-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:2px;}
+.ocr-name-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:2px;}
 .ocr-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;}
 .ocr-bottom-row{display:flex;align-items:center;gap:10px;padding:10px 13px;}
 .ocr-cat-cell{flex:1;}
-.ocr-cat-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
+.ocr-cat-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
 .ocr-amt-cell{flex-shrink:0;text-align:right;}
-.ocr-amt-label{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
+.ocr-amt-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:4px;}
 .ocr-amt-row{display:flex;align-items:center;gap:4px;}
 .ocr-select{
   width:100%;padding:6px 10px;
@@ -695,7 +696,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .sale-info-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
 .sale-info-reset{font-size:10px;color:var(--muted);}
 .sale-title{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.35;color:var(--ink);}
-.sale-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.sale-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 .sale-count{text-align:center;flex-shrink:0;border-left:1px solid var(--rule);padding-left:16px;}
 .sale-remaining{font-size:28px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--ink);}
 .sale-total{font-size:10px;color:var(--hint);margin-top:2px;}
@@ -705,7 +706,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .price-strike{text-decoration:line-through;color:var(--hint);font-size:12px;font-weight:500;margin-right:4px;}
 
 /* ── 랜딩 섹션 ── */
-.landing-section{padding:0 1.5rem;}
+.landing-section{padding:0 1.5rem;background:#EEF3FE;border-top:1px solid #C0D0FA;margin-top:0;}
 .landing-inner{max-width:820px;margin:0 auto;}
 .section-block{padding:3.5rem 0 3rem;border-top:1px solid var(--rule);}
 .section-block:first-child{border-top:none;}
@@ -724,7 +725,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .why-icon.blue{background:#EBF0FE;color:var(--accent);}
 .why-icon.green{background:var(--cheap-bg);color:var(--cheap);}
 .why-label{font-size:14px;font-weight:800;margin-bottom:5px;letter-spacing:-0.3px;}
-.why-text{font-size:12px;color:var(--muted);line-height:1.6;}
+.why-text{font-size:13px;color:var(--muted);line-height:1.6;}
 
 /* how steps */
 .how-steps{display:flex;gap:0;position:relative;}
@@ -734,7 +735,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 @media(max-width:640px){.how-step+.how-step{margin-left:0;margin-top:-1px;}}
 .how-num{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;margin:0 auto 0.85rem;}
 .how-step-title{font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-0.3px;}
-.how-step-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.how-step-desc{font-size:13px;color:var(--muted);line-height:1.5;}
 .how-arrow{position:absolute;right:-12px;top:50%;transform:translateY(-50%);z-index:2;width:22px;height:22px;border-radius:50%;background:var(--paper);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;}
 @media(max-width:640px){.how-arrow{right:50%;top:auto;bottom:-12px;transform:translateX(50%) rotate(90deg);}}
 
@@ -778,7 +779,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 .cta-price span{color:#A0BFF8;}
 .cta-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:1.5rem;line-height:1.6;}
 .cta-features{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:1.75rem;}
-.cta-feat{font-size:11px;font-weight:600;padding:4px 12px;border:1px solid rgba(255,255,255,.15);border-radius:20px;color:rgba(255,255,255,.6);}
+.cta-feat{font-size:13px;font-weight:600;padding:4px 12px;border:1px solid rgba(255,255,255,.15);border-radius:20px;color:rgba(255,255,255,.6);}
 .cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:#fff;color:var(--ink);border:none;border-radius:8px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.3px;transition:transform .15s,box-shadow .15s;}
 .cta-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.2);}
 
@@ -827,7 +828,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
   <div class="hero-inner">
     <div class="hero-eyebrow">5,000건+ 견적 데이터 기반</div>
     <h1>내 견적, <em>비싼 건지</em><br>알고 싶었잖아요</h1>
-    <p class="hero-desc">5,000여 건의 실제 인테리어 견적 데이터를 분석해 구축한 지역별 단가 기준으로,<br>내 견적서가 적정한지 항목별로 즉시 판별해드립니다.</p>
+    <p class="hero-desc">5,000건 실 데이터 기반으로 내 견적서가 비싼지 즉시 판별합니다.</p>
     <div class="hero-cats">
       <span class="hero-cat">철거/방수</span><span class="hero-cat">타일/바닥</span>
       <span class="hero-cat">도배/도장</span><span class="hero-cat">욕실/주방</span>
@@ -867,7 +868,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
         </svg>
       </div>
       <div class="upload-main">견적서를 올려주세요</div>
-      <div class="upload-sub">PDF · JPG · PNG · WEBP · 클릭하거나 드래그 앤 드롭</div>
+      <div class="upload-sub">PDF · 사진 · 클릭 또는 드래그</div>
     </div>
     <div id="imgPreviewArea"></div>
   </div>
@@ -972,28 +973,28 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <div class="section-block">
   <div class="section-eyebrow">Why</div>
   <div class="section-title">견적서, 받아만 보고<br><em>결정은 못 하고 계신가요?</em></div>
-  <div class="section-desc">같은 32평 아파트도 업체마다 1,000만~3,800만원 차이가 납니다. 어디가 비싼 건지, 어디를 깎아야 하는지 — 혼자 받은 5건의 견적으로는 비교할 수 없어요.</div>
+  <div class="section-desc">같은 평수도 업체마다 수천만원 차이가 납니다. 어디가 비싼지 혼자선 알 수 없어요.</div>
   <div class="why-grid">
     <div class="why-card">
       <div class="why-icon red">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4h12M4 8h8M4 12h10M4 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="14" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M14.5 14h3M16 12.5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       </div>
       <div class="why-label">모든 업체를 상담받을 수 없으니까</div>
-      <div class="why-text">3곳, 5곳 견적 받아도 결국 어디가 적정 가격인지 모릅니다. 5,000건 실 데이터 기준이 있어야 비로소 비교가 됩니다.</div>
+      <div class="why-text">5,000건 실 데이터 기준이 있어야 비교가 됩니다.</div>
     </div>
     <div class="why-card">
       <div class="why-icon blue">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 17V7l7-4 7 4v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 17v-5h6v5" stroke="currentColor" stroke-width="1.4"/><path d="M1 17h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="9" r="1.2" fill="currentColor"/></svg>
       </div>
       <div class="why-label">전문가 용어 뒤에 숨은 가격</div>
-      <div class="why-text">할증, 부분철거, 턴키, 오버레이 — 익숙하지 않은 용어 속에 수백만원 차이가 숨어 있습니다. 항목별로 해석해드립니다.</div>
+      <div class="why-text">생소한 용어 속에 수백만원이 숨어 있습니다. 항목별로 해석해드립니다.</div>
     </div>
     <div class="why-card">
       <div class="why-icon green">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 7v6l8 5 8-5V7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 18v-6M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
       </div>
       <div class="why-label">저렴한 견적에는 함정이 있어요</div>
-      <div class="why-text">지나치게 싼 견적은 자재 등급 하락, 공정 누락, 추가금 유발 가능성이 높습니다. 저렴·적정·비쌈 모두 근거와 함께 판별합니다.</div>
+      <div class="why-text">싼 견적엔 공정 누락·추가금 함정이 있습니다. 근거와 함께 판별합니다.</div>
     </div>
   </div>
 </div>
@@ -1002,12 +1003,12 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <div class="section-block">
   <div class="section-eyebrow">How it works</div>
   <div class="section-title">3단계, <em>1분이면 끝</em></div>
-  <div class="section-desc">견적서 사진 한 장이면 AI가 항목을 자동으로 인식하고, 시중 평균가와 즉시 비교합니다.</div>
+  <div class="section-desc">사진 한 장으로 시중가와 즉시 비교합니다.</div>
   <div class="how-steps">
     <div class="how-step">
       <div class="how-num">1</div>
       <div class="how-step-title">견적서 업로드</div>
-      <div class="how-step-desc">PDF·사진 파일을 올리거나<br>금액을 직접 입력하세요</div>
+      <div class="how-step-desc">PDF·사진 업로드 또는<br>직접 입력</div>
       <div class="how-arrow">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
@@ -1015,7 +1016,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <div class="how-step">
       <div class="how-num">2</div>
       <div class="how-step-title">AI 자동 분석</div>
-      <div class="how-step-desc">항목별 금액을 인식하고<br>5,000건 데이터와 비교</div>
+      <div class="how-step-desc">AI가 항목 인식 후<br>시중가 자동 비교</div>
       <div class="how-arrow">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
@@ -1023,7 +1024,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <div class="how-step">
       <div class="how-num">3</div>
       <div class="how-step-title">판정 결과 확인</div>
-      <div class="how-step-desc">저렴/적정/비쌈 판정과<br>전문가 협상 팁 제공</div>
+      <div class="how-step-desc">판정 결과 +<br>협상 팁 제공</div>
     </div>
   </div>
 </div>
@@ -1032,7 +1033,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <div class="section-block">
   <div class="section-eyebrow">Preview</div>
   <div class="section-title">이렇게 <em>한눈에</em> 보여드립니다</div>
-  <div class="section-desc">실제 분석 결과 화면 미리보기입니다. 항목별 저렴/적정/비쌈 판정, 시중가 대비 비교 바, 절약 가능 금액까지 모두 확인할 수 있습니다.</div>
+  <div class="section-desc">실제 분석 결과 미리보기입니다.</div>
   <div class="preview-frame">
     <div class="preview-bar">
       <span class="preview-dot r"></span>
@@ -1119,10 +1120,10 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 <div class="section-block" style="border-top:none;padding-top:0;">
   <div class="cta-block">
     <div class="cta-inner">
-      <div class="cta-price">모든 분석과 절약방법을<br><span>단돈 1만 원</span>에 해결하세요</div>
+      <div class="cta-price">인테리어 비용 절약방법을<br><span>견적메이트</span>에서 분석받으세요</div>
       <div class="cta-sub">
-        인테리어 업체 한 곳 더 만나는 시간과 비용 대비,<br>
-        단돈 1만원으로 내 견적의 모든 항목을 낱낱이 점검하세요.
+        인테리어 업체 한 곳을 더 만나는 시간과 비용보다<br>
+        견적메이트에서 제대로된 분석을 받는 것이 효율적입니다.
       </div>
       <div class="cta-features">
         <span class="cta-feat">✓ 항목별 저렴/적정/비쌈 판정</span>
@@ -1144,6 +1145,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 </div>
 
 </div>
+
+<!-- ── 이벤트 배너 섹션 ── -->
+<div style="padding:2rem 1.5rem;background:#fff;border-top:1px solid #C0D0FA;">
+  <div style="max-width:820px;margin:0 auto;">
+    <div id="ctaSaleBanner"></div>
+  </div>
+</div>
+
 </div><!-- /landing-section -->
 
 <!-- 입력 페이지 푸터 -->
@@ -1241,7 +1250,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
     <div class="card-title">카테고리별 금액 확인 및 수정</div>
     <div class="edit-notice">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="6" stroke="#1F4FD8" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#1F4FD8" stroke-width="1.3" stroke-linecap="round"/></svg>
-      AI가 금액을 잘못 인식했다면 여기서 수정하세요. 수정한 금액 기준으로 상세 분석이 진행됩니다.
+      금액이 다르면 여기서 수정하세요.
     </div>
     <div class="cat-edit-list" id="catEditList"></div>
     <div class="cat-total-row">
@@ -1305,14 +1314,14 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
             </svg>
           </div>
           <div class="paywall-card-title">상세 분석 잠김</div>
-          <div class="paywall-card-sub">시중가 비교, 저렴/비쌈 판정,<br>전문가 협상 팁까지 모두 확인하세요</div>
+          <div class="paywall-card-sub">항목별 판정과 협상 팁을 확인하세요</div>
           <div class="gate-save-msg" id="gateSaveMsg" style="display:none;">
             최소 <span id="saveMin">—</span> ~ 최대 <span id="saveMax">—</span><br>절약할 수 있을 것 같아요!
           </div>
           <div class="gate-features">
             <div class="gate-feat"><div class="gate-feat-check">✓</div>항목별 저렴/적정/비쌈 판정</div>
-            <div class="gate-feat"><div class="gate-feat-check">✓</div>시중 평균가 대비 % 비교 바</div>
-            <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 8가지 상세 제공</div>
+            <div class="gate-feat"><div class="gate-feat-check">✓</div>시중가 대비 % 비교</div>
+            <div class="gate-feat"><div class="gate-feat-check">✓</div>전문가 협상 팁 제공</div>
           </div>
           <div id="creditStatusWrap" style="margin-bottom:10px;display:none;">
             <div style="background:#EBF7F0;border:1px solid #4CAF82;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:#1A6B3E;display:flex;align-items:center;justify-content:space-between;">
@@ -1380,8 +1389,8 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--paper);
 
   <div id="ocrEditContent">
     <div class="card">
-      <div class="card-title" style="margin-bottom:0.75rem;">공종 분류 확인</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종 분류와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
+      <div class="card-title" style="margin-bottom:0.75rem;">공종 확인</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">AI가 인식한 공종와 금액을 확인해주세요. 잘못된 항목은 직접 수정할 수 있어요.</div>
 
 
 
@@ -2712,7 +2721,7 @@ PROFIT MARGIN DETECTION:
 4. ITEM NAME: Use the EXACT name from the original estimate document, not the reference name.
 
 JSON format — items array MUST preserve original document order:
-{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"tips":[{"category":"철거/방수","itemName":"전체철거","icon":"🔨","verdict":"비쌈","currentAmount":0,"marketMin":0,"marketMax":0,"diffAmount":0,"ways":["절약방법1","절약방법2","절약방법3"],"question":"업체에 물어볼 질문"}]}
+{"totalAmount":0,"overallVerdict":"적정","overallComment":"총평20자이내","items":[{"name":"견적서원본항목명","category":"철거/방수","amount":0,"qty":1,"unit":"식","verdict":"적정","reason":"판단이유15자이내","marketMin":0,"marketMax":0,"ratioVsAvg":100}],"tips":[{"category":"철거/방수","itemName":"전체철거","icon":"🔨","verdict":"비쌈","currentAmount":0,"marketMin":0,"marketMax":0,"diffAmount":0,"ways":["절약방법1","절약방법2","절약방법3"],"checks":["확인사항1","확인사항2","확인사항3"]}]}
 
 Verdict rules:
 - 저렴: ratioVsAvg < 85
@@ -2733,7 +2742,7 @@ Each tip object MUST have:
 - marketMax: 시중가 최고 (원)
 - diffAmount: currentAmount - (marketMin+marketMax)/2 양수면 초과 음수면 절감
 - ways: 절약 방법 4~7가지 배열. 각 항목은 구체적 금액·브랜드·수량 포함 (각 100자 내외)
-- question: 이 항목에서 반드시 확인해야 할 체크리스트 내용 1개 (30~60자, 질문 형식 아닌 확인 사항으로 작성)
+- checks: 이 항목에서 반드시 확인해야 할 체크리스트 배열, 최소 3개~최대 5개 (각 30~60자, 질문 형식 아닌 확인 사항으로 작성)
 
 region:${region} area:${Math.round(py)}평(${Math.round(m2)}㎡) 방:${roomCount}개 화장실:${bathCount}개
 Market refs per 평 (${region}기준, 지역 물가 보정 적용):
@@ -2790,7 +2799,7 @@ async function doAnalyze(){
   document.getElementById('errorBox').style.display='none';
   setStep(2);startProgress(isImg);
 
-  /* OCR 파싱용 프롬프트 — 공종 분류 포함한 항목 목록만 추출 */
+  /* OCR 파싱용 프롬프트 — 공종 포함한 항목 목록만 추출 */
   const ocrSystem=`You are an OCR parser for Korean interior renovation estimates.
 Return ONLY a valid JSON array, nothing else. No markdown, no explanation, no code blocks.
 Example: [{"name":"전체철거","category":"철거/방수","amount":480},{"name":"강마루","category":"바닥재","amount":320}]
@@ -2879,12 +2888,12 @@ function renderOcrList(){
     const catOpts=OCR_CATS.map(c=>`<option value="${c}"${c===item.category?' selected':''}>${c}</option>`).join('');
     return `<div class="ocr-row">
       <div class="ocr-name-cell">
-        <div class="ocr-name-label">인식된 텍스트</div>
+        <div class="ocr-name-label">인식 텍스트</div>
         <div class="ocr-name">${esc(item.name||'')}</div>
       </div>
       <div class="ocr-bottom-row">
         <div class="ocr-cat-cell">
-          <div class="ocr-cat-label">공종 분류</div>
+          <div class="ocr-cat-label">공종</div>
           <select class="ocr-select" onchange="ocrUpdateCat(${i},this.value)">${catOpts}</select>
         </div>
         <div class="ocr-amt-cell">
@@ -3283,10 +3292,10 @@ function renderPaidDetail(){
               <div class="tip-way-num ${c}">${wi+1}</div>
               <div class="tip-way-text">${esc(w)}</div>
             </div>`).join('')}`:''}
-          ${tip.question?`
+          ${(tip.checks&&tip.checks.length)?`
           <div class="tip-question">
             <div class="tip-question-label">✅ Check List</div>
-            ${esc(tip.question)}
+            ${tip.checks.map((ch,ci)=>`<div style="display:flex;align-items:flex-start;gap:6px;${ci>0?'margin-top:6px;padding-top:6px;border-top:0.5px solid var(--rule);':''}"><span style="flex-shrink:0;font-size:11px;font-weight:700;color:var(--muted);">${ci+1}.</span><span>${esc(ch)}</span></div>`).join('')}
           </div>`:''}
         </div>
       </div>`;
@@ -3831,44 +3840,72 @@ function renderSaleBanners() {
   const s = dailySaleState;
   const saleBanner = document.getElementById('saleBannerWrap');
   const mpBanner = document.getElementById('mpSaleBanner');
-  
-  if (s.isSaleActive && s.remaining > 0) {
-    const html = `<div class="sale-banner">
-      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink:0;">
-        <rect x="4" y="16" width="34" height="22" rx="3.5" fill="#EBF7F0" stroke="#4CAF82" stroke-width="1.3"/>
-        <path d="M4 24h34" stroke="#4CAF82" stroke-width="1.3"/>
-        <circle cx="9" cy="20" r="2" fill="#4CAF82"/>
-        <circle cx="15" cy="20" r="2" fill="#4CAF82" opacity=".4"/>
-        <circle cx="21" cy="20" r="2" fill="#4CAF82" opacity=".2"/>
-        <rect x="10" y="29" width="22" height="5" rx="2" fill="#4CAF82" opacity=".25"/>
-        <rect x="10" y="29" width="13" height="5" rx="2" fill="#4CAF82"/>
-        <circle cx="40" cy="13" r="9" fill="#FCD34D" stroke="#EF9F27" stroke-width="1.2"/>
-        <path d="M37 13l2 2 4-4" stroke="#633806" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div class="sale-info">
-        <div class="sale-info-top">
-          <div class="sale-badge">EVENT</div>
-          <div class="sale-info-reset">매일 오전 9시 리셋</div>
+  const ctaBanner = document.getElementById('ctaSaleBanner');
+
+  // ── 선착순 배너 ──
+  const banner1 = s.isSaleActive && s.remaining > 0 ? `
+    <div style="background:#0F0E0C;border-radius:16px;padding:20px;overflow:hidden;position:relative;margin-bottom:12px;">
+      <div style="position:absolute;right:-10px;top:-10px;width:100px;height:100px;border-radius:50%;background:rgba(252,211,77,.07);"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;">
+        <div style="flex:1;">
+          <div style="display:inline-flex;align-items:center;background:#FCD34D;border-radius:6px;padding:3px 10px;margin-bottom:10px;">
+            <span style="font-size:10px;font-weight:800;color:#0F0E0C;letter-spacing:.5px;">오늘 한정 EVENT</span>
+          </div>
+          <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;letter-spacing:-.5px;margin-bottom:6px;">선착순 <span style="color:#FCD34D;">${s.dailyLimit}명</span>만<br>크레딧 1만원!</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);">정상가 2만원 · 매일 오전 9시 리셋</div>
         </div>
-        <div class="sale-title">선착순 ${s.dailyLimit}명<br><span style="color:#7A6010;">크레딧 단돈 1만원!</span></div>
-        <div class="sale-sub">정상가 2만원 → 50% 할인</div>
+        <div style="flex-shrink:0;text-align:center;">
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;">남은 자리</div>
+          <div style="background:#FCD34D;border-radius:12px;padding:10px 16px;min-width:64px;">
+            <div style="font-size:36px;font-weight:900;color:#0F0E0C;letter-spacing:-2px;line-height:1;">${s.remaining}</div>
+            <div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.5);margin-top:2px;">/ ${s.dailyLimit}명</div>
+          </div>
+        </div>
       </div>
-      <div class="sale-count">
-        <div class="sale-remaining">${s.remaining}</div>
-        <div class="sale-total">/ ${s.dailyLimit}명</div>
-        <div class="sale-remaining-label">잔여</div>
+    </div>` : `
+    <div style="background:#1A1918;border-radius:16px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:20px;">⏰</span>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;">오늘 선착순 마감됐어요. <strong style="color:#FCD34D;">정상가 ${(s.normalPrice/10000).toLocaleString()}만원</strong>으로 구매 가능합니다.<br>내일 오전 9시 다시 시작!</div>
+    </div>`;
+
+  // ── 친구 초대 배너 ──
+  const banner2 = `
+    <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:16px;padding:20px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="flex:1;">
+          <div style="display:inline-flex;background:#EF9F27;border-radius:6px;padding:3px 10px;margin-bottom:10px;">
+            <span style="font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;">상시 EVENT</span>
+          </div>
+          <div style="font-size:22px;font-weight:900;color:#412402;line-height:1.2;letter-spacing:-.5px;margin-bottom:6px;">친구 초대하면<br><span style="color:#854F0B;">나도 친구도</span> 크레딧!</div>
+          <div style="font-size:12px;color:#BA7517;">초대 링크로 가입 시 양쪽 1개씩 즉시 지급</div>
+        </div>
+        <svg width="88" height="88" viewBox="0 0 88 88" fill="none" style="flex-shrink:0;">
+          <ellipse cx="26" cy="68" rx="12" ry="7" fill="#FDE68A"/>
+          <rect x="20" y="52" width="12" height="18" rx="4" fill="#FDE68A"/>
+          <circle cx="26" cy="46" r="9" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1.5"/>
+          <path d="M17 44c0-5 4-9 9-9s9 4 9 9" fill="#854F0B"/>
+          <path d="M23 46 q1 1.5 2.5 1.5 q1.5 0 2.5-1.5" stroke="#633806" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <circle cx="14" cy="38" r="8" fill="#EF9F27" stroke="#fff" stroke-width="1.5"/>
+          <text x="14" y="42" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="sans-serif">+1</text>
+          <ellipse cx="62" cy="68" rx="12" ry="7" fill="#FCD34D"/>
+          <rect x="56" y="52" width="12" height="18" rx="4" fill="#FCD34D"/>
+          <circle cx="62" cy="46" r="9" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1.5"/>
+          <path d="M53 44c0-5 4-9 9-9s9 4 9 9" fill="#412402"/>
+          <path d="M53 44 q-2 8 0 16" stroke="#412402" stroke-width="3" stroke-linecap="round"/>
+          <path d="M71 44 q2 8 0 16" stroke="#412402" stroke-width="3" stroke-linecap="round"/>
+          <path d="M59 46 q1 1.5 2.5 1.5 q1.5 0 2.5-1.5" stroke="#633806" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <circle cx="74" cy="38" r="8" fill="#EF9F27" stroke="#fff" stroke-width="1.5"/>
+          <text x="74" y="42" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="sans-serif">+1</text>
+          <path d="M38 50 C40 46 48 46 50 50" stroke="#EF9F27" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2"/>
+          <path d="M41 56 q3-4 3-4 q3 4 3 4 q0 3-3 5 q-3-2-3-5z" fill="#EF9F27"/>
+        </svg>
       </div>
     </div>`;
-    if (saleBanner) saleBanner.innerHTML = html;
-    if (mpBanner) mpBanner.innerHTML = html;
-  } else {
-    const html = `<div class="sale-ended">
-      <span>⏰</span>
-      <div>오늘의 할인 수량이 모두 소진됐어요. <strong>정상가 ${(s.normalPrice/10000).toLocaleString()}만원</strong>으로 구매 가능합니다.<br>내일 오전 9시에 다시 할인이 시작돼요!</div>
-    </div>`;
-    if (saleBanner) saleBanner.innerHTML = html;
-    if (mpBanner) mpBanner.innerHTML = html;
-  }
+
+  const html = banner1 + banner2;
+  if (saleBanner) saleBanner.innerHTML = html;
+  if (mpBanner) mpBanner.innerHTML = html;
+  if (ctaBanner) ctaBanner.innerHTML = html;
 }
 
 function getCurrentUnitPrice() {
