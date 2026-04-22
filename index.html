@@ -1164,9 +1164,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
         <div class="footer-desc">5,000건+ 견적 데이터 기반 인테리어 견적 분석 서비스</div>
       </div>
       <div class="footer-links">
-        <a href="#terms" onclick="goLegal('terms');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">이용약관</a>
-        <a href="#privacy" onclick="goLegal('privacy');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">개인정보처리방침</a>
-        <a href="#refund" onclick="goLegal('refund');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">환불정책</a>
+        <button onclick="goLegal('terms')">이용약관</button>
+        <button onclick="goLegal('privacy')">개인정보처리방침</button>
+        <button onclick="goLegal('refund')">환불정책</button>
       </div>
     </div>
     <div class="footer-divider"></div>
@@ -1180,8 +1180,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
       <div class="footer-info-row">
         <span>주소: 광주광역시 동구 동계천로 150 I-PLEX 306</span><span class="footer-sep">|</span>
         <span>영업시간: 09:00 ~ 18:00</span><span class="footer-sep">|</span>
-        <span>전화: <a href="tel:062-710-7123" style="color:rgba(255,255,255,0.5);text-decoration:none;">062-710-7123</a></span><span class="footer-sep">|</span>
-        <span>이메일: <a href="mailto:quote-analysis@gmail.com" style="color:rgba(255,255,255,0.5);text-decoration:none;">quote-analysis@gmail.com</a></span>
+        <span>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e5f5b415a4b034f404f42575d475d6e49434f4742004d4143">[email&#160;protected]</a></span>
       </div>
       <div class="footer-copy">© 2025 (주)마인스페이스. All rights reserved. 본 서비스의 분석 결과는 참고용이며 실제 견적과 다를 수 있습니다.</div>
     </div>
@@ -1636,25 +1635,8 @@ window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     detectSessionInUrl: true,
     lock: async (name, acquireTimeout, fn) => {
-      /* Web Locks API 정상 구현 — stole 에러 방지 + 세션 안정성 확보 */
-      if (navigator.locks?.request) {
-        return new Promise((resolve, reject) => {
-          navigator.locks.request(
-            name,
-            { ifAvailable: true },
-            async lock => {
-              try {
-                /* 락을 얻었든 못 얻었든 fn() 실행 — 못 얻어도 로그아웃 안 됨 */
-                resolve(await fn());
-              } catch(e) {
-                reject(e);
-              }
-            }
-          );
-        });
-      }
-      /* Web Locks API 미지원 환경 (일부 구형 브라우저) — 직접 실행 */
-      return fn();
+      /* 락 획득 실패 시 기다리지 않고 바로 실행 — "stole" 에러 원천 차단 */
+      try { return await fn(); } catch(e) { return await fn(); }
     }
   }
 });
@@ -1744,79 +1726,58 @@ async function getSessionOnce() {
   return _cachedSession;
 }
 
-/* ── onAuthStateChange: 세션 변화의 단일 진실 공급원 ── */
-/* onAuthStateChange가 resolve할 Promise — restoreAuth()가 이벤트를 기다림 */
-let _authReady = null;
-let _authReadyResolve = null;
-_authReady = new Promise(res => { _authReadyResolve = res; });
-let _explicitSignOut = false;
-
+/* 토큰 갱신 시 캐시 무효화 + authToken 자동 업데이트 + 신규 가입 리워드 */
 window._supabase.auth.onAuthStateChange(async (event, session) => {
   _cachedSession = session || false;
-
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-    if (session?.user) {
-      currentUser = {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.user_metadata?.full_name
-          || session.user.user_metadata?.name
-          || session.user.email?.split('@')[0] || '회원'
-      };
-      authToken = session.access_token;
-      updateHeaderUser();
-    }
+  if (session?.access_token && currentUser) {
+    authToken = session.access_token;
   }
 
-  if (event === 'SIGNED_OUT') {
-    /* 명시적 로그아웃(doLogout 호출)이 아닌 경우 새로고침 중 오발 방지 */
-    if (_explicitSignOut) {
-      currentUser = null;
-      authToken = null;
-      updateHeaderUser();
-    }
-  }
-
-  /* 신규 가입 감지 — SIGNED_IN + created_at 1분 이내 */
+  /* 신규 가입 감지 — SIGNED_IN 이벤트 + created_at 1분 이내 */
   if (event === 'SIGNED_IN' && session?.user) {
     const createdAt = new Date(session.user.created_at);
     const isNewUser = (Date.now() - createdAt.getTime()) < 60000;
+
     if (isNewUser) {
+      /* referral_ref가 있으면 추천인에게 크레딧 지급 */
       const ref = localStorage.getItem('referral_ref');
       if (ref && ref !== session.user.id) {
         try {
           await fetch('/api/credits?action=rewardSharer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sharerId: ref, shareId: 'referral:' + session.user.id })
+            body: JSON.stringify({
+              sharerId: ref,
+              shareId: 'referral:' + session.user.id  /* 중복 방지 키 */
+            })
           });
           localStorage.removeItem('referral_ref');
+          /* 친구 초대로 가입한 신규 유저에게 안내 */
           setTimeout(() => {
             alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개가 지급되었습니다.');
             loadUserCredits();
           }, 800);
-        } catch(e) { console.error('추천 리워드 지급 실패:', e); }
+        } catch(e) {
+          console.error('추천 리워드 지급 실패:', e);
+        }
       }
     }
   }
-
-  /* INITIAL_SESSION / SIGNED_IN / SIGNED_OUT 중 첫 이벤트에서 authReady resolve */
-  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)) {
-    _authReadyResolve();
-    _authReadyResolve = null;
-  }
 });
+
 async function restoreAuth() {
-  /* onAuthStateChange INITIAL_SESSION 이벤트를 최대 3초 기다림 */
   try {
-    await Promise.race([_authReady, new Promise(res => setTimeout(res, 3000))]);
-  } catch(e) {}
-  /* 이벤트 기반으로 이미 세팅됐으면 완료 */
-  if (currentUser) return;
-  /* fallback: 직접 getSession 재시도 */
-  try {
-    const { data } = await window._supabase.auth.getSession();
-    const session = data?.session;
+    let session = await getSessionOnce();
+    /* 세션 없으면 refreshSession으로 한 번 더 시도 */
+    if (!session?.user) {
+      try {
+        const { data } = await window._supabase.auth.refreshSession();
+        if (data?.session?.user) {
+          session = data.session;
+          _cachedSession = session;
+        }
+      } catch(e) {}
+    }
     if (session?.user) {
       currentUser = {
         id: session.user.id,
@@ -1826,11 +1787,11 @@ async function restoreAuth() {
           || session.user.email?.split('@')[0] || '회원'
       };
       authToken = session.access_token;
-      _cachedSession = session;
       updateHeaderUser();
     }
-  } catch(e) {}
+  } catch(e) { clearAuth(); }
 }
+
 /* ── 모달 제어 ── */
 let currentAuthTab = 'login';
 
@@ -2110,7 +2071,6 @@ function doSocialAuth(provider) {
 }
 
 async function doLogout() {
-  _explicitSignOut = true;
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
@@ -2254,22 +2214,10 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 
 
 /* ── 페이지 전환 ── */
-/* ── 페이지 ID → URL hash 매핑 ── */
-const PAGE_HASH = { pageMypage:'mypage' };
-const HASH_PAGE = { mypage:'pageMypage', refund:'pageLegal', terms:'pageLegal', privacy:'pageLegal' };
-
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-
-  /* URL hash 업데이트 (pageLegal은 goLegal에서 처리) */
-  if(PAGE_HASH[id]){
-    window.history.pushState({page:id}, '', '#' + PAGE_HASH[id]);
-  } else if(['pageInput','pageAnalyzing','pageOcrEdit'].includes(id)){
-    window.history.pushState({page:id}, '', window.location.pathname);
-  }
-
   /* 새로고침 복원용 — 분석결과·마이페이지만 저장 (입력·로딩 등은 제외) */
   const persistPages = ['pageResult','pageMypage'];
   if(persistPages.includes(id)){
@@ -2284,39 +2232,9 @@ function goLegal(type){
   const c=LEGAL_CONTENT[type];
   document.getElementById('legalTitle').textContent=c.title;
   document.getElementById('legalBody').innerHTML=c.body;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('pageLegal').classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
-  window.history.pushState({page:'pageLegal',legalType:type}, '', '#' + type);
-  try { localStorage.removeItem('_lastPage'); } catch(e){}
+  showPage('pageLegal');
 }
-function goBack(){
-  const target = prevPage === 'pageMypage' ? '#mypage' : window.location.pathname;
-  window.history.pushState({page:prevPage}, '', target);
-  showPage(prevPage);
-}
-
-/* ── 브라우저 뒤로가기 처리 ── */
-window.addEventListener('popstate', function(){
-  const hash = window.location.hash.replace('#','');
-  if(!hash){
-    showPage('pageInput');
-  } else if(hash === 'mypage'){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('pageMypage').classList.add('active');
-    window.scrollTo({top:0,behavior:'smooth'});
-    loadMyPageData();
-  } else if(['refund','terms','privacy'].includes(hash)){
-    const c = LEGAL_CONTENT[hash];
-    if(c){
-      document.getElementById('legalTitle').textContent=c.title;
-      document.getElementById('legalBody').innerHTML=c.body;
-      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-      document.getElementById('pageLegal').classList.add('active');
-      window.scrollTo({top:0,behavior:'smooth'});
-    }
-  }
-});
+function goBack(){showPage(prevPage);}
 
 /* ── 약관 콘텐츠 ── */
 const LEGAL_CONTENT={
@@ -2385,23 +2303,14 @@ const LEGAL_CONTENT={
   <li>결제 후 7일이 경과한 경우</li>
   <li>단순 변심 (열람 후)</li>
 </ul>
-<h3>부분 환불 기준</h3>
-<p>크레딧을 여러 개 구매한 경우, 미사용 크레딧에 한하여 구매일로부터 7일 이내 환불 신청이 가능합니다. 이미 사용한 크레딧은 환불 대상에서 제외되며, 미사용분에 대해서만 비례 환불 처리됩니다.</p>
-<h3>환불 수단</h3>
-<p>환불은 원결제 수단으로 처리됩니다. 신용카드 결제 시 카드 취소, 계좌이체 결제 시 등록 계좌로 입금되며, 결제 수단에 따라 처리 방식이 상이할 수 있습니다.</p>
 <h3>환불 신청 방법</h3>
 <ul>
   <li>이메일: quote-analysis@gmail.com</li>
-  <li>전화: 062-710-7123</li>
   <li>영업시간: 평일 09:00 ~ 18:00</li>
   <li>결제일, 주문번호, 환불 사유를 함께 전달해 주세요.</li>
 </ul>
 <h3>환불 처리 기간</h3>
 <p>환불 요청 확인 후 영업일 기준 3~5일 이내 처리. 카드사 정책에 따라 추가 시간이 소요될 수 있습니다.</p>
-<h3>미성년자 결제 환불</h3>
-<p>만 19세 미만 미성년자가 법정대리인(부모 등)의 동의 없이 결제한 경우, 법정대리인은 해당 결제를 취소할 수 있습니다. 취소 요청 시 미성년자임을 증빙하는 서류(가족관계증명서 등)를 이메일로 제출해 주세요. 단, 미성년자가 속임수를 사용하여 동의가 있는 것으로 믿게 한 경우에는 취소가 제한될 수 있습니다.</p>
-<h3>소비자분쟁 해결</h3>
-<p>서비스 이용 중 발생한 분쟁은 공정거래위원회 소비자분쟁해결기준에 따라 처리됩니다. 자율적 해결이 어려운 경우 한국소비자원(국번없이 1372) 또는 전자거래분쟁조정위원회(www.ecmc.or.kr)에 분쟁 조정을 신청하실 수 있습니다.</p>
 <h3>관련 법령</h3>
 <p>전자상거래 등에서의 소비자보호에 관한 법률 제17조 및 디지털콘텐츠 관련 규정에 따라 운영됩니다.</p>`
   }
@@ -3271,33 +3180,11 @@ function render(r){
 
   showPage('pageResult');
 
-  /* 이미 열람한 분석이면 자동 잠금 해제 */
+  /* 이미 열람한 분석이면 자동 잠금 해제 (localStorage 또는 서버 기록) */
   if (isAnalysisUnlocked(r)) {
-    /* 로컬 캐시 히트(logId 기반) — 서버 재확인 병행해서 위변조 방지 */
-    if (currentLogId && currentUser) {
-      fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
-        headers: { 'Authorization': 'Bearer ' + authToken }
-      }).then(res => res.json()).then(data => {
-        if (data.unlocked) {
-          setTimeout(() => renderPaidDetail(), 300);
-        } else {
-          /* 서버에서 미결제 확인 → 로컬 캐시 제거하고 잠금 유지 */
-          try {
-            const unlocked = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
-            const key = getAnalysisKey(r);
-            const filtered = unlocked.filter(k => k !== key);
-            localStorage.setItem('unlockedAnalyses', JSON.stringify(filtered));
-          } catch(e) {}
-        }
-      }).catch(() => {
-        /* 네트워크 오류 시 로컬 캐시 유지 (오프라인 대응) */
-        setTimeout(() => renderPaidDetail(), 300);
-      });
-    } else {
-      setTimeout(() => renderPaidDetail(), 300);
-    }
+    setTimeout(() => renderPaidDetail(), 300);
   } else if (currentLogId && currentUser) {
-    /* 로컬 캐시 없음 — 서버에서 열람 기록 확인 (다른 기기 대응) */
+    /* 서버에서 열람 기록 확인 (다른 기기 대응) */
     fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
       headers: { 'Authorization': 'Bearer ' + authToken }
     }).then(res => res.json()).then(data => {
@@ -3320,18 +3207,10 @@ function render(r){
 
 /* ── 상세분석 열람 영속 저장 ── */
 function getAnalysisKey(result) {
-  /* logId가 있으면 logId 기반 키 사용 (가장 정확) */
+  /* totalAmount + 첫 항목명으로 고유 키 생성 */
   if (!result) return null;
-  if (currentLogId) return 'unlocked_logid_' + currentLogId;
-  /* logId 없는 경우 — totalAmount + 모든 항목명 합산 해시로 강화 */
-  const items = result.items || [];
-  const itemSig = items.map(i => (i.name||'') + (i.amount||0)).join('|');
-  let hash = 0;
-  for (let i = 0; i < itemSig.length; i++) {
-    hash = ((hash << 5) - hash) + itemSig.charCodeAt(i);
-    hash |= 0;
-  }
-  return 'unlocked_' + (result.totalAmount || 0) + '_' + Math.abs(hash);
+  const first = (result.items || [])[0]?.name || '';
+  return 'unlocked_' + (result.totalAmount || 0) + '_' + first.slice(0, 10);
 }
 function markAnalysisUnlocked(result) {
   const key = getAnalysisKey(result);
@@ -3347,8 +3226,6 @@ function markAnalysisUnlocked(result) {
   } catch(e) {}
 }
 function isAnalysisUnlocked(result) {
-  /* logId가 없으면 로컬 캐시 신뢰 안 함 — 반드시 서버 검증 */
-  if (!currentLogId) return false;
   const key = getAnalysisKey(result);
   if (!key) return false;
   try {
@@ -3659,9 +3536,11 @@ window.addEventListener('load', async () => {
       if(_saved){
         const _r = JSON.parse(_saved);
         render(_r);
-        /* 잠금 해제 여부 — render() 내부의 서버 검증 흐름에 위임
-           (currentLogId가 없는 새로고침 복원 시엔 isAnalysisUnlocked가 false 반환하므로
-            서버 isUnlocked API로만 판단) */
+        /* 잠금 해제 여부에 따라 상세 표시 */
+        if(isAnalysisUnlocked(_r)){
+          markAnalysisUnlocked(_r);
+          renderPaidDetail();
+        }
         showPage('pageResult');
       } else {
         localStorage.removeItem('_lastPage');
@@ -3673,30 +3552,6 @@ window.addEventListener('load', async () => {
     loadMyPageData();
   } else {
     localStorage.removeItem('_lastPage');
-    /* ── URL hash 기반 초기 진입 처리 ── */
-    const initHash = window.location.hash.replace('#','');
-    if(initHash === 'mypage'){
-      if(currentUser){
-        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-        document.getElementById('pageMypage').classList.add('active');
-        loadMyPageData();
-      } else {
-        /* 비로그인 시 로그인 모달 띄우고 홈 유지 */
-        openAuthModal('login');
-      }
-    } else if(['refund','terms','privacy'].includes(initHash)){
-      /* LEGAL_CONTENT가 정의된 후 실행되도록 setTimeout 사용 */
-      setTimeout(()=>{
-        const c = LEGAL_CONTENT[initHash];
-        if(c){
-          document.getElementById('legalTitle').textContent=c.title;
-          document.getElementById('legalBody').innerHTML=c.body;
-          document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-          document.getElementById('pageLegal').classList.add('active');
-          window.scrollTo({top:0,behavior:'smooth'});
-        }
-      }, 0);
-    }
   }
 });
 
