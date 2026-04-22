@@ -1635,9 +1635,8 @@ window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-    /* lock 옵션 제거 — 커스텀 lock의 ifAvailable:true가 락 획득 실패 시
-       fn()을 null lock으로 실행시켜 Supabase가 세션 저장을 스킵하는 버그.
-       기본 lock 동작을 쓰면 Supabase SDK가 세션을 정상적으로 저장함. */
+    /* lock 옵션 제거 — ifAvailable:true가 락 획득 실패 시 세션 저장을 스킵해
+       새로고침 시 SIGNED_OUT 오발 → 로그아웃 버그 발생했었음 */
   }
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1752,7 +1751,7 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
   }
 
   if (event === 'SIGNED_OUT') {
-    /* INITIAL_SESSION 이전에 오는 SIGNED_OUT은 새로고침 오발이므로 무시 */
+    /* INITIAL_SESSION 이전의 SIGNED_OUT은 새로고침 오발이므로 무시 */
     if (_authInitialized) {
       currentUser = null;
       authToken = null;
@@ -1971,6 +1970,17 @@ async function doEmailAuth() {
 
     /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
+
+    /* Supabase 클라이언트에 세션 직접 세팅 — 없으면 새로고침 시 세션 복원 안 됨 */
+    if (data.access_token && data.refresh_token) {
+      try {
+        await window._supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        });
+      } catch(e) { console.warn('setSession 실패:', e); }
+    }
+
     /* 📊 GA: 이메일 로그인 */
     if(typeof GAnalytics !== 'undefined') GAnalytics.login({ method: 'email' });
     
@@ -3170,7 +3180,12 @@ function render(r){
   r = recalcVerdicts(r);
   allItems=(r.items||[]).filter(item=>item.amount&&item.amount>0);lastResult=r;
   /* 새로고침 복원용으로 결과 저장 */
-  try { localStorage.setItem('_savedResult', JSON.stringify(r)); } catch(e){}
+  try {
+    localStorage.setItem('_savedResult', JSON.stringify(r));
+    /* currentLogId도 함께 저장 — 새로고침 후 isAnalysisUnlocked가 올바르게 동작하려면 필요 */
+    if (currentLogId) localStorage.setItem('_savedLogId', currentLogId);
+    else localStorage.removeItem('_savedLogId');
+  } catch(e){}
   /* sessionStorage는 결제 후 복귀 시에만 사용 — 일반 분석 후엔 저장 안 함 */
 
   /* 공유 CTA 버튼 표시 */
@@ -3641,6 +3656,9 @@ window.addEventListener('load', async () => {
       const _saved = localStorage.getItem('_savedResult');
       if(_saved){
         const _r = JSON.parse(_saved);
+        /* currentLogId 복원 — 없으면 잠금 해제 여부 판단 불가 */
+        const _savedLogId = localStorage.getItem('_savedLogId');
+        if (_savedLogId) currentLogId = _savedLogId;
         render(_r);
         /* 잠금 해제 여부 — render() 내부의 서버 검증 흐름에 위임
            (currentLogId가 없는 새로고침 복원 시엔 isAnalysisUnlocked가 false 반환하므로
@@ -4424,7 +4442,10 @@ function goHome(){
 /* ── 리셋 ── */
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
-  try { localStorage.removeItem('_savedResult'); } catch(e){}
+  try {
+    localStorage.removeItem('_savedResult');
+    localStorage.removeItem('_savedLogId');
+  } catch(e){}
   currentShareUrl='';
   localStorage.removeItem('analysisResult');
   sessionStorage.removeItem('analysisResult');
