@@ -1750,8 +1750,6 @@ let _authReady = null;
 let _authReadyResolve = null;
 _authReady = new Promise(res => { _authReadyResolve = res; });
 let _explicitSignOut = false;
-/* INITIAL_SESSION 수신 후 true — 그 이전의 SIGNED_OUT은 새로고침 오발이므로 무시 */
-let _authInitialized = false;
 
 window._supabase.auth.onAuthStateChange(async (event, session) => {
   _cachedSession = session || false;
@@ -1768,14 +1766,11 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
       authToken = session.access_token;
       updateHeaderUser();
     }
-    /* INITIAL_SESSION 도달 = 초기화 완료 */
-    if (event === 'INITIAL_SESSION') _authInitialized = true;
   }
 
   if (event === 'SIGNED_OUT') {
-    /* _authInitialized 이전(새로고침 직후 오발)은 무시.
-       초기화 완료 후에 온 SIGNED_OUT만 실제 로그아웃으로 처리. */
-    if (_authInitialized) {
+    /* 명시적 로그아웃(doLogout 호출)이 아닌 경우 새로고침 중 오발 방지 */
+    if (_explicitSignOut) {
       currentUser = null;
       authToken = null;
       updateHeaderUser();
@@ -1805,10 +1800,8 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
     }
   }
 
-  /* INITIAL_SESSION / SIGNED_IN 중 첫 이벤트에서 authReady resolve.
-     SIGNED_OUT은 제외 — 새로고침 시 SIGNED_OUT이 INITIAL_SESSION보다 먼저 오면
-     authReady가 세션 없는 상태로 resolve되어 로그아웃 오동작이 발생하기 때문. */
-  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN'].includes(event)) {
+  /* INITIAL_SESSION / SIGNED_IN / SIGNED_OUT 중 첫 이벤트에서 authReady resolve */
+  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)) {
     _authReadyResolve();
     _authReadyResolve = null;
   }
@@ -1995,6 +1988,21 @@ async function doEmailAuth() {
 
     /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
+
+    /* ★ Supabase 클라이언트에 세션을 직접 심어줌.
+       이게 없으면 새로고침 시 Supabase가 자체 storage에서 세션을 못 찾아
+       SIGNED_OUT을 발화 → 로그아웃처럼 보이는 버그 발생.
+       소셜 로그인은 Supabase가 리다이렉트를 직접 처리하므로 괜찮지만
+       이메일 로그인은 서버(/api/auth)를 거치므로 반드시 여기서 세팅해야 함. */
+    if (data.access_token && data.refresh_token) {
+      try {
+        await window._supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        });
+      } catch(e) { console.warn('setSession 실패:', e); }
+    }
+
     /* 📊 GA: 이메일 로그인 */
     if(typeof GAnalytics !== 'undefined') GAnalytics.login({ method: 'email' });
     
