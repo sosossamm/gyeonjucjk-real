@@ -1635,7 +1635,6 @@ window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-    /* lock 옵션 제거 — ifAvailable:true가 락 획득 실패 시 세션 저장 스킵 → 새로고침 로그아웃 버그 */
   }
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1750,7 +1749,6 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
   }
 
   if (event === 'SIGNED_OUT') {
-    /* INITIAL_SESSION 이전의 SIGNED_OUT은 새로고침 오발이므로 무시 */
     if (_authInitialized) {
       currentUser = null;
       authToken = null;
@@ -2099,7 +2097,7 @@ function doSocialAuth(provider) {
 }
 
 async function doLogout() {
-  /* _explicitSignOut → _authInitialized 방식으로 대체 */
+  /* _explicitSignOut → _authInitialized */
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
@@ -2289,6 +2287,21 @@ function goBack(){
 window.addEventListener('popstate', function(){
   const hash = window.location.hash.replace('#','');
   if(!hash){
+    /* _savedResult가 있으면 결과 페이지 복원, 없으면 입력 페이지 */
+    const savedResult = localStorage.getItem('_savedResult');
+    const savedLogId  = localStorage.getItem('_savedLogId');
+    if (savedResult) {
+      try {
+        const _r = JSON.parse(savedResult);
+        if (savedLogId) currentLogId = savedLogId;
+        render(_r);
+        showPage('pageResult');
+        return;
+      } catch(e) {
+        localStorage.removeItem('_savedResult');
+        localStorage.removeItem('_savedLogId');
+      }
+    }
     showPage('pageInput');
   } else if(hash === 'mypage'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2871,7 +2884,7 @@ Category: 철거/방수 타일 바닥 도배 도장 욕실 주방 가구/붙박�
 
 /* ── 분석 실행 (PDF/이미지) ── */
 async function doAnalyze(){
-  clearAnalysis(); /* 새 분석 시작 — 이전 저장 결과 초기화 */
+  clearAnalysis();
   const area=parseFloat(document.getElementById('areaNum').value)||0;
   const unit=document.getElementById('areaUnit').value;
   const region=document.getElementById('region').value;
@@ -3083,7 +3096,7 @@ ${lines}`;
 
 /* ── 분석 실행 (직접입력) ── */
 async function doManualAnalyze(){
-  clearAnalysis(); /* 새 분석 시작 — 이전 저장 결과 초기화 */
+  clearAnalysis();
   const area=parseFloat(document.getElementById('areaNumM').value)||0;
   const unit=document.getElementById('areaUnitM').value;
   const region=document.getElementById('regionM').value;
@@ -4438,7 +4451,6 @@ function goHome(){
 
 /* ── 리셋 ── */
 function clearAnalysis(){
-  /* 새 분석 시작 시 저장된 결과까지 완전 초기화 */
   try {
     localStorage.removeItem('_savedResult');
     localStorage.removeItem('_savedLogId');
@@ -4448,8 +4460,7 @@ function clearAnalysis(){
 }
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
-  /* _savedResult/_savedLogId는 지우지 않음 — 뒤로가기 후 복원 가능하도록 유지
-     새 분석 시작 시에만 clearAnalysis()로 제거 */
+  /* _savedResult/_savedLogId 보존 — 뒤로가기 후 복원 가능하도록 */
   currentShareUrl='';
   const shareCTA=document.getElementById('shareCTAWrap');
   if(shareCTA){shareCTA.style.display='none';}
