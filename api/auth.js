@@ -103,6 +103,7 @@ export default async function handler(req, res) {
         success: true,
         user: data.user,
         access_token: data.session?.access_token,
+        refresh_token: data.session?.refresh_token,  /* 프론트에서 setSession()에 필요 — 없으면 새로고침 시 로그아웃됨 */
         session: data.session
       });
     }
