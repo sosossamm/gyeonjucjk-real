@@ -1164,9 +1164,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
         <div class="footer-desc">5,000건+ 견적 데이터 기반 인테리어 견적 분석 서비스</div>
       </div>
       <div class="footer-links">
-        <button onclick="goLegal('terms')">이용약관</button>
-        <button onclick="goLegal('privacy')">개인정보처리방침</button>
-        <button onclick="goLegal('refund')">환불정책</button>
+        <a href="#terms" onclick="goLegal('terms');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">이용약관</a>
+        <a href="#privacy" onclick="goLegal('privacy');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">개인정보처리방침</a>
+        <a href="#refund" onclick="goLegal('refund');return false;" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);font-family:inherit;padding:0;transition:color 0.15s;text-decoration:none;">환불정책</a>
       </div>
     </div>
     <div class="footer-divider"></div>
@@ -2215,10 +2215,22 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 
 
 /* ── 페이지 전환 ── */
+/* ── 페이지 ID → URL hash 매핑 ── */
+const PAGE_HASH = { pageMypage:'mypage' };
+const HASH_PAGE = { mypage:'pageMypage', refund:'pageLegal', terms:'pageLegal', privacy:'pageLegal' };
+
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+
+  /* URL hash 업데이트 (pageLegal은 goLegal에서 처리) */
+  if(PAGE_HASH[id]){
+    window.history.pushState({page:id}, '', '#' + PAGE_HASH[id]);
+  } else if(['pageInput','pageAnalyzing','pageOcrEdit'].includes(id)){
+    window.history.pushState({page:id}, '', window.location.pathname);
+  }
+
   /* 새로고침 복원용 — 분석결과·마이페이지만 저장 (입력·로딩 등은 제외) */
   const persistPages = ['pageResult','pageMypage'];
   if(persistPages.includes(id)){
@@ -2233,9 +2245,39 @@ function goLegal(type){
   const c=LEGAL_CONTENT[type];
   document.getElementById('legalTitle').textContent=c.title;
   document.getElementById('legalBody').innerHTML=c.body;
-  showPage('pageLegal');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pageLegal').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  window.history.pushState({page:'pageLegal',legalType:type}, '', '#' + type);
+  try { localStorage.removeItem('_lastPage'); } catch(e){}
 }
-function goBack(){showPage(prevPage);}
+function goBack(){
+  const target = prevPage === 'pageMypage' ? '#mypage' : window.location.pathname;
+  window.history.pushState({page:prevPage}, '', target);
+  showPage(prevPage);
+}
+
+/* ── 브라우저 뒤로가기 처리 ── */
+window.addEventListener('popstate', function(){
+  const hash = window.location.hash.replace('#','');
+  if(!hash){
+    showPage('pageInput');
+  } else if(hash === 'mypage'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('pageMypage').classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+    loadMyPageData();
+  } else if(['refund','terms','privacy'].includes(hash)){
+    const c = LEGAL_CONTENT[hash];
+    if(c){
+      document.getElementById('legalTitle').textContent=c.title;
+      document.getElementById('legalBody').innerHTML=c.body;
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pageLegal').classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  }
+});
 
 /* ── 약관 콘텐츠 ── */
 const LEGAL_CONTENT={
@@ -3562,6 +3604,30 @@ window.addEventListener('load', async () => {
     loadMyPageData();
   } else {
     localStorage.removeItem('_lastPage');
+    /* ── URL hash 기반 초기 진입 처리 ── */
+    const initHash = window.location.hash.replace('#','');
+    if(initHash === 'mypage'){
+      if(currentUser){
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+        document.getElementById('pageMypage').classList.add('active');
+        loadMyPageData();
+      } else {
+        /* 비로그인 시 로그인 모달 띄우고 홈 유지 */
+        openAuthModal('login');
+      }
+    } else if(['refund','terms','privacy'].includes(initHash)){
+      /* LEGAL_CONTENT가 정의된 후 실행되도록 setTimeout 사용 */
+      setTimeout(()=>{
+        const c = LEGAL_CONTENT[initHash];
+        if(c){
+          document.getElementById('legalTitle').textContent=c.title;
+          document.getElementById('legalBody').innerHTML=c.body;
+          document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+          document.getElementById('pageLegal').classList.add('active');
+          window.scrollTo({top:0,behavior:'smooth'});
+        }
+      }, 0);
+    }
   }
 });
 
