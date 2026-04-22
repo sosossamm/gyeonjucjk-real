@@ -1631,10 +1631,11 @@ const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
 window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storageKey: 'sb-qm-auth',
+    storageKey: 'sb-qm-auth',          /* 고유 키 — 탭 간 락 충돌 방지 */
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    /* lock 옵션 제거 — ifAvailable:true 버그로 세션 저장 스킵됨 */
   }
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2287,7 +2288,6 @@ function goBack(){
 window.addEventListener('popstate', function(){
   const hash = window.location.hash.replace('#','');
   if(!hash){
-    /* _savedResult가 있으면 결과 페이지 복원, 없으면 입력 페이지 */
     const savedResult = localStorage.getItem('_savedResult');
     const savedLogId  = localStorage.getItem('_savedLogId');
     if (savedResult) {
@@ -3279,41 +3279,35 @@ function render(r){
 
   showPage('pageResult');
 
-  /* 이미 열람한 분석이면 자동 잠금 해제 */
-  if (isAnalysisUnlocked(r)) {
-    /* 로컬 캐시 히트(logId 기반) — 서버 재확인 병행해서 위변조 방지 */
-    if (currentLogId && currentUser) {
-      fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
-        headers: { 'Authorization': 'Bearer ' + authToken }
-      }).then(res => res.json()).then(data => {
-        if (data.unlocked) {
-          setTimeout(() => renderPaidDetail(), 300);
-        } else {
-          /* 서버에서 미결제 확인 → 로컬 캐시 제거하고 잠금 유지 */
-          try {
-            const unlocked = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
-            const key = getAnalysisKey(r);
-            const filtered = unlocked.filter(k => k !== key);
-            localStorage.setItem('unlockedAnalyses', JSON.stringify(filtered));
-          } catch(e) {}
-        }
-      }).catch(() => {
-        /* 네트워크 오류 시 로컬 캐시 유지 (오프라인 대응) */
-        setTimeout(() => renderPaidDetail(), 300);
-      });
-    } else {
-      setTimeout(() => renderPaidDetail(), 300);
-    }
-  } else if (currentLogId && currentUser) {
-    /* 로컬 캐시 없음 — 서버에서 열람 기록 확인 (다른 기기 대응) */
+  /* 이미 열람한 분석이면 자동 잠금 해제
+     로컬 캐시 히트 여부와 무관하게 currentLogId 있으면 항상 서버 확인
+     — 해시키 불일치(구버전에서 저장된 경우)도 서버 기준으로 보정 */
+  if (currentLogId && currentUser) {
     fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
       headers: { 'Authorization': 'Bearer ' + authToken }
     }).then(res => res.json()).then(data => {
       if (data.unlocked) {
-        markAnalysisUnlocked(r);
+        /* logId 기반 키로 명시 저장 */
+        try {
+          const key = 'unlocked_logid_' + currentLogId;
+          const arr = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
+          if (!arr.includes(key)) { arr.push(key); localStorage.setItem('unlockedAnalyses', JSON.stringify(arr)); }
+        } catch(e) {}
         renderPaidDetail();
+      } else {
+        /* 서버 미결제 확인 → 로컬 캐시도 제거 */
+        try {
+          const key = getAnalysisKey(r);
+          const arr = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
+          localStorage.setItem('unlockedAnalyses', JSON.stringify(arr.filter(k => k !== key)));
+        } catch(e) {}
       }
-    }).catch(() => {});
+    }).catch(() => {
+      /* 네트워크 오류 시 로컬 캐시 기준으로 판단 */
+      if (isAnalysisUnlocked(r)) setTimeout(() => renderPaidDetail(), 300);
+    });
+  } else if (isAnalysisUnlocked(r)) {
+    setTimeout(() => renderPaidDetail(), 300);
   }
 
   /* 📊 GA: 견적 분석 완료 */
@@ -4451,16 +4445,12 @@ function goHome(){
 
 /* ── 리셋 ── */
 function clearAnalysis(){
-  try {
-    localStorage.removeItem('_savedResult');
-    localStorage.removeItem('_savedLogId');
-  } catch(e){}
+  try { localStorage.removeItem('_savedResult'); localStorage.removeItem('_savedLogId'); } catch(e){}
   localStorage.removeItem('analysisResult');
   sessionStorage.removeItem('analysisResult');
 }
 function doReset(){
   pdfText='';imageBase64='';imageMime='';allItems=[];lastResult=null;currentLogId=null;editedCats={};
-  /* _savedResult/_savedLogId 보존 — 뒤로가기 후 복원 가능하도록 */
   currentShareUrl='';
   const shareCTA=document.getElementById('shareCTAWrap');
   if(shareCTA){shareCTA.style.display='none';}
