@@ -1744,58 +1744,17 @@ async function getSessionOnce() {
   return _cachedSession;
 }
 
-/* 토큰 갱신 시 캐시 무효화 + authToken 자동 업데이트 + 신규 가입 리워드 */
+/* ── onAuthStateChange: 세션 변화의 단일 진실 공급원 ── */
+/* onAuthStateChange가 resolve할 Promise — restoreAuth()가 이벤트를 기다림 */
+let _authReady = null;
+let _authReadyResolve = null;
+_authReady = new Promise(res => { _authReadyResolve = res; });
+let _explicitSignOut = false;
+
 window._supabase.auth.onAuthStateChange(async (event, session) => {
   _cachedSession = session || false;
-  if (session?.access_token && currentUser) {
-    authToken = session.access_token;
-  }
 
-  /* 신규 가입 감지 — SIGNED_IN 이벤트 + created_at 1분 이내 */
-  if (event === 'SIGNED_IN' && session?.user) {
-    const createdAt = new Date(session.user.created_at);
-    const isNewUser = (Date.now() - createdAt.getTime()) < 60000;
-
-    if (isNewUser) {
-      /* referral_ref가 있으면 추천인에게 크레딧 지급 */
-      const ref = localStorage.getItem('referral_ref');
-      if (ref && ref !== session.user.id) {
-        try {
-          await fetch('/api/credits?action=rewardSharer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sharerId: ref,
-              shareId: 'referral:' + session.user.id  /* 중복 방지 키 */
-            })
-          });
-          localStorage.removeItem('referral_ref');
-          /* 친구 초대로 가입한 신규 유저에게 안내 */
-          setTimeout(() => {
-            alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개가 지급되었습니다.');
-            loadUserCredits();
-          }, 800);
-        } catch(e) {
-          console.error('추천 리워드 지급 실패:', e);
-        }
-      }
-    }
-  }
-});
-
-async function restoreAuth() {
-  try {
-    let session = await getSessionOnce();
-    /* 세션 없으면 refreshSession으로 한 번 더 시도 */
-    if (!session?.user) {
-      try {
-        const { data } = await window._supabase.auth.refreshSession();
-        if (data?.session?.user) {
-          session = data.session;
-          _cachedSession = session;
-        }
-      } catch(e) {}
-    }
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
     if (session?.user) {
       currentUser = {
         id: session.user.id,
@@ -1807,9 +1766,71 @@ async function restoreAuth() {
       authToken = session.access_token;
       updateHeaderUser();
     }
-  } catch(e) { clearAuth(); }
-}
+  }
 
+  if (event === 'SIGNED_OUT') {
+    /* 명시적 로그아웃(doLogout 호출)이 아닌 경우 새로고침 중 오발 방지 */
+    if (_explicitSignOut) {
+      currentUser = null;
+      authToken = null;
+      updateHeaderUser();
+    }
+  }
+
+  /* 신규 가입 감지 — SIGNED_IN + created_at 1분 이내 */
+  if (event === 'SIGNED_IN' && session?.user) {
+    const createdAt = new Date(session.user.created_at);
+    const isNewUser = (Date.now() - createdAt.getTime()) < 60000;
+    if (isNewUser) {
+      const ref = localStorage.getItem('referral_ref');
+      if (ref && ref !== session.user.id) {
+        try {
+          await fetch('/api/credits?action=rewardSharer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sharerId: ref, shareId: 'referral:' + session.user.id })
+          });
+          localStorage.removeItem('referral_ref');
+          setTimeout(() => {
+            alert('🎉 친구 초대로 가입하셨네요!\n크레딧 1개가 지급되었습니다.');
+            loadUserCredits();
+          }, 800);
+        } catch(e) { console.error('추천 리워드 지급 실패:', e); }
+      }
+    }
+  }
+
+  /* INITIAL_SESSION / SIGNED_IN / SIGNED_OUT 중 첫 이벤트에서 authReady resolve */
+  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)) {
+    _authReadyResolve();
+    _authReadyResolve = null;
+  }
+});
+async function restoreAuth() {
+  /* onAuthStateChange INITIAL_SESSION 이벤트를 최대 3초 기다림 */
+  try {
+    await Promise.race([_authReady, new Promise(res => setTimeout(res, 3000))]);
+  } catch(e) {}
+  /* 이벤트 기반으로 이미 세팅됐으면 완료 */
+  if (currentUser) return;
+  /* fallback: 직접 getSession 재시도 */
+  try {
+    const { data } = await window._supabase.auth.getSession();
+    const session = data?.session;
+    if (session?.user) {
+      currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.full_name
+          || session.user.user_metadata?.name
+          || session.user.email?.split('@')[0] || '회원'
+      };
+      authToken = session.access_token;
+      _cachedSession = session;
+      updateHeaderUser();
+    }
+  } catch(e) {}
+}
 /* ── 모달 제어 ── */
 let currentAuthTab = 'login';
 
@@ -2089,6 +2110,7 @@ function doSocialAuth(provider) {
 }
 
 async function doLogout() {
+  _explicitSignOut = true;
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
