@@ -51,8 +51,19 @@ export default async function handler(req, res) {
           fair_count: items.filter(i => i.verdict === '적정').length,
           cheap_count: items.filter(i => i.verdict === '저렴').length,
           has_result: !!log.analysis_result,
+          is_unlocked: unlockedIds.has(String(log.id)),
         };
       });
+
+      /* 열람 기록 조회 — unlocked_logs에서 이 유저가 열람한 log_id 목록 */
+      let unlockedIds = new Set();
+      try {
+        const { data: unlocked } = await supabase
+          .from('unlocked_logs')
+          .select('log_id')
+          .eq('user_id', user.id);
+        (unlocked || []).forEach(u => unlockedIds.add(String(u.log_id)));
+      } catch(e) {}
 
       /* 통계 */
       const stats = {
