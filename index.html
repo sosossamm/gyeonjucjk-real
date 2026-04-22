@@ -3232,11 +3232,33 @@ function render(r){
 
   showPage('pageResult');
 
-  /* 이미 열람한 분석이면 자동 잠금 해제 (localStorage 또는 서버 기록) */
+  /* 이미 열람한 분석이면 자동 잠금 해제 */
   if (isAnalysisUnlocked(r)) {
-    setTimeout(() => renderPaidDetail(), 300);
+    /* 로컬 캐시 히트(logId 기반) — 서버 재확인 병행해서 위변조 방지 */
+    if (currentLogId && currentUser) {
+      fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
+        headers: { 'Authorization': 'Bearer ' + authToken }
+      }).then(res => res.json()).then(data => {
+        if (data.unlocked) {
+          setTimeout(() => renderPaidDetail(), 300);
+        } else {
+          /* 서버에서 미결제 확인 → 로컬 캐시 제거하고 잠금 유지 */
+          try {
+            const unlocked = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
+            const key = getAnalysisKey(r);
+            const filtered = unlocked.filter(k => k !== key);
+            localStorage.setItem('unlockedAnalyses', JSON.stringify(filtered));
+          } catch(e) {}
+        }
+      }).catch(() => {
+        /* 네트워크 오류 시 로컬 캐시 유지 (오프라인 대응) */
+        setTimeout(() => renderPaidDetail(), 300);
+      });
+    } else {
+      setTimeout(() => renderPaidDetail(), 300);
+    }
   } else if (currentLogId && currentUser) {
-    /* 서버에서 열람 기록 확인 (다른 기기 대응) */
+    /* 로컬 캐시 없음 — 서버에서 열람 기록 확인 (다른 기기 대응) */
     fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
       headers: { 'Authorization': 'Bearer ' + authToken }
     }).then(res => res.json()).then(data => {
@@ -3259,10 +3281,18 @@ function render(r){
 
 /* ── 상세분석 열람 영속 저장 ── */
 function getAnalysisKey(result) {
-  /* totalAmount + 첫 항목명으로 고유 키 생성 */
+  /* logId가 있으면 logId 기반 키 사용 (가장 정확) */
   if (!result) return null;
-  const first = (result.items || [])[0]?.name || '';
-  return 'unlocked_' + (result.totalAmount || 0) + '_' + first.slice(0, 10);
+  if (currentLogId) return 'unlocked_logid_' + currentLogId;
+  /* logId 없는 경우 — totalAmount + 모든 항목명 합산 해시로 강화 */
+  const items = result.items || [];
+  const itemSig = items.map(i => (i.name||'') + (i.amount||0)).join('|');
+  let hash = 0;
+  for (let i = 0; i < itemSig.length; i++) {
+    hash = ((hash << 5) - hash) + itemSig.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'unlocked_' + (result.totalAmount || 0) + '_' + Math.abs(hash);
 }
 function markAnalysisUnlocked(result) {
   const key = getAnalysisKey(result);
@@ -3278,6 +3308,8 @@ function markAnalysisUnlocked(result) {
   } catch(e) {}
 }
 function isAnalysisUnlocked(result) {
+  /* logId가 없으면 로컬 캐시 신뢰 안 함 — 반드시 서버 검증 */
+  if (!currentLogId) return false;
   const key = getAnalysisKey(result);
   if (!key) return false;
   try {
@@ -3588,11 +3620,9 @@ window.addEventListener('load', async () => {
       if(_saved){
         const _r = JSON.parse(_saved);
         render(_r);
-        /* 잠금 해제 여부에 따라 상세 표시 */
-        if(isAnalysisUnlocked(_r)){
-          markAnalysisUnlocked(_r);
-          renderPaidDetail();
-        }
+        /* 잠금 해제 여부 — render() 내부의 서버 검증 흐름에 위임
+           (currentLogId가 없는 새로고침 복원 시엔 isAnalysisUnlocked가 false 반환하므로
+            서버 isUnlocked API로만 판단) */
         showPage('pageResult');
       } else {
         localStorage.removeItem('_lastPage');
