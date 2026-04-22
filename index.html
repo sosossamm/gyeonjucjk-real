@@ -584,6 +584,8 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
 .mp-actions{display:flex;gap:7px;border-top:0.5px solid var(--rule);padding-top:10px;}
 .mp-btn-view{flex:1;height:36px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
 .mp-btn-view:hover{background:var(--rule);}
+.mp-btn-view.unlocked{background:var(--cheap-bg);color:var(--cheap);border-color:var(--cheap-mid);}
+.mp-btn-view.unlocked:hover{background:#d4f0e3;}
 .mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .mp-btn-share:hover{opacity:.85;}
 
@@ -3503,51 +3505,25 @@ function updatePayButton(){
   }
 }
 
-/* ── 크레딧 사용 확인 모달 ── */
 function showCreditConfirmModal(credits) {
   return new Promise(resolve => {
-    /* 기존 모달 제거 */
     const existing = document.getElementById('creditConfirmModal');
     if (existing) existing.remove();
-
     const modal = document.createElement('div');
     modal.id = 'creditConfirmModal';
-    modal.style.cssText = `
-      position:fixed;inset:0;z-index:9999;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(0,0,0,0.5);padding:1.5rem;
-    `;
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);padding:1.5rem;';
     modal.innerHTML = `
-      <div style="
-        background:#fff;border-radius:16px;padding:28px 24px;
-        max-width:320px;width:100%;text-align:center;
-        box-shadow:0 20px 60px rgba(0,0,0,0.2);
-      ">
+      <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
         <div style="font-size:32px;margin-bottom:12px;">🔓</div>
         <div style="font-size:17px;font-weight:800;color:#0F0E0C;margin-bottom:8px;">상세 분석 열람</div>
-        <div style="font-size:14px;color:#4A4743;line-height:1.6;margin-bottom:6px;">
-          1크레딧을 사용해 분석 열람을 진행합니다
-        </div>
-        <div style="font-size:12px;color:#8A8780;margin-bottom:24px;">
-          보유 크레딧: <strong style="color:#1A6B3E;">${credits}개</strong>
-          → 사용 후 <strong style="color:#0F0E0C;">${credits - 1}개</strong>
-        </div>
+        <div style="font-size:14px;color:#4A4743;line-height:1.6;margin-bottom:6px;">1크레딧을 사용해 분석 열람을 진행합니다</div>
+        <div style="font-size:12px;color:#8A8780;margin-bottom:24px;">보유 크레딧: <strong style="color:#1A6B3E;">${credits}개</strong> → 사용 후 <strong style="color:#0F0E0C;">${credits - 1}개</strong></div>
         <div style="display:flex;gap:10px;">
-          <button id="creditConfirmCancel" style="
-            flex:1;padding:13px;border:1.5px solid #E8E5E0;border-radius:10px;
-            background:#fff;font-family:inherit;font-size:14px;font-weight:700;
-            color:#4A4743;cursor:pointer;
-          ">취소</button>
-          <button id="creditConfirmOk" style="
-            flex:1;padding:13px;border:none;border-radius:10px;
-            background:#0F0E0C;font-family:inherit;font-size:14px;font-weight:800;
-            color:#fff;cursor:pointer;
-          ">열람하기</button>
+          <button id="creditConfirmCancel" style="flex:1;padding:13px;border:1.5px solid #E8E5E0;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:700;color:#4A4743;cursor:pointer;">취소</button>
+          <button id="creditConfirmOk" style="flex:1;padding:13px;border:none;border-radius:10px;background:#0F0E0C;font-family:inherit;font-size:14px;font-weight:800;color:#fff;cursor:pointer;">열람하기</button>
         </div>
-      </div>
-    `;
+      </div>`;
     document.body.appendChild(modal);
-
     document.getElementById('creditConfirmOk').onclick = () => { modal.remove(); resolve(true); };
     document.getElementById('creditConfirmCancel').onclick = () => { modal.remove(); resolve(false); };
     modal.addEventListener('click', e => { if (e.target === modal) { modal.remove(); resolve(false); } });
@@ -4410,9 +4386,11 @@ async function loadMypage() {
             <span class="mp-dot-item"><span class="mp-dot cheap"></span>저렴 ${h.cheap_count}개</span>
           </div>` : ''}
           <div class="mp-actions">
-            <button class="mp-btn-view" onclick="viewHistory('${esc(h.id)}')">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg>
-              결과 보기
+            <button class="mp-btn-view ${h.is_unlocked ? 'unlocked' : ''}" onclick="viewHistory('${esc(h.id)}')">
+              ${h.is_unlocked
+                ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="8" height="6" rx="1.5"/><path d="M5 6V4.5a2 2 0 014 0V6"/></svg> 상세분석 완료`
+                : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg> 결과 보기`
+              }
             </button>
             <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
