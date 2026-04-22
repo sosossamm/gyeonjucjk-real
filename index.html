@@ -3279,32 +3279,21 @@ function render(r){
 
   showPage('pageResult');
 
-  /* 이미 열람한 분석이면 자동 잠금 해제
-     로컬 캐시 히트 여부와 무관하게 currentLogId 있으면 항상 서버 확인
-     — 해시키 불일치(구버전에서 저장된 경우)도 서버 기준으로 보정 */
+  /* currentLogId 있으면 항상 서버 확인 — 로컬 캐시 불일치 방지 */
   if (currentLogId && currentUser) {
     fetch(`/api/credits?action=isUnlocked&logId=${currentLogId}`, {
       headers: { 'Authorization': 'Bearer ' + authToken }
     }).then(res => res.json()).then(data => {
       if (data.unlocked) {
-        /* logId 기반 키로 명시 저장 */
         try {
           const key = 'unlocked_logid_' + currentLogId;
           const arr = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
           if (!arr.includes(key)) { arr.push(key); localStorage.setItem('unlockedAnalyses', JSON.stringify(arr)); }
         } catch(e) {}
         renderPaidDetail();
-      } else {
-        /* 서버 미결제 확인 → 로컬 캐시도 제거 */
-        try {
-          const key = getAnalysisKey(r);
-          const arr = JSON.parse(localStorage.getItem('unlockedAnalyses') || '[]');
-          localStorage.setItem('unlockedAnalyses', JSON.stringify(arr.filter(k => k !== key)));
-        } catch(e) {}
       }
     }).catch(() => {
-      /* 네트워크 오류 시 로컬 캐시 기준으로 판단 */
-      if (isAnalysisUnlocked(r)) setTimeout(() => renderPaidDetail(), 300);
+      if (isAnalysisUnlocked(r)) renderPaidDetail();
     });
   } else if (isAnalysisUnlocked(r)) {
     setTimeout(() => renderPaidDetail(), 300);
@@ -3514,6 +3503,57 @@ function updatePayButton(){
   }
 }
 
+/* ── 크레딧 사용 확인 모달 ── */
+function showCreditConfirmModal(credits) {
+  return new Promise(resolve => {
+    /* 기존 모달 제거 */
+    const existing = document.getElementById('creditConfirmModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'creditConfirmModal';
+    modal.style.cssText = `
+      position:fixed;inset:0;z-index:9999;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.5);padding:1.5rem;
+    `;
+    modal.innerHTML = `
+      <div style="
+        background:#fff;border-radius:16px;padding:28px 24px;
+        max-width:320px;width:100%;text-align:center;
+        box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      ">
+        <div style="font-size:32px;margin-bottom:12px;">🔓</div>
+        <div style="font-size:17px;font-weight:800;color:#0F0E0C;margin-bottom:8px;">상세 분석 열람</div>
+        <div style="font-size:14px;color:#4A4743;line-height:1.6;margin-bottom:6px;">
+          1크레딧을 사용해 분석 열람을 진행합니다
+        </div>
+        <div style="font-size:12px;color:#8A8780;margin-bottom:24px;">
+          보유 크레딧: <strong style="color:#1A6B3E;">${credits}개</strong>
+          → 사용 후 <strong style="color:#0F0E0C;">${credits - 1}개</strong>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button id="creditConfirmCancel" style="
+            flex:1;padding:13px;border:1.5px solid #E8E5E0;border-radius:10px;
+            background:#fff;font-family:inherit;font-size:14px;font-weight:700;
+            color:#4A4743;cursor:pointer;
+          ">취소</button>
+          <button id="creditConfirmOk" style="
+            flex:1;padding:13px;border:none;border-radius:10px;
+            background:#0F0E0C;font-family:inherit;font-size:14px;font-weight:800;
+            color:#fff;cursor:pointer;
+          ">열람하기</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('creditConfirmOk').onclick = () => { modal.remove(); resolve(true); };
+    document.getElementById('creditConfirmCancel').onclick = () => { modal.remove(); resolve(false); };
+    modal.addEventListener('click', e => { if (e.target === modal) { modal.remove(); resolve(false); } });
+  });
+}
+
 async function startPayment(){
   if(!lastResult){alert('분석 결과가 없습니다.');return;}
 
@@ -3536,8 +3576,10 @@ async function startPayment(){
     localStorage.setItem('analysisResult',JSON.stringify(lastResult));
   }
 
-  /* 크레딧 있으면 크레딧 사용 */
+  /* 크레딧 있으면 확인 팝업 후 사용 */
   if(currentUser && userCredits > 0){
+    const confirmed = await showCreditConfirmModal(userCredits);
+    if (!confirmed) return;
     try{
       const resp = await fetch('/api/credits?action=use', {
         method: 'POST',
