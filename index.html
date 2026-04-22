@@ -1636,8 +1636,25 @@ window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     detectSessionInUrl: true,
     lock: async (name, acquireTimeout, fn) => {
-      /* 락 획득 실패 시 기다리지 않고 바로 실행 — "stole" 에러 원천 차단 */
-      try { return await fn(); } catch(e) { return await fn(); }
+      /* Web Locks API 정상 구현 — stole 에러 방지 + 세션 안정성 확보 */
+      if (navigator.locks?.request) {
+        return new Promise((resolve, reject) => {
+          navigator.locks.request(
+            name,
+            { ifAvailable: true },
+            async lock => {
+              try {
+                /* 락을 얻었든 못 얻었든 fn() 실행 — 못 얻어도 로그아웃 안 됨 */
+                resolve(await fn());
+              } catch(e) {
+                reject(e);
+              }
+            }
+          );
+        });
+      }
+      /* Web Locks API 미지원 환경 (일부 구형 브라우저) — 직접 실행 */
+      return fn();
     }
   }
 });
