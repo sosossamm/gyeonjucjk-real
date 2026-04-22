@@ -1631,31 +1631,13 @@ const SUPABASE_URL = 'https://vzztfgqubrguwujlsadh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enRmZ3F1YnJndXd1amxzYWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTQyNzUsImV4cCI6MjA5MDE3MDI3NX0.EtkCZB5NUtNpJbzZbFpy_NGMBx60Cy-oJRKza1YTI1E';
 window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storageKey: 'sb-qm-auth',          /* 고유 키 — 탭 간 락 충돌 방지 */
+    storageKey: 'sb-qm-auth',
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
-    lock: async (name, acquireTimeout, fn) => {
-      /* Web Locks API 정상 구현 — stole 에러 방지 + 세션 안정성 확보 */
-      if (navigator.locks?.request) {
-        return new Promise((resolve, reject) => {
-          navigator.locks.request(
-            name,
-            { ifAvailable: true },
-            async lock => {
-              try {
-                /* 락을 얻었든 못 얻었든 fn() 실행 — 못 얻어도 로그아웃 안 됨 */
-                resolve(await fn());
-              } catch(e) {
-                reject(e);
-              }
-            }
-          );
-        });
-      }
-      /* Web Locks API 미지원 환경 (일부 구형 브라우저) — 직접 실행 */
-      return fn();
-    }
+    detectSessionInUrl: true
+    /* lock 옵션 제거 — 커스텀 lock의 ifAvailable:true가 락 획득 실패 시
+       fn()을 null lock으로 실행시켜 Supabase가 세션 저장을 스킵하는 버그.
+       기본 lock 동작을 쓰면 Supabase SDK가 세션을 정상적으로 저장함. */
   }
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1749,7 +1731,7 @@ async function getSessionOnce() {
 let _authReady = null;
 let _authReadyResolve = null;
 _authReady = new Promise(res => { _authReadyResolve = res; });
-let _explicitSignOut = false;
+let _authInitialized = false;
 
 window._supabase.auth.onAuthStateChange(async (event, session) => {
   _cachedSession = session || false;
@@ -1766,11 +1748,12 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
       authToken = session.access_token;
       updateHeaderUser();
     }
+    if (event === 'INITIAL_SESSION') _authInitialized = true;
   }
 
   if (event === 'SIGNED_OUT') {
-    /* 명시적 로그아웃(doLogout 호출)이 아닌 경우 새로고침 중 오발 방지 */
-    if (_explicitSignOut) {
+    /* INITIAL_SESSION 이전에 오는 SIGNED_OUT은 새로고침 오발이므로 무시 */
+    if (_authInitialized) {
       currentUser = null;
       authToken = null;
       updateHeaderUser();
@@ -1801,7 +1784,7 @@ window._supabase.auth.onAuthStateChange(async (event, session) => {
   }
 
   /* INITIAL_SESSION / SIGNED_IN / SIGNED_OUT 중 첫 이벤트에서 authReady resolve */
-  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)) {
+  if (_authReadyResolve && ['INITIAL_SESSION','SIGNED_IN'].includes(event)) {
     _authReadyResolve();
     _authReadyResolve = null;
   }
@@ -1988,21 +1971,6 @@ async function doEmailAuth() {
 
     /* 로그인 성공 */
     saveAuth(data.user, data.access_token);
-
-    /* ★ Supabase 클라이언트에 세션을 직접 심어줌.
-       이게 없으면 새로고침 시 Supabase가 자체 storage에서 세션을 못 찾아
-       SIGNED_OUT을 발화 → 로그아웃처럼 보이는 버그 발생.
-       소셜 로그인은 Supabase가 리다이렉트를 직접 처리하므로 괜찮지만
-       이메일 로그인은 서버(/api/auth)를 거치므로 반드시 여기서 세팅해야 함. */
-    if (data.access_token && data.refresh_token) {
-      try {
-        await window._supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
-      } catch(e) { console.warn('setSession 실패:', e); }
-    }
-
     /* 📊 GA: 이메일 로그인 */
     if(typeof GAnalytics !== 'undefined') GAnalytics.login({ method: 'email' });
     
@@ -2125,7 +2093,7 @@ function doSocialAuth(provider) {
 }
 
 async function doLogout() {
-  _explicitSignOut = true;
+  /* _explicitSignOut 제거됨 — _authInitialized 방식으로 대체 */
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
