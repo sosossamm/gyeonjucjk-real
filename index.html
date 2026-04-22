@@ -1635,8 +1635,7 @@ window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-    /* lock 옵션 제거 — ifAvailable:true가 락 획득 실패 시 세션 저장을 스킵해
-       새로고침 시 SIGNED_OUT 오발 → 로그아웃 버그 발생했었음 */
+    /* lock 옵션 제거 — ifAvailable:true가 락 획득 실패 시 세션 저장 스킵 → 새로고침 로그아웃 버그 */
   }
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2103,7 +2102,7 @@ function doSocialAuth(provider) {
 }
 
 async function doLogout() {
-  /* _explicitSignOut 제거됨 — _authInitialized 방식으로 대체 */
+  /* _explicitSignOut → _authInitialized 방식으로 대체 */
   try { await window._supabase.auth.signOut(); } catch(e) {}
   clearAuth();
 }
@@ -3182,7 +3181,6 @@ function render(r){
   /* 새로고침 복원용으로 결과 저장 */
   try {
     localStorage.setItem('_savedResult', JSON.stringify(r));
-    /* currentLogId도 함께 저장 — 새로고침 후 isAnalysisUnlocked가 올바르게 동작하려면 필요 */
     if (currentLogId) localStorage.setItem('_savedLogId', currentLogId);
     else localStorage.removeItem('_savedLogId');
   } catch(e){}
@@ -3656,7 +3654,6 @@ window.addEventListener('load', async () => {
       const _saved = localStorage.getItem('_savedResult');
       if(_saved){
         const _r = JSON.parse(_saved);
-        /* currentLogId 복원 — 없으면 잠금 해제 여부 판단 불가 */
         const _savedLogId = localStorage.getItem('_savedLogId');
         if (_savedLogId) currentLogId = _savedLogId;
         render(_r);
@@ -4392,6 +4389,8 @@ async function viewHistory(logId) {
     if (!resp.ok || !data.result) throw new Error(data.error || '불러오기 실패');
     lastResult = data.result;
     allItems = data.result.items || [];
+    /* currentLogId 세팅 — render() 안의 isUnlocked 체크에 필요 */
+    currentLogId = logId;
     render(data.result);
   } catch(err) {
     alert('결과를 불러올 수 없어요: ' + err.message);
