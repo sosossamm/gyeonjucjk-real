@@ -35,7 +35,32 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      /* ✅ 열람 기록을 먼저 조회 — history 매핑에서 참조하기 때문 */
+      /* ── 값 없는 로그 자동 삭제 ──
+         조건: analysis_result가 없거나, items 배열이 비어있거나, totalAmount가 0인 경우 */
+      const emptyLogIds = (logs || [])
+        .filter(log => {
+          const r = log.analysis_result;
+          if (!r) return true;
+          if (!r.totalAmount || r.totalAmount === 0) return true;
+          if (!r.items || r.items.length === 0) return true;
+          return false;
+        })
+        .map(log => log.id);
+
+      if (emptyLogIds.length > 0) {
+        supabase
+          .from('estimate_logs')
+          .delete()
+          .in('id', emptyLogIds)
+          .eq('user_id', user.id)
+          .then(() => {})
+          .catch(() => {});
+      }
+
+      /* 유효한 로그만 남김 */
+      const validLogs = (logs || []).filter(log => !emptyLogIds.includes(log.id));
+
+      /* ✅ 열람 기록 먼저 조회 */
       let unlockedIds = new Set();
       try {
         const { data: unlocked } = await supabase
@@ -46,7 +71,7 @@ export default async function handler(req, res) {
       } catch(e) {}
 
       /* ✅ unlockedIds 준비 후 매핑 */
-      const history = (logs || []).map(log => {
+      const history = validLogs.map(log => {
         const r = log.analysis_result || {};
         const items = r.items || [];
         return {
@@ -73,7 +98,6 @@ export default async function handler(req, res) {
         share_count: 0,
       };
 
-      /* share_links 조회 시도 */
       try {
         const { count } = await supabase
           .from('share_links')
