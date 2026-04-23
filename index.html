@@ -588,7 +588,7 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
 .mp-btn-view.unlocked:hover{background:#d4f0e3;}
 .mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .mp-btn-share:hover{opacity:.85;}
-.mp-btn-delete{width:36px;height:36px;flex-shrink:0;background:transparent;color:var(--muted);border:1px solid var(--rule);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mp-btn-delete{width:26px;height:26px;flex-shrink:0;background:transparent;color:var(--muted);border:1px solid var(--rule);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 .mp-btn-delete:hover{background:var(--exp-bg);color:var(--exp);border-color:var(--exp-mid);}
 /* 삭제 확인 팝업 */
 .delete-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;}
@@ -4387,9 +4387,14 @@ async function loadMypage() {
               ${h.region ? `<span class="mp-region">${esc(h.region)}</span>` : ''}
               ${h.area_py ? `<span class="mp-area">${Math.round(h.area_py)}평</span>` : ''}
             </div>
+            <button class="mp-btn-delete" onclick="confirmDeleteHistory('${esc(h.id)}')" title="기록 삭제">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,3.5 12,3.5"/><path d="M5.5 3.5V2.5h3v1"/><rect x="3" y="3.5" width="8" height="8.5" rx="1"/><line x1="5.5" y1="6" x2="5.5" y2="9.5"/><line x1="8.5" y1="6" x2="8.5" y2="9.5"/></svg>
+            </button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <div class="mp-amount" style="margin-bottom:0;">${amt}</div>
             <span class="mp-vpill ${c}">${h.verdict==='비쌈'?'🔴 비쌈':h.verdict==='저렴'?'💚 저렴':'🟡 적정'}</span>
           </div>
-          <div class="mp-amount">${amt}</div>
           ${h.item_count ? `
           <div class="mp-dots">
             <span class="mp-dot-item"><span class="mp-dot exp"></span>비쌈 ${h.exp_count}개</span>
@@ -4406,9 +4411,6 @@ async function loadMypage() {
             <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
               공유하고 무료 분석 받기
-            </button>
-            <button class="mp-btn-delete" onclick="confirmDeleteHistory('${esc(h.id)}')" title="기록 삭제">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,3.5 12,3.5"/><path d="M5.5 3.5V2.5h3v1"/><rect x="3" y="3.5" width="8" height="8.5" rx="1"/><line x1="5.5" y1="6" x2="5.5" y2="9.5"/><line x1="8.5" y1="6" x2="8.5" y2="9.5"/></svg>
             </button>
           </div>
         </div>`;
