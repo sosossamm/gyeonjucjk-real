@@ -7,7 +7,7 @@ async function getSupabase() {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -107,6 +107,31 @@ export default async function handler(req, res) {
       } catch(e) {}
 
       return res.status(200).json({ success: true, history, stats, user: { id: user.id, email: user.email, name: user.user_metadata?.name || '' } });
+    }
+
+    /* ── 분석 기록 삭제 ── */
+    if (action === 'delete') {
+      const logId = req.query.id;
+      if (!logId) return res.status(400).json({ error: 'id 필요' });
+
+      const { error } = await supabase
+        .from('estimate_logs')
+        .delete()
+        .eq('id', logId)
+        .eq('user_id', user.id); // 본인 데이터만 삭제 가능
+
+      if (error) throw error;
+
+      /* 연관된 unlocked_logs도 함께 삭제 */
+      supabase
+        .from('unlocked_logs')
+        .delete()
+        .eq('log_id', logId)
+        .eq('user_id', user.id)
+        .then(() => {})
+        .catch(() => {});
+
+      return res.status(200).json({ success: true });
     }
 
     /* ── 분석 결과 단건 조회 ── */
