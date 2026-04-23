@@ -2309,7 +2309,7 @@ window.addEventListener('popstate', function(){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('pageMypage').classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
-    loadMyPageData();
+    loadMypage();
   } else if(['refund','terms','privacy'].includes(hash)){
     const c = LEGAL_CONTENT[hash];
     if(c){
@@ -3692,7 +3692,7 @@ window.addEventListener('load', async () => {
   } else if(_lastPage === 'pageMypage' && currentUser){
     /* 로그인 상태면 마이페이지 복원 */
     showPage('pageMypage');
-    loadMyPageData();
+    loadMypage();
   } else {
     localStorage.removeItem('_lastPage');
     /* ── URL hash 기반 초기 진입 처리 ── */
@@ -3701,7 +3701,7 @@ window.addEventListener('load', async () => {
       if(currentUser){
         document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
         document.getElementById('pageMypage').classList.add('active');
-        loadMyPageData();
+        loadMypage();
       } else {
         /* 비로그인 시 로그인 모달 띄우고 홈 유지 */
         openAuthModal('login');
