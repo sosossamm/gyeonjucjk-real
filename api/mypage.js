@@ -35,6 +35,17 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
+      /* ✅ 열람 기록을 먼저 조회 — history 매핑에서 참조하기 때문 */
+      let unlockedIds = new Set();
+      try {
+        const { data: unlocked } = await supabase
+          .from('unlocked_logs')
+          .select('log_id')
+          .eq('user_id', user.id);
+        (unlocked || []).forEach(u => unlockedIds.add(String(u.log_id)));
+      } catch(e) {}
+
+      /* ✅ unlockedIds 준비 후 매핑 */
       const history = (logs || []).map(log => {
         const r = log.analysis_result || {};
         const items = r.items || [];
@@ -55,21 +66,11 @@ export default async function handler(req, res) {
         };
       });
 
-      /* 열람 기록 조회 — unlocked_logs에서 이 유저가 열람한 log_id 목록 */
-      let unlockedIds = new Set();
-      try {
-        const { data: unlocked } = await supabase
-          .from('unlocked_logs')
-          .select('log_id')
-          .eq('user_id', user.id);
-        (unlocked || []).forEach(u => unlockedIds.add(String(u.log_id)));
-      } catch(e) {}
-
       /* 통계 */
       const stats = {
         total: history.length,
         exp_count: history.filter(h => h.verdict === '비쌈').length,
-        share_count: 0, /* share_links 테이블 있으면 추가 */
+        share_count: 0,
       };
 
       /* share_links 조회 시도 */
