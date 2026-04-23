@@ -588,6 +588,17 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--surface
 .mp-btn-view.unlocked:hover{background:#d4f0e3;}
 .mp-btn-share{flex:2;height:36px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .mp-btn-share:hover{opacity:.85;}
+.mp-btn-delete{width:36px;height:36px;flex-shrink:0;background:transparent;color:var(--muted);border:1px solid var(--rule);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mp-btn-delete:hover{background:var(--exp-bg);color:var(--exp);border-color:var(--exp-mid);}
+/* 삭제 확인 팝업 */
+.delete-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.delete-modal{background:#fff;border-radius:14px;padding:28px 24px 20px;width:min(320px,90vw);text-align:center;}
+.delete-modal h3{font-size:16px;font-weight:800;color:var(--ink);margin:0 0 8px;}
+.delete-modal p{font-size:13px;color:var(--ink3);line-height:1.6;margin:0 0 20px;}
+.delete-modal-btns{display:flex;gap:8px;}
+.delete-modal-btns button{flex:1;height:42px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+.delete-modal-cancel{background:var(--paper);color:var(--ink3);border:1px solid var(--rule) !important;}
+.delete-modal-confirm{background:var(--exp);color:#fff;}
 
 @media(max-width:640px){
   .profit-input-wrap{flex-direction:column;align-items:flex-start;}
@@ -4308,7 +4319,7 @@ async function goMypage() {
 async function loadMypage() {
   if (!currentUser || !authToken) return;
 
-  /* 프로필 — 즉시 렌더 */
+  /* 프로필 */
   const name = currentUser.name || currentUser.email?.split('@')[0] || '회원';
   const initial = name.charAt(0).toUpperCase();
   const av = document.getElementById('mpAvatar');
@@ -4318,46 +4329,40 @@ async function loadMypage() {
   if (nm) nm.textContent = name;
   if (em) em.textContent = currentUser.email || '';
 
-  /* 로딩 스켈레톤 즉시 표시 */
-  const el = id => document.getElementById(id);
-  if (el('mpCreditBalance')) el('mpCreditBalance').textContent = '…';
-  if (el('mpTotal'))   el('mpTotal').textContent   = '…';
-  if (el('mpExp'))     el('mpExp').textContent     = '…';
-  if (el('mpShare'))   el('mpShare').textContent   = '…';
-  if (el('mpFriends')) el('mpFriends').textContent = '…';
-  const list = el('mpHistoryList');
-  if (list) list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px;">불러오는 중…</div>`;
+  /* 크레딧 잔여량 */
+  await loadMyPageCredits();
 
-  /* ✅ 3개 API 병렬 호출 */
-  const [balanceRes, historyRes, creditHistoryRes] = await Promise.allSettled([
-    fetch('/api/credits?action=balance',  { headers: { 'Authorization': 'Bearer ' + authToken } }),
-    fetch('/api/mypage?action=history',   { headers: { 'Authorization': 'Bearer ' + authToken } }),
-    fetch('/api/credits?action=history',  { headers: { 'Authorization': 'Bearer ' + authToken } }),
-  ]);
-
-  /* 1) 크레딧 잔액 */
+  /* 기록 불러오기 */
   try {
-    if (balanceRes.status === 'fulfilled' && balanceRes.value.ok) {
-      const data = await balanceRes.value.json();
-      userCredits = data.credits || 0;
-      if (el('mpCreditBalance')) el('mpCreditBalance').textContent = userCredits + ' 크레딧';
-      updatePayButton();
-    }
-  } catch(e) { if (el('mpCreditBalance')) el('mpCreditBalance').textContent = '—'; }
+    const resp = await fetch('/api/mypage?action=history', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || '불러오기 실패');
 
-  /* 2) 히스토리 + 통계 */
-  try {
-    if (historyRes.status !== 'fulfilled' || !historyRes.value.ok) throw new Error('불러오기 실패');
-    const data = await historyRes.value.json();
-
+    /* 통계 */
     const s = data.stats || {};
+    const el = id => document.getElementById(id);
     if (el('mpTotal')) el('mpTotal').textContent = (s.total || 0) + '건';
     if (el('mpExp'))   el('mpExp').textContent   = (s.exp_count || 0) + '건';
     if (el('mpShare')) el('mpShare').textContent = (s.share_count || 0) + '건';
 
+    /* 가입한 친구 수 — credit_logs에서 reward 타입 건수 */
+    try{
+      const cResp = await fetch('/api/credits?action=history', {
+        headers: { 'Authorization': 'Bearer ' + authToken }
+      });
+      const cData = await cResp.json();
+      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
+      if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
+    }catch(e){ if(el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>'; }
+
+    /* 기록 목록 */
+    const list = document.getElementById('mpHistoryList');
+    if (!list) return;
+
     const history = data.history || [];
-    if (!list) { /* noop */ }
-    else if (history.length === 0) {
+    if (history.length === 0) {
       list.innerHTML = `
         <div style="text-align:center;padding:2.5rem 1rem;color:var(--muted);">
           <div style="font-size:32px;margin-bottom:10px;">📋</div>
@@ -4365,14 +4370,17 @@ async function loadMypage() {
           <div style="font-size:12px;line-height:1.6;">견적서를 업로드하고 분석해보세요</div>
           <button onclick="goBack()" style="margin-top:14px;background:var(--ink);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">견적 분석하기</button>
         </div>`;
-    } else {
-      const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
-      const fmtDate = d => { const dt = new Date(d); return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`; };
-      list.innerHTML = history.map(h => {
-        const c = clsMap[h.verdict] || 'fair';
-        const amt = h.total_amount ? Math.round(h.total_amount/10000).toLocaleString('ko-KR')+'만원' : '—';
-        return `
-        <div class="mp-hist-card ${c}">
+      return;
+    }
+
+    const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
+    const fmtDate = d => { const dt = new Date(d); return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`; };
+
+    list.innerHTML = history.map(h => {
+      const c = clsMap[h.verdict] || 'fair';
+      const amt = h.total_amount ? Math.round(h.total_amount/10000).toLocaleString('ko-KR')+'만원' : '—';
+      return `
+        <div class="mp-hist-card ${c}" data-log-id="${esc(h.id)}">
           <div class="mp-hist-top">
             <div class="mp-hist-meta">
               <span class="mp-date">${fmtDate(h.created_at)}</span>
@@ -4399,22 +4407,17 @@ async function loadMypage() {
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
               공유하고 무료 분석 받기
             </button>
+            <button class="mp-btn-delete" onclick="confirmDeleteHistory('${esc(h.id)}')" title="기록 삭제">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,3.5 12,3.5"/><path d="M5.5 3.5V2.5h3v1"/><rect x="3" y="3.5" width="8" height="8.5" rx="1"/><line x1="5.5" y1="6" x2="5.5" y2="9.5"/><line x1="8.5" y1="6" x2="8.5" y2="9.5"/></svg>
+            </button>
           </div>
         </div>`;
-      }).join('');
-    }
+    }).join('');
+
   } catch(err) {
+    const list = document.getElementById('mpHistoryList');
     if (list) list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--exp);font-size:13px;">불러오기 실패: ${err.message}</div>`;
   }
-
-  /* 3) 친구 수 */
-  try {
-    if (creditHistoryRes.status === 'fulfilled' && creditHistoryRes.value.ok) {
-      const cData = await creditHistoryRes.value.json();
-      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
-      if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
-    }
-  } catch(e) { if (el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>'; }
 }
 
 async function viewHistory(logId) {
@@ -4430,6 +4433,54 @@ async function viewHistory(logId) {
     render(data.result);
   } catch(err) {
     alert('결과를 불러올 수 없어요: ' + err.message);
+  }
+}
+
+function confirmDeleteHistory(logId) {
+  /* 기존 팝업 제거 */
+  const existing = document.getElementById('deleteModal');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'deleteModal';
+  backdrop.className = 'delete-modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="delete-modal">
+      <h3>분석 기록을 삭제할까요?</h3>
+      <p>삭제한 기록은 복구할 수 없어요.<br>열람한 상세분석도 함께 삭제됩니다.</p>
+      <div class="delete-modal-btns">
+        <button class="delete-modal-cancel" onclick="document.getElementById('deleteModal').remove()">취소</button>
+        <button class="delete-modal-confirm" onclick="deleteHistory('${logId}')">삭제</button>
+      </div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+}
+
+async function deleteHistory(logId) {
+  const modal = document.getElementById('deleteModal');
+  if (modal) modal.remove();
+
+  try {
+    const resp = await fetch(`/api/mypage?action=delete&id=${logId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || '삭제 실패');
+
+    /* 카드 즉시 제거 */
+    const card = document.querySelector(`[data-log-id="${logId}"]`);
+    if (card) {
+      card.style.transition = 'opacity .2s';
+      card.style.opacity = '0';
+      setTimeout(() => { card.remove(); }, 200);
+    } else {
+      /* data-log-id 없으면 목록 새로고침 */
+      loadMypage();
+    }
+  } catch(err) {
+    alert('삭제 중 오류가 발생했어요: ' + err.message);
   }
 }
 
