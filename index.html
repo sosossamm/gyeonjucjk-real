@@ -4308,7 +4308,7 @@ async function goMypage() {
 async function loadMypage() {
   if (!currentUser || !authToken) return;
 
-  /* 프로필 */
+  /* 프로필 (동기 — 즉시 렌더) */
   const name = currentUser.name || currentUser.email?.split('@')[0] || '회원';
   const initial = name.charAt(0).toUpperCase();
   const av = document.getElementById('mpAvatar');
@@ -4318,40 +4318,52 @@ async function loadMypage() {
   if (nm) nm.textContent = name;
   if (em) em.textContent = currentUser.email || '';
 
-  /* 크레딧 잔여량 */
-  await loadMyPageCredits();
+  /* 로딩 스켈레톤 즉시 표시 */
+  const el = id => document.getElementById(id);
+  if (el('mpCreditBalance')) el('mpCreditBalance').textContent = '…';
+  if (el('mpTotal'))   el('mpTotal').textContent   = '…';
+  if (el('mpExp'))     el('mpExp').textContent     = '…';
+  if (el('mpShare'))   el('mpShare').textContent   = '…';
+  if (el('mpFriends')) el('mpFriends').textContent = '…';
 
-  /* 기록 불러오기 */
+  const list = el('mpHistoryList');
+  if (list) list.innerHTML = `
+    <div style="text-align:center;padding:2rem;color:var(--muted);font-size:13px;">
+      불러오는 중…
+    </div>`;
+
+  /* ✅ 3개 API 병렬 호출 */
+  const [creditBalanceRes, historyRes, creditHistoryRes] = await Promise.allSettled([
+    fetch('/api/credits?action=balance',  { headers: { 'Authorization': 'Bearer ' + authToken } }),
+    fetch('/api/mypage?action=history',   { headers: { 'Authorization': 'Bearer ' + authToken } }),
+    fetch('/api/credits?action=history',  { headers: { 'Authorization': 'Bearer ' + authToken } }),
+  ]);
+
+  /* 1) 크레딧 잔액 */
   try {
-    const resp = await fetch('/api/mypage?action=history', {
-      headers: { 'Authorization': 'Bearer ' + authToken }
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || '불러오기 실패');
+    if (creditBalanceRes.status === 'fulfilled' && creditBalanceRes.value.ok) {
+      const data = await creditBalanceRes.value.json();
+      userCredits = data.credits || 0;
+      if (el('mpCreditBalance')) el('mpCreditBalance').textContent = userCredits + ' 크레딧';
+      updatePayButton();
+    }
+  } catch(e) {
+    if (el('mpCreditBalance')) el('mpCreditBalance').textContent = '—';
+  }
 
-    /* 통계 */
+  /* 2) 히스토리 + 통계 */
+  try {
+    if (historyRes.status !== 'fulfilled' || !historyRes.value.ok) throw new Error('불러오기 실패');
+    const data = await historyRes.value.json();
+
     const s = data.stats || {};
-    const el = id => document.getElementById(id);
     if (el('mpTotal')) el('mpTotal').textContent = (s.total || 0) + '건';
     if (el('mpExp'))   el('mpExp').textContent   = (s.exp_count || 0) + '건';
     if (el('mpShare')) el('mpShare').textContent = (s.share_count || 0) + '건';
 
-    /* 가입한 친구 수 — credit_logs에서 reward 타입 건수 */
-    try{
-      const cResp = await fetch('/api/credits?action=history', {
-        headers: { 'Authorization': 'Bearer ' + authToken }
-      });
-      const cData = await cResp.json();
-      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
-      if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
-    }catch(e){ if(el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>'; }
-
-    /* 기록 목록 */
-    const list = document.getElementById('mpHistoryList');
-    if (!list) return;
-
     const history = data.history || [];
-    if (history.length === 0) {
+    if (!list) { /* noop */ }
+    else if (history.length === 0) {
       list.innerHTML = `
         <div style="text-align:center;padding:2.5rem 1rem;color:var(--muted);">
           <div style="font-size:32px;margin-bottom:10px;">📋</div>
@@ -4359,50 +4371,57 @@ async function loadMypage() {
           <div style="font-size:12px;line-height:1.6;">견적서를 업로드하고 분석해보세요</div>
           <button onclick="goBack()" style="margin-top:14px;background:var(--ink);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">견적 분석하기</button>
         </div>`;
-      return;
-    }
-
-    const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
-    const fmtDate = d => { const dt = new Date(d); return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`; };
-
-    list.innerHTML = history.map(h => {
-      const c = clsMap[h.verdict] || 'fair';
-      const amt = h.total_amount ? Math.round(h.total_amount/10000).toLocaleString('ko-KR')+'만원' : '—';
-      return `
-        <div class="mp-hist-card ${c}">
-          <div class="mp-hist-top">
-            <div class="mp-hist-meta">
-              <span class="mp-date">${fmtDate(h.created_at)}</span>
-              ${h.region ? `<span class="mp-region">${esc(h.region)}</span>` : ''}
-              ${h.area_py ? `<span class="mp-area">${Math.round(h.area_py)}평</span>` : ''}
+    } else {
+      const clsMap = {비쌈:'exp',적정:'fair',저렴:'cheap'};
+      const fmtDate = d => { const dt = new Date(d); return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`; };
+      list.innerHTML = history.map(h => {
+        const c = clsMap[h.verdict] || 'fair';
+        const amt = h.total_amount ? Math.round(h.total_amount/10000).toLocaleString('ko-KR')+'만원' : '—';
+        return `
+          <div class="mp-hist-card ${c}">
+            <div class="mp-hist-top">
+              <div class="mp-hist-meta">
+                <span class="mp-date">${fmtDate(h.created_at)}</span>
+                ${h.region ? `<span class="mp-region">${esc(h.region)}</span>` : ''}
+                ${h.area_py ? `<span class="mp-area">${Math.round(h.area_py)}평</span>` : ''}
+              </div>
+              <span class="mp-vpill ${c}">${h.verdict==='비쌈'?'🔴 비쌈':h.verdict==='저렴'?'💚 저렴':'🟡 적정'}</span>
             </div>
-            <span class="mp-vpill ${c}">${h.verdict==='비쌈'?'🔴 비쌈':h.verdict==='저렴'?'💚 저렴':'🟡 적정'}</span>
-          </div>
-          <div class="mp-amount">${amt}</div>
-          ${h.item_count ? `
-          <div class="mp-dots">
-            <span class="mp-dot-item"><span class="mp-dot exp"></span>비쌈 ${h.exp_count}개</span>
-            <span class="mp-dot-item"><span class="mp-dot fair"></span>적정 ${h.fair_count}개</span>
-            <span class="mp-dot-item"><span class="mp-dot cheap"></span>저렴 ${h.cheap_count}개</span>
-          </div>` : ''}
-          <div class="mp-actions">
-            <button class="mp-btn-view ${h.is_unlocked ? 'unlocked' : ''}" onclick="viewHistory('${esc(h.id)}')">
-              ${h.is_unlocked
-                ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="8" height="6" rx="1.5"/><path d="M5 6V4.5a2 2 0 014 0V6"/></svg> 상세분석 완료`
-                : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg> 결과 보기`
-              }
-            </button>
-            <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
-              공유하고 무료 분석 받기
-            </button>
-          </div>
-        </div>`;
-    }).join('');
-
+            <div class="mp-amount">${amt}</div>
+            ${h.item_count ? `
+            <div class="mp-dots">
+              <span class="mp-dot-item"><span class="mp-dot exp"></span>비쌈 ${h.exp_count}개</span>
+              <span class="mp-dot-item"><span class="mp-dot fair"></span>적정 ${h.fair_count}개</span>
+              <span class="mp-dot-item"><span class="mp-dot cheap"></span>저렴 ${h.cheap_count}개</span>
+            </div>` : ''}
+            <div class="mp-actions">
+              <button class="mp-btn-view ${h.is_unlocked ? 'unlocked' : ''}" onclick="viewHistory('${esc(h.id)}')">
+                ${h.is_unlocked
+                  ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="8" height="6" rx="1.5"/><path d="M5 6V4.5a2 2 0 014 0V6"/></svg> 상세분석 완료`
+                  : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="7" cy="7" rx="6" ry="4"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/></svg> 결과 보기`
+                }
+              </button>
+              <button class="mp-btn-share" onclick="shareHistory('${esc(h.id)}')">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><path d="M4.4 7.8l5.2 2.9M9.6 3.3L4.4 6.2"/></svg>
+                공유하고 무료 분석 받기
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
   } catch(err) {
-    const list = document.getElementById('mpHistoryList');
     if (list) list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--exp);font-size:13px;">불러오기 실패: ${err.message}</div>`;
+  }
+
+  /* 3) 친구 수 */
+  try {
+    if (creditHistoryRes.status === 'fulfilled' && creditHistoryRes.value.ok) {
+      const cData = await creditHistoryRes.value.json();
+      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
+      if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
+    }
+  } catch(e) {
+    if (el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>';
   }
 }
 
