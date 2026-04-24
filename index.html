@@ -2320,7 +2320,7 @@ window.addEventListener('popstate', function(){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('pageMypage').classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
-    loadMyPageData();
+    loadMypage();
   } else if(['refund','terms','privacy'].includes(hash)){
     const c = LEGAL_CONTENT[hash];
     if(c){
@@ -3721,7 +3721,7 @@ window.addEventListener('load', async () => {
   } else if(_lastPage === 'pageMypage' && currentUser){
     /* 로그인 상태면 마이페이지 복원 */
     showPage('pageMypage');
-    loadMyPageData();
+    loadMypage();
   } else {
     localStorage.removeItem('_lastPage');
     /* ── URL hash 기반 초기 진입 처리 ── */
@@ -3730,7 +3730,7 @@ window.addEventListener('load', async () => {
       if(currentUser){
         document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
         document.getElementById('pageMypage').classList.add('active');
-        loadMyPageData();
+        loadMypage();
       } else {
         /* 비로그인 시 로그인 모달 띄우고 홈 유지 */
         openAuthModal('login');
@@ -4091,10 +4091,9 @@ function renderSaleBanners() {
       </div>
     </div>`;
 
-  // 랜딩/결과 → 두 배너 합쳐서
-  const html = banner1 + banner2;
-  if (saleBanner) saleBanner.innerHTML = html;
-  if (ctaBanner) ctaBanner.innerHTML = html;
+  // 랜딩/결과 → 선착순 배너만 표시 (친구 초대는 상단 카드에서 별도 표시)
+  if (saleBanner) saleBanner.innerHTML = banner1;
+  if (ctaBanner) ctaBanner.innerHTML = banner1;
 
   // 마이페이지 → 선착순 배너만 기존 디자인으로
   if (mpBanner) {
@@ -4360,7 +4359,7 @@ async function loadMypage() {
         headers: { 'Authorization': 'Bearer ' + authToken }
       });
       const cData = await cResp.json();
-      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:referral:')).length;
+      const friendCount = (cData.logs || []).filter(l => l.type === 'reward' && (l.description||'').startsWith('share:')).length;
       if (el('mpFriends')) el('mpFriends').innerHTML = friendCount + '명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+' + friendCount + '크레딧 적립)</span>';
     }catch(e){ if(el('mpFriends')) el('mpFriends').innerHTML = '0명 <span style="font-size:11px;font-weight:500;color:var(--muted)">(+0크레딧 적립)</span>'; }
 
