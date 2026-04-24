@@ -3673,6 +3673,24 @@ window.addEventListener('load', async () => {
   if(_urlParams.get('newAnalysis')){
     window.history.replaceState({}, '', window.location.pathname);
   }
+
+  /* ── 법적 페이지(환불/이용약관/개인정보)는 로그인과 무관하므로
+        restoreAuth() 3초 대기 없이 즉시 렌더링 후 종료 ── */
+  const _earlyHash = window.location.hash.replace('#','');
+  if(['refund','terms','privacy'].includes(_earlyHash)){
+    const c = LEGAL_CONTENT[_earlyHash];
+    if(c){
+      document.getElementById('legalTitle').textContent = c.title;
+      document.getElementById('legalBody').innerHTML = c.body;
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pageLegal').classList.add('active');
+      window.scrollTo({top:0,behavior:'instant'});
+    }
+    /* 헤더 크레딧 등 백그라운드 초기화는 계속 진행 */
+    restoreAuth().then(()=>{ loadUserCredits(); fetchDailySaleStatus(); });
+    return;
+  }
+
   await restoreAuth();
   await loadUserCredits();
   await fetchDailySaleStatus();
@@ -3717,19 +3735,8 @@ window.addEventListener('load', async () => {
         /* 비로그인 시 로그인 모달 띄우고 홈 유지 */
         openAuthModal('login');
       }
-    } else if(['refund','terms','privacy'].includes(initHash)){
-      /* LEGAL_CONTENT가 정의된 후 실행되도록 setTimeout 사용 */
-      setTimeout(()=>{
-        const c = LEGAL_CONTENT[initHash];
-        if(c){
-          document.getElementById('legalTitle').textContent=c.title;
-          document.getElementById('legalBody').innerHTML=c.body;
-          document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-          document.getElementById('pageLegal').classList.add('active');
-          window.scrollTo({top:0,behavior:'smooth'});
-        }
-      }, 0);
     }
+    /* refund/terms/privacy는 load 이벤트 최상단에서 이미 처리됨 */
   }
 });
 
