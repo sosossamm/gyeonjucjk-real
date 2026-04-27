@@ -356,25 +356,25 @@ async function rewardAndShow(directToken, directUserId){
     userId = session.user.id;
   }
 
-  /* 공유자 크레딧 보상 시도 */
-  try{
-    const shareResp = await fetch(`/api/share?id=${currentShareId}`);
-    const shareJson = await shareResp.json();
-    const sharerId = shareJson.data?.sharerId;
-    console.log('보상 시도 - sharerId:', sharerId, 'userId:', userId);
+  /* 공유자 크레딧 보상 시도 — 같은 세션에서 중복 호출 방지 */
+  const _rewardKey = 'rewarded_' + currentShareId;
+  if(!sessionStorage.getItem(_rewardKey)){
+    try{
+      const shareResp = await fetch(`/api/share?id=${currentShareId}`);
+      const shareJson = await shareResp.json();
+      const sharerId = shareJson.data?.sharerId;
 
-    if(sharerId && sharerId !== userId){
-      const rewardResp = await fetch('/api/credits?action=rewardSharer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
-      });
-      const rewardData = await rewardResp.json();
-      console.log('보상 결과:', rewardData);
-    } else {
-      console.log('보상 스킵 - sharerId 없거나 본인 링크');
-    }
-  }catch(e){ console.error('보상 처리 실패:', e); }
+      if(sharerId && sharerId !== userId){
+        await fetch('/api/credits?action=rewardSharer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sharerId, shareId: currentShareId, description: '공유 링크 신규 가입 보상' })
+        });
+      }
+      /* 성공 여부와 무관하게 이 세션에선 재호출 안 함 */
+      sessionStorage.setItem(_rewardKey, '1');
+    }catch(e){ /* 보상 실패해도 열람은 허용 */ }
+  }
 
   /* 결과 다시 로드해서 잠금 해제 */
   await loadShare();
@@ -404,7 +404,8 @@ async function loadShare(){
     }
 
     if(session){
-      showUnlocked(d);
+      /* 로그인 상태여도 rewardAndShow를 거쳐야 함 — 보상 처리 + 서버 검증 후 열람 */
+      await rewardAndShow(session.access_token, session.user.id);
     } else {
       showBlurred(d, shareId);
     }
