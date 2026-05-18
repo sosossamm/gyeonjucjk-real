@@ -1968,8 +1968,8 @@ function closeAuthModal() {
 }
 
 function handleOverlayClick(e) {
-  /* overlay 배경을 클릭했을 때만 닫기 (드래그 무시) */
-  if (e.target === document.getElementById('authOverlay') && e.button === 0 && !e.dragged) {
+  /* overlay 배경 순수 클릭 시만 닫기 — 드래그이거나 모달 안에서 드래그해서 나온 경우 무시 */
+  if (e.target === document.getElementById('authOverlay') && e.button === 0 && !_isDragging && !_mousedownInSheet) {
     closeAuthModal();
   }
 }
@@ -1977,16 +1977,24 @@ function handleOverlayClick(e) {
 /* ── 드래그 감지 ── */
 let dragStartX = 0;
 let dragStartY = 0;
+let _isDragging = false;  /* 드래그 여부 전역 플래그 */
+let _mousedownInSheet = false;  /* mousedown이 모달 내부에서 시작됐는지 */
 document.addEventListener('mousedown', (e) => {
   dragStartX = e.clientX;
   dragStartY = e.clientY;
+  _isDragging = false;
+  /* 모달 시트 안에서 눌렀는지 기록 */
+  _mousedownInSheet = !!e.target.closest('.auth-sheet');
 });
-document.addEventListener('mouseup', (e) => {
-  const dragDistance = Math.sqrt(Math.pow(e.clientX - dragStartX, 2) + Math.pow(e.clientY - dragStartY, 2));
-  if (dragDistance > 10) {
-    e.dragged = true; /* 10px 이상 움직임 = 드래그 */
+document.addEventListener('mousemove', (e) => {
+  if (e.buttons === 1) {
+    const dist = Math.sqrt(Math.pow(e.clientX - dragStartX, 2) + Math.pow(e.clientY - dragStartY, 2));
+    if (dist > 5) _isDragging = true;
   }
-}, true);
+});
+document.addEventListener('mouseup', () => {
+  setTimeout(() => { _isDragging = false; _mousedownInSheet = false; }, 0);
+});
 
 /* ── 이메일 인증 팝업 제어 ── */
 function openEmailVerifyPopup(email) {
